@@ -16,18 +16,21 @@ public static class DependencyInjection
     {
         services.AddDbContext<AppDbContext>(o => o.UseSqlite(config.GetConnectionString("Default")));
         services.AddSingleton<IPasswordService, PasswordService>();
+        services.AddSingleton<IClock, SystemClock>();
 
         // Repositooriumid
         services.AddScoped<IRestaurantRepository, RestaurantRepository>();
         services.AddScoped<ITableRepository, TableRepository>();
         services.AddScoped<IMenuRepository, MenuRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IReservationRepository, ReservationRepository>();
 
         // Teenused (äriloogika)
         services.AddScoped<IRestaurantService, RestaurantService>();
         services.AddScoped<ITableService, TableService>();
         services.AddScoped<IMenuService, MenuService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IReservationService, ReservationService>();
 
         return services;
     }
