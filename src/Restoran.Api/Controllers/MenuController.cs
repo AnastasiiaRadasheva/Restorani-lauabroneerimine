@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Restoran.Application.Common;
 using Restoran.Application.DTOs;
@@ -32,6 +33,7 @@ public class MenuController : ControllerBase
     public async Task<ActionResult<MenuItemDto>> Get(int id) => Ok(await _menu.GetByIdAsync(id));
 
     /// <summary>Lisa menüüpunkt.</summary>
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     [ProducesResponseType(typeof(MenuItemDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -42,6 +44,7 @@ public class MenuController : ControllerBase
     }
 
     /// <summary>Muuda menüüpunkti.</summary>
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id:int}")]
     [ProducesResponseType(typeof(MenuItemDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -49,6 +52,7 @@ public class MenuController : ControllerBase
     public async Task<ActionResult<MenuItemDto>> Update(int id, SaveMenuItemDto dto) => Ok(await _menu.UpdateAsync(id, dto));
 
     /// <summary>Kustuta menüüpunkt.</summary>
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

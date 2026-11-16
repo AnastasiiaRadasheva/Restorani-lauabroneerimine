@@ -1,5 +1,41 @@
 @api = http://localhost:5000
 
+### ===== Autentimine =====
+# Käivita kõigepealt login päringud, siis saavad teised päringud tokeni.
+
+# @name adminLogin
+POST {{api}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "admin@restoran.ee", "password": "Admin123!" }
+
+###
+# @name customerLogin
+POST {{api}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "klient@restoran.ee", "password": "Klient123!" }
+
+###
+@adminToken = {{adminLogin.response.body.$.token}}
+@customerToken = {{customerLogin.response.body.$.token}}
+
+### Vale parool (401)
+POST {{api}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "admin@restoran.ee", "password": "vale" }
+
+### Registreerimine
+POST {{api}}/api/auth/register
+Content-Type: application/json
+
+{ "name": "Mari Maasikas", "email": "mari@example.com", "phone": "+372 5555 5555", "password": "Parool123!" }
+
+### Minu andmed
+GET {{api}}/api/auth/me
+Authorization: Bearer {{customerToken}}
+
 ### ===== Restoranid =====
 
 ### Kõik restoranid (lähim esimesena)
@@ -13,6 +49,7 @@ GET {{api}}/api/restaurants/1/tables
 
 ### Lisa restoran
 POST {{api}}/api/restaurants
+Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
@@ -31,8 +68,16 @@ Content-Type: application/json
 ### Üks laud
 GET {{api}}/api/tables/1
 
+### Klient ei tohi lauda lisada (403)
+POST {{api}}/api/tables
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{ "restaurantId": 1, "number": 13, "seats": 4, "location": "Hall" }
+
 ### Lisa laud
 POST {{api}}/api/tables
+Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
@@ -45,6 +90,7 @@ Content-Type: application/json
 
 ### Vigane laud (400)
 POST {{api}}/api/tables
+Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
@@ -56,6 +102,7 @@ Content-Type: application/json
 
 ### Muuda lauda
 PUT {{api}}/api/tables/1
+Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
@@ -80,6 +127,7 @@ GET {{api}}/api/menu?search=supp
 
 ### Lisa menüüpunkt
 POST {{api}}/api/menu
+Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
@@ -93,6 +141,7 @@ Content-Type: application/json
 
 ### Muuda menüüpunkti
 PUT {{api}}/api/menu/1
+Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {

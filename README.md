@@ -28,6 +28,18 @@ Swagger: http://localhost:5000/swagger
 
 API requests for testing: `src/Restoran.Api/Restoran.Api.http` (Visual Studio / VS Code REST Client / Rider).
 
+## Test users
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | admin@restoran.ee | Admin123! |
+| Waiter | waiter@restoran.ee | Waiter123! |
+| Customer | klient@restoran.ee | Klient123! |
+| Service (worker) | service@restoran.ee | Service123! |
+
+Login with `POST /api/auth/login`, then press **Authorize** in Swagger and paste the token.
+Creating, updating and deleting restaurants, tables and menu items requires the `Admin` role.
+
 ## API endpoints
 
 | Method | URL | Description |
@@ -38,5 +50,9 @@ API requests for testing: `src/Restoran.Api/Restoran.Api.http` (Visual Studio / 
 | GET/POST/PUT/DELETE | `/api/tables/{id}` | Table CRUD (seats, hall or terrace, position on the floor plan) |
 | GET | `/api/menu?restaurantId=&category=&search=&sort=&page=` | Menu with filter, search, sorting, paging |
 | GET/POST/PUT/DELETE | `/api/menu/{id}` | Menu CRUD |
+
+| POST | `/api/auth/register` | Register a customer |
+| POST | `/api/auth/login` | Login, returns a JWT token |
+| GET | `/api/auth/me` | Current user |
 
 Errors are returned as `ProblemDetails` (400, 404, 409, 500).

@@ -26,6 +26,7 @@ public class GlobalExceptionHandler : IExceptionHandler
             NotFoundException => (StatusCodes.Status404NotFound, "Ei leitud"),
             ConflictException => (StatusCodes.Status409Conflict, "Konflikt"),
             BusinessRuleException => (StatusCodes.Status400BadRequest, "Vigane päring"),
+            UnauthorizedException => (StatusCodes.Status401Unauthorized, "Autentimine ebaõnnestus"),
             ForbiddenException => (StatusCodes.Status403Forbidden, "Keelatud"),
             _ => (StatusCodes.Status500InternalServerError, "Serveri viga")
         };

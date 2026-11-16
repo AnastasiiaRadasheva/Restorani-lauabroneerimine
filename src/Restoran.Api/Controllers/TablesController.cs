@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Restoran.Application.DTOs;
 using Restoran.Application.Interfaces;
@@ -30,6 +31,7 @@ public class TablesController : ControllerBase
     ///     POST /api/tables
     ///     { "restaurantId": 1, "number": 11, "seats": 4, "location": "Hall", "x": 50, "y": 10, "width": 12, "height": 12 }
     /// </remarks>
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     [ProducesResponseType(typeof(TableDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -41,6 +43,7 @@ public class TablesController : ControllerBase
     }
 
     /// <summary>Muuda lauda.</summary>
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id:int}")]
     [ProducesResponseType(typeof(TableDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -49,6 +52,7 @@ public class TablesController : ControllerBase
     public async Task<ActionResult<TableDto>> Update(int id, SaveTableDto dto) => Ok(await _tables.UpdateAsync(id, dto));
 
     /// <summary>Kustuta laud (kui sellel pole tulevasi broneeringuid).</summary>
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

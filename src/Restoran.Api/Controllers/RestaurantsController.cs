@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Restoran.Application.DTOs;
 using Restoran.Application.Interfaces;
@@ -41,6 +42,7 @@ public class RestaurantsController : ControllerBase
     public async Task<ActionResult<List<TableDto>>> GetTables(int id) => Ok(await _tables.GetByRestaurantAsync(id));
 
     /// <summary>Lisa restoran.</summary>
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     [ProducesResponseType(typeof(RestaurantDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -51,6 +53,7 @@ public class RestaurantsController : ControllerBase
     }
 
     /// <summary>Muuda restorani.</summary>
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id:int}")]
     [ProducesResponseType(typeof(RestaurantDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -59,6 +62,7 @@ public class RestaurantsController : ControllerBase
         Ok(await _restaurants.UpdateAsync(id, dto));
 
     /// <summary>Kustuta restoran.</summary>
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
