@@ -1,0 +1,253 @@
+@api = http://localhost:5000
+
+### ===== Autentimine =====
+# Käivita kõigepealt login päringud, siis saavad teised päringud tokeni.
+
+# @name adminLogin
+POST {{api}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "admin@restoran.ee", "password": "Admin123!" }
+
+###
+# @name customerLogin
+POST {{api}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "klient@restoran.ee", "password": "Klient123!" }
+
+###
+@adminToken = {{adminLogin.response.body.$.token}}
+@customerToken = {{customerLogin.response.body.$.token}}
+
+### Vale parool (401)
+POST {{api}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "admin@restoran.ee", "password": "vale" }
+
+### Registreerimine
+POST {{api}}/api/auth/register
+Content-Type: application/json
+
+{ "name": "Mari Maasikas", "email": "mari@example.com", "phone": "+372 5555 5555", "password": "Parool123!" }
+
+### Minu andmed
+GET {{api}}/api/auth/me
+Authorization: Bearer {{customerToken}}
+
+### ===== Restoranid =====
+
+### Kõik restoranid (lähim esimesena)
+GET {{api}}/api/restaurants?lat=59.437&lng=24.745
+
+### Üks restoran
+GET {{api}}/api/restaurants/1
+
+### Restorani lauad
+GET {{api}}/api/restaurants/1/tables
+
+### Lisa restoran
+POST {{api}}/api/restaurants
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Tuul",
+  "address": "Telliskivi 60a, Tallinn",
+  "description": "Uus restoran Telliskivis",
+  "latitude": 59.4399,
+  "longitude": 24.7286,
+  "opensAt": "12:00",
+  "closesAt": "22:00",
+  "barX": 42, "barY": 45, "barWidth": 22, "barHeight": 50
+}
+
+### ===== Lauad =====
+
+### Üks laud
+GET {{api}}/api/tables/1
+
+### Klient ei tohi lauda lisada (403)
+POST {{api}}/api/tables
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{ "restaurantId": 1, "number": 13, "seats": 4, "location": "Hall" }
+
+### Lisa laud
+POST {{api}}/api/tables
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "restaurantId": 1,
+  "number": 11,
+  "seats": 4,
+  "location": "Hall",
+  "x": 50, "y": 10, "width": 12, "height": 12
+}
+
+### Vigane laud (400)
+POST {{api}}/api/tables
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "restaurantId": 1,
+  "number": 12,
+  "seats": 0,
+  "location": "Hall"
+}
+
+### Muuda lauda
+PUT {{api}}/api/tables/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "restaurantId": 1,
+  "number": 1,
+  "seats": 5,
+  "location": "Hall",
+  "isActive": true,
+  "x": 4, "y": 6, "width": 16, "height": 22
+}
+
+### Lauda ei leitud (404)
+GET {{api}}/api/tables/999
+
+### ===== Menüü =====
+
+### Menüü (filter, sortimine, leheküljed)
+GET {{api}}/api/menu?restaurantId=1&category=Pearoad&sort=price&desc=true&page=1&pageSize=10
+
+### Otsing
+GET {{api}}/api/menu?search=supp
+
+### Lisa menüüpunkt
+POST {{api}}/api/menu
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "restaurantId": 1,
+  "name": "Kartulisalat",
+  "description": "Ema retsepti järgi",
+  "category": "Eelroad",
+  "price": 5.50,
+  "isAvailable": true
+}
+
+### Muuda menüüpunkti
+PUT {{api}}/api/menu/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "restaurantId": 1,
+  "name": "Seenesupp",
+  "description": "Metsaseentest koorene supp",
+  "category": "Supid",
+  "price": 7.00,
+  "isAvailable": true
+}
+
+### ===== Broneeringud =====
+# Muuda kuupäev tulevikku (vähemalt 2 päeva ette, et 24 h reegel ei segaks).
+@date = 2026-12-20
+
+### Sobiv vaba laud
+GET {{api}}/api/tables/available?restaurantId=1&date={{date}}&time=19:00&guests=2
+
+### Uus broneering (laud valitakse automaatselt)
+# @name created
+POST {{api}}/api/reservations
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "restaurantId": 1,
+  "date": "{{date}}",
+  "time": "19:00",
+  "guests": 2,
+  "specialRequest": "Aknaalune laud, kui võimalik"
+}
+
+###
+@reservationId = {{created.response.body.$.id}}
+@tableId = {{created.response.body.$.tableId}}
+
+### Sama laud samal ajal (409 Conflict)
+POST {{api}}/api/reservations
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "restaurantId": 1,
+  "date": "{{date}}",
+  "time": "20:00",
+  "guests": 2,
+  "tableId": {{tableId}}
+}
+
+### Minevikus (400)
+POST {{api}}/api/reservations
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{ "restaurantId": 1, "date": "2020-01-01", "time": "19:00", "guests": 2 }
+
+### Eeltellimus
+POST {{api}}/api/reservations/{{reservationId}}/preorder
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "items": [
+    { "menuItemId": 3, "quantity": 2 },
+    { "menuItemId": 7, "quantity": 1 }
+  ],
+  "specialRequest": "Sünnipäev, palun küünal koogile"
+}
+
+### Võltsmakse
+POST {{api}}/api/reservations/{{reservationId}}/pay
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{ "cardHolder": "Kati Klient", "cardNumber": "4242 4242 4242 4242", "expiry": "12/28", "cvc": "123" }
+
+### Muuda broneeringut
+PUT {{api}}/api/reservations/{{reservationId}}
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{ "date": "{{date}}", "time": "18:00", "guests": 2 }
+
+### Minu broneeringud
+GET {{api}}/api/reservations/my
+Authorization: Bearer {{customerToken}}
+
+### Tühista
+PATCH {{api}}/api/reservations/{{reservationId}}/cancel
+Authorization: Bearer {{customerToken}}
+
+### Kõik broneeringud (personal): filter, otsing, sortimine, leheküljed
+GET {{api}}/api/reservations?restaurantId=1&status=Active&search=jaan&sort=date&desc=true&page=1&pageSize=10
+Authorization: Bearer {{adminToken}}
+
+### Klient ei näe kõiki broneeringuid (403)
+GET {{api}}/api/reservations
+Authorization: Bearer {{customerToken}}
+
+### Päeva laudade plaan
+GET {{api}}/api/tables/plan?restaurantId=1&date={{date}}
+Authorization: Bearer {{adminToken}}
+
+### Klient saabus
+PATCH {{api}}/api/reservations/{{reservationId}}/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "status": "Arrived" }
