@@ -11,6 +11,19 @@ Customers pick a restaurant, a date, a time and the number of guests, and the sy
 - Layers: `Restoran.Api` → `Restoran.Application` (entities, services, DTOs) → `Restoran.Infrastructure` (EF Core, repositories)
 - xUnit + Moq tests
 
+## Tests
+
+```bash
+dotnet test
+```
+
+21 unit tests (xUnit). `ReservationServiceTests` uses **Moq** mocks instead of the database.
+Tested: overlap rule, smallest free table, 409 on double booking, opening hours, past dates, 24 h rule, access rights, pre-order validation.
+
+## Logging
+
+`ILogger` logs every request (method, path, status, duration), new / cancelled / paid reservations and all errors.
+
 ## Database
 
 Tables: `Users`, `Restaurants`, `Tables`, `Reservations`, `MenuItems`, `PreOrderItems`, `Notifications`.
