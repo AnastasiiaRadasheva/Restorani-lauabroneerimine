@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -41,6 +42,14 @@ builder.Services.AddCors(o => o.AddPolicy("web", p => p
     .WithOrigins(builder.Configuration.GetSection("Cors:Origins").Get<string[]>() ?? ["http://localhost:5173"])
     .AllowAnyHeader()
     .AllowAnyMethod()));
+
+// Logimine: iga päring (meetod, aadress, olekukood, kestus)
+builder.Services.AddHttpLogging(o =>
+{
+    o.LoggingFields = HttpLoggingFields.RequestMethod | HttpLoggingFields.RequestPath |
+                      HttpLoggingFields.ResponseStatusCode | HttpLoggingFields.Duration;
+    o.CombineLogs = true; // üks rida päringu kohta
+});
 
 // Ühtne veakäsitlus (ProblemDetails)
 builder.Services.AddProblemDetails();
@@ -82,6 +91,7 @@ using (var scope = app.Services.CreateScope())
     await DbSeeder.SeedAsync(db, scope.ServiceProvider.GetRequiredService<IPasswordService>());
 }
 
+app.UseHttpLogging();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 

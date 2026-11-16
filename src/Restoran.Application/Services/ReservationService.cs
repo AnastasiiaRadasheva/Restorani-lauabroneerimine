@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Restoran.Application.Common;
 using Restoran.Application.DTOs;
 using Restoran.Application.Entities;
@@ -15,6 +16,7 @@ public class ReservationService : IReservationService
     private readonly IMenuRepository _menu;
     private readonly ICurrentUser _current;
     private readonly IClock _clock;
+    private readonly ILogger<ReservationService> _logger;
 
     public ReservationService(
         IReservationRepository reservations,
@@ -22,7 +24,8 @@ public class ReservationService : IReservationService
         IRestaurantRepository restaurants,
         IMenuRepository menu,
         ICurrentUser current,
-        IClock clock)
+        IClock clock,
+        ILogger<ReservationService> logger)
     {
         _reservations = reservations;
         _tables = tables;
@@ -30,6 +33,7 @@ public class ReservationService : IReservationService
         _menu = menu;
         _current = current;
         _clock = clock;
+        _logger = logger;
     }
 
     // ---------- Vabad lauad ----------
@@ -73,6 +77,8 @@ public class ReservationService : IReservationService
         };
         await _reservations.AddAsync(reservation);
         await _reservations.SaveChangesAsync();
+        _logger.LogInformation("Uus broneering {Id}: restoran {Restaurant}, laud {Table}, {Start}, {Guests} inimest",
+            reservation.Id, restaurant.Name, table.Number, start, dto.Guests);
 
         return await GetByIdAsync(reservation.Id);
     }
@@ -106,6 +112,7 @@ public class ReservationService : IReservationService
 
         r.Status = ReservationStatus.Cancelled;
         await _reservations.SaveChangesAsync();
+        _logger.LogInformation("Broneering {Id} tühistati", r.Id);
         return ToDto(r);
     }
 
@@ -172,6 +179,7 @@ public class ReservationService : IReservationService
 
         r.IsPaid = true;
         await _reservations.SaveChangesAsync();
+        _logger.LogInformation("Broneering {Id} makstud (võltsmakse), summa {Total}", r.Id, r.PreOrderItems.Sum(p => p.UnitPrice * p.Quantity));
         return ToDto(r);
     }
 
@@ -205,6 +213,7 @@ public class ReservationService : IReservationService
         var r = await _reservations.GetWithDetailsAsync(id) ?? throw NotFound(id);
         r.Status = status;
         await _reservations.SaveChangesAsync();
+        _logger.LogInformation("Broneeringu {Id} uus olek: {Status}", r.Id, status);
         return ToDto(r);
     }
 
