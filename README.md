@@ -25,3 +25,18 @@ dotnet run
 ```
 
 Swagger: http://localhost:5000/swagger
+
+API requests for testing: `src/Restoran.Api/Restoran.Api.http` (Visual Studio / VS Code REST Client / Rider).
+
+## API endpoints
+
+| Method | URL | Description |
+|---|---|---|
+| GET | `/api/restaurants?lat=&lng=` | Restaurants, nearest first (with distance) |
+| GET/POST/PUT/DELETE | `/api/restaurants/{id}` | Restaurant CRUD |
+| GET | `/api/restaurants/{id}/tables` | Tables of a restaurant |
+| GET/POST/PUT/DELETE | `/api/tables/{id}` | Table CRUD (seats, hall or terrace, position on the floor plan) |
+| GET | `/api/menu?restaurantId=&category=&search=&sort=&page=` | Menu with filter, search, sorting, paging |
+| GET/POST/PUT/DELETE | `/api/menu/{id}` | Menu CRUD |
+
+Errors are returned as `ProblemDetails` (400, 404, 409, 500).

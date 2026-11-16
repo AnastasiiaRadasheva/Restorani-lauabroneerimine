@@ -1,17 +1,32 @@
-using Microsoft.EntityFrameworkCore;
+using System.Reflection;
+using System.Text.Json.Serialization;
+using Restoran.Api.Infrastructure;
 using Restoran.Application.Interfaces;
+using Restoran.Infrastructure;
 using Restoran.Infrastructure.Data;
-using Restoran.Infrastructure.Security;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<AppDbContext>(o =>
-    o.UseSqlite(builder.Configuration.GetConnectionString("Default")));
-builder.Services.AddSingleton<IPasswordService, PasswordService>();
+// Andmebaas, repositooriumid ja teenused
+builder.Services.AddRestoran(builder.Configuration);
 
-builder.Services.AddControllers();
+// Ühtne veakäsitlus (ProblemDetails)
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+builder.Services.AddControllers()
+    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(o =>
+{
+    o.SwaggerDoc("v1", new() { Title = "Restorani lauabroneerimine API", Version = "v1" });
+    var xml = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
+    o.IncludeXmlComments(xml);
+    var appXml = Path.Combine(AppContext.BaseDirectory, "Restoran.Application.xml");
+    if (File.Exists(appXml)) o.IncludeXmlComments(appXml);
+});
 
 var app = builder.Build();
 
@@ -22,6 +37,9 @@ using (var scope = app.Services.CreateScope())
     await db.Database.MigrateAsync();
     await DbSeeder.SeedAsync(db, scope.ServiceProvider.GetRequiredService<IPasswordService>());
 }
+
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 
 app.UseSwagger();
 app.UseSwaggerUI();

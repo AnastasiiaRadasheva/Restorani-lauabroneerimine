@@ -489,3 +489,6 @@ $RECYCLE.BIN/
 # Node
 node_modules/
 dist/
+
+# Demo SMS-id ja e-kirjad
+outbox/
