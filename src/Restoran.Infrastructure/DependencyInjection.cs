@@ -21,11 +21,13 @@ public static class DependencyInjection
         services.AddScoped<IRestaurantRepository, RestaurantRepository>();
         services.AddScoped<ITableRepository, TableRepository>();
         services.AddScoped<IMenuRepository, MenuRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
 
         // Teenused (äriloogika)
         services.AddScoped<IRestaurantService, RestaurantService>();
         services.AddScoped<ITableService, TableService>();
         services.AddScoped<IMenuService, MenuService>();
+        services.AddScoped<IAuthService, AuthService>();
 
         return services;
     }

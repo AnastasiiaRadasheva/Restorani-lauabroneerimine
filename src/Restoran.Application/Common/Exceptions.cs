@@ -18,6 +18,12 @@ public class BusinessRuleException : Exception
     public BusinessRuleException(string message) : base(message) { }
 }
 
+/// <summary>Vale kasutajanimi või parool (API tagastab 401).</summary>
+public class UnauthorizedException : Exception
+{
+    public UnauthorizedException(string message) : base(message) { }
+}
+
 /// <summary>Kasutajal pole õigust seda objekti muuta (API tagastab 403).</summary>
 public class ForbiddenException : Exception
 {
