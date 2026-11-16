@@ -12,11 +12,37 @@ namespace Restoran.Api.Controllers;
 public class TablesController : ControllerBase
 {
     private readonly ITableService _tables;
+    private readonly IReservationService _reservations;
 
-    public TablesController(ITableService tables)
+    public TablesController(ITableService tables, IReservationService reservations)
     {
         _tables = tables;
+        _reservations = reservations;
     }
+
+    /// <summary>Sobiva vaba laua pakkumine.</summary>
+    /// <remarks>
+    /// Tagastab pakutud laua (väikseim sobiv vaba laud) ja kõik restorani lauad koos infoga,
+    /// kas need on valitud ajal vabad. Broneering kestab 2 tundi.
+    ///
+    /// Näide: GET /api/tables/available?restaurantId=1&amp;date=2026-11-20&amp;time=19:00&amp;guests=4
+    /// </remarks>
+    [HttpGet("available")]
+    [ProducesResponseType(typeof(AvailabilityDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<AvailabilityDto>> Available(
+        [FromQuery] int restaurantId, [FromQuery] DateOnly date, [FromQuery] TimeOnly time, [FromQuery] int guests) =>
+        Ok(await _reservations.GetAvailabilityAsync(restaurantId, date, time, guests));
+
+    /// <summary>Päeva laudade plaan: lauad ja nende broneeringud (personal).</summary>
+    /// <remarks>Näide: GET /api/tables/plan?restaurantId=1&amp;date=2026-11-20</remarks>
+    [Authorize(Roles = "Admin,Waiter")]
+    [HttpGet("plan")]
+    [ProducesResponseType(typeof(TablePlanDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<TablePlanDto>> Plan([FromQuery] int restaurantId, [FromQuery] DateOnly date) =>
+        Ok(await _reservations.GetPlanAsync(restaurantId, date));
 
     /// <summary>Üks laud.</summary>
     [HttpGet("{id:int}")]

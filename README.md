@@ -28,6 +28,14 @@ Swagger: http://localhost:5000/swagger
 
 API requests for testing: `src/Restoran.Api/Restoran.Api.http` (Visual Studio / VS Code REST Client / Rider).
 
+## Booking rules
+
+- A reservation lasts **2 hours** and must fit in the restaurant opening hours.
+- Two reservations overlap when `newStart < existingEnd && newEnd > existingStart`.
+  `Cancelled` and `NoShow` reservations do not occupy a table.
+- Automatic table choice: the **smallest free table** with `Seats >= guests`.
+- Customers can change or cancel a reservation only **more than 24 hours** before it starts.
+
 ## Test users
 
 | Role | Email | Password |
@@ -51,6 +59,16 @@ Creating, updating and deleting restaurants, tables and menu items requires the 
 | GET | `/api/menu?restaurantId=&category=&search=&sort=&page=` | Menu with filter, search, sorting, paging |
 | GET/POST/PUT/DELETE | `/api/menu/{id}` | Menu CRUD |
 
+| GET | `/api/tables/available?restaurantId=&date=&time=&guests=` | Suggested free table + availability of all tables |
+| GET | `/api/tables/plan?restaurantId=&date=` | Floor plan of the day (staff) |
+| GET | `/api/reservations` | All reservations with filter/search/sort/paging (staff) |
+| GET | `/api/reservations/my` | My reservations |
+| POST | `/api/reservations` | Create reservation (`409 Conflict` if the table is taken) |
+| PUT | `/api/reservations/{id}` | Change reservation (customer: only more than 24 h before) |
+| PATCH | `/api/reservations/{id}/cancel` | Cancel (customer: only more than 24 h before) |
+| POST | `/api/reservations/{id}/preorder` | Food pre-order |
+| POST | `/api/reservations/{id}/pay` | Fake payment (test card `4242 4242 4242 4242`) |
+| PATCH | `/api/reservations/{id}/status` | Change status, e.g. `Arrived` (staff) |
 | POST | `/api/auth/register` | Register a customer |
 | POST | `/api/auth/login` | Login, returns a JWT token |
 | GET | `/api/auth/me` | Current user |

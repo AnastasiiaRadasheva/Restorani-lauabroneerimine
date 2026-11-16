@@ -152,3 +152,102 @@ Content-Type: application/json
   "price": 7.00,
   "isAvailable": true
 }
+
+### ===== Broneeringud =====
+# Muuda kuupäev tulevikku (vähemalt 2 päeva ette, et 24 h reegel ei segaks).
+@date = 2026-12-20
+
+### Sobiv vaba laud
+GET {{api}}/api/tables/available?restaurantId=1&date={{date}}&time=19:00&guests=2
+
+### Uus broneering (laud valitakse automaatselt)
+# @name created
+POST {{api}}/api/reservations
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "restaurantId": 1,
+  "date": "{{date}}",
+  "time": "19:00",
+  "guests": 2,
+  "specialRequest": "Aknaalune laud, kui võimalik"
+}
+
+###
+@reservationId = {{created.response.body.$.id}}
+@tableId = {{created.response.body.$.tableId}}
+
+### Sama laud samal ajal (409 Conflict)
+POST {{api}}/api/reservations
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "restaurantId": 1,
+  "date": "{{date}}",
+  "time": "20:00",
+  "guests": 2,
+  "tableId": {{tableId}}
+}
+
+### Minevikus (400)
+POST {{api}}/api/reservations
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{ "restaurantId": 1, "date": "2020-01-01", "time": "19:00", "guests": 2 }
+
+### Eeltellimus
+POST {{api}}/api/reservations/{{reservationId}}/preorder
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "items": [
+    { "menuItemId": 3, "quantity": 2 },
+    { "menuItemId": 7, "quantity": 1 }
+  ],
+  "specialRequest": "Sünnipäev, palun küünal koogile"
+}
+
+### Võltsmakse
+POST {{api}}/api/reservations/{{reservationId}}/pay
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{ "cardHolder": "Kati Klient", "cardNumber": "4242 4242 4242 4242", "expiry": "12/28", "cvc": "123" }
+
+### Muuda broneeringut
+PUT {{api}}/api/reservations/{{reservationId}}
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{ "date": "{{date}}", "time": "18:00", "guests": 2 }
+
+### Minu broneeringud
+GET {{api}}/api/reservations/my
+Authorization: Bearer {{customerToken}}
+
+### Tühista
+PATCH {{api}}/api/reservations/{{reservationId}}/cancel
+Authorization: Bearer {{customerToken}}
+
+### Kõik broneeringud (personal): filter, otsing, sortimine, leheküljed
+GET {{api}}/api/reservations?restaurantId=1&status=Active&search=jaan&sort=date&desc=true&page=1&pageSize=10
+Authorization: Bearer {{adminToken}}
+
+### Klient ei näe kõiki broneeringuid (403)
+GET {{api}}/api/reservations
+Authorization: Bearer {{customerToken}}
+
+### Päeva laudade plaan
+GET {{api}}/api/tables/plan?restaurantId=1&date={{date}}
+Authorization: Bearer {{adminToken}}
+
+### Klient saabus
+PATCH {{api}}/api/reservations/{{reservationId}}/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "status": "Arrived" }
