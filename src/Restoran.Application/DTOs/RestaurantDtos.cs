@@ -19,7 +19,7 @@ public record RestaurantDto(
 /// <summary>Restorani loomine või muutmine.</summary>
 public class SaveRestaurantDto
 {
-    /// <example>Aed</example>
+    /// <example>Argent</example>
     [Required, StringLength(100, MinimumLength = 2)]
     public string Name { get; set; } = "";
 
