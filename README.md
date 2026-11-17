@@ -8,6 +8,7 @@ Customers pick a restaurant, a date, a time and the number of guests, and the sy
 ## Tech stack
 
 - ASP.NET Core Web API (.NET 10), EF Core, SQLite
+- React 19 + Vite + React Router (website, works only through the API)
 - Layers: `Restoran.Api` → `Restoran.Application` (entities, services, DTOs) → `Restoran.Infrastructure` (EF Core, repositories)
 - xUnit + Moq tests
 
@@ -32,12 +33,24 @@ The database is created automatically on first start (migrations + seed data).
 
 ## Run
 
+1. API (creates the database on first start):
+
 ```bash
 cd src/Restoran.Api
 dotnet run
 ```
 
 Swagger: http://localhost:5000/swagger
+
+2. Website (React + Vite), in a second terminal:
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
+Website: http://localhost:5173 (the API allows this address with CORS).
 
 API requests for testing: `src/Restoran.Api/Restoran.Api.http` (Visual Studio / VS Code REST Client / Rider).
 
