@@ -11,26 +11,26 @@ public static class SeedData
         b.Entity<Restaurant>().HasData(
             new Restaurant
             {
-                Id = 1, Name = "Aed Vanalinn", Address = "Rataskaevu 8, Tallinn",
-                Description = "Hubane restoran vanalinna südames. Hooajaline Eesti köök.",
+                Id = 1, Name = "Argent · Vanalinn", Address = "Rataskaevu 8, Tallinn",
+                Description = "Kõrgköögi restoran vanalinna südames. Degustatsioonimenüü ja lahtine tuli.",
                 Latitude = 59.4370, Longitude = 24.7428,
-                OpensAt = new TimeOnly(12, 0), ClosesAt = new TimeOnly(23, 0),
+                OpensAt = new TimeOnly(17, 0), ClosesAt = new TimeOnly(23, 30),
                 BarX = 42, BarY = 45, BarWidth = 22, BarHeight = 50
             },
             new Restaurant
             {
-                Id = 2, Name = "Aed Kalamaja", Address = "Kalasadama 8, Tallinn",
-                Description = "Mereäärne Aed Kalamajas. Värske kala ja suur terrass.",
+                Id = 2, Name = "Argent · Kalamaja", Address = "Kalasadama 8, Tallinn",
+                Description = "Mereäärne saal ja suur terrass. Mereannid ja šampanja.",
                 Latitude = 59.4466, Longitude = 24.7395,
-                OpensAt = new TimeOnly(11, 0), ClosesAt = new TimeOnly(22, 0),
+                OpensAt = new TimeOnly(17, 0), ClosesAt = new TimeOnly(23, 30),
                 BarX = 42, BarY = 5, BarWidth = 22, BarHeight = 40
             },
             new Restaurant
             {
-                Id = 3, Name = "Aed Kadriorg", Address = "Weizenbergi 18, Tallinn",
-                Description = "Rahulik Aed Kadrioru pargi kõrval.",
+                Id = 3, Name = "Argent · Kadriorg", Address = "Weizenbergi 18, Tallinn",
+                Description = "Vaikne saal Kadrioru pargi kõrval. Hooajalised setid ja veinid.",
                 Latitude = 59.4385, Longitude = 24.7920,
-                OpensAt = new TimeOnly(12, 0), ClosesAt = new TimeOnly(23, 0),
+                OpensAt = new TimeOnly(17, 0), ClosesAt = new TimeOnly(23, 30),
                 BarX = 42, BarY = 45, BarWidth = 22, BarHeight = 50
             });
 

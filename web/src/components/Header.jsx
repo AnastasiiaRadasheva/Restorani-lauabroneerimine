@@ -1,0 +1,47 @@
+import { useState } from 'react'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { useAuth } from '../auth'
+import { useI18n } from '../i18n'
+import { MenuIcon } from './Icons'
+
+export default function Header() {
+  const { user, logout } = useAuth()
+  const { t } = useI18n()
+  const [open, setOpen] = useState(false)
+  const navigate = useNavigate()
+  const close = () => setOpen(false)
+
+  function onLogout() {
+    logout()
+    close()
+    navigate('/')
+  }
+
+  return (
+    <header className={open ? 'header open' : 'header'}>
+      <div className="header-inner">
+        <button className="menu-toggle" onClick={() => setOpen(!open)} aria-label="Menüü" aria-expanded={open}>
+          <MenuIcon />
+        </button>
+
+        <nav className="nav" aria-label="Põhimenüü">
+          <NavLink to="/" end onClick={close}>{t('nav.home')}</NavLink>
+          <NavLink to="/broneeri" onClick={close}>{t('nav.booking')}</NavLink>
+        </nav>
+
+        <Link to="/" className="logo" onClick={close}>ARGENT</Link>
+
+        <div className="nav-right">
+          {user ? (
+            <>
+              <span className="user">{user.name}</span>
+              <button className="link underline" onClick={onLogout}>{t('nav.logout')}</button>
+            </>
+          ) : (
+            <NavLink to="/login" className="link underline" onClick={close}>{t('nav.login')}</NavLink>
+          )}
+        </div>
+      </div>
+    </header>
+  )
+}
