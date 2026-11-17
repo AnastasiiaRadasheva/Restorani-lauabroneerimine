@@ -42,7 +42,7 @@ public static class DbSeeder
                 .ToListAsync();
             var tables = await db.Tables.ToListAsync();
             var rnd = new Random(42);
-            var slots = new[] { 12.0, 14.5, 17.0, 19.5 };
+            var slots = new[] { 17.0, 19.0, 21.0 }; // Argent on õhturestoran (17:00–23:30)
             var today = DateTime.Today;
             var list = new List<Reservation>();
 
@@ -55,7 +55,7 @@ public static class DbSeeder
                     foreach (var slot in slots)
                     {
                         // Õhtuti ja nädalavahetusel on rohkem broneeringuid
-                        double chance = (slot >= 17 ? 0.35 : 0.12) + (weekend ? 0.25 : 0);
+                        double chance = (slot == 19.0 ? 0.45 : 0.25) + (weekend ? 0.25 : 0);
                         if (d >= 0) chance /= 3;
                         if (rnd.NextDouble() > chance) continue;
 

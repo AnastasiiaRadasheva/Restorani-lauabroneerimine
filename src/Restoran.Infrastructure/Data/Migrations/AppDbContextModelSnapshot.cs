@@ -896,12 +896,12 @@ namespace Restoran.Infrastructure.Data.Migrations
                             BarWidth = 22,
                             BarX = 42,
                             BarY = 45,
-                            ClosesAt = new TimeOnly(23, 0, 0),
-                            Description = "Hubane restoran vanalinna südames. Hooajaline Eesti köök.",
+                            ClosesAt = new TimeOnly(23, 30, 0),
+                            Description = "Kõrgköögi restoran vanalinna südames. Degustatsioonimenüü ja lahtine tuli.",
                             Latitude = 59.436999999999998,
                             Longitude = 24.742799999999999,
-                            Name = "Aed Vanalinn",
-                            OpensAt = new TimeOnly(12, 0, 0)
+                            Name = "Argent · Vanalinn",
+                            OpensAt = new TimeOnly(17, 0, 0)
                         },
                         new
                         {
@@ -911,12 +911,12 @@ namespace Restoran.Infrastructure.Data.Migrations
                             BarWidth = 22,
                             BarX = 42,
                             BarY = 5,
-                            ClosesAt = new TimeOnly(22, 0, 0),
-                            Description = "Mereäärne Aed Kalamajas. Värske kala ja suur terrass.",
+                            ClosesAt = new TimeOnly(23, 30, 0),
+                            Description = "Mereäärne saal ja suur terrass. Mereannid ja šampanja.",
                             Latitude = 59.446599999999997,
                             Longitude = 24.7395,
-                            Name = "Aed Kalamaja",
-                            OpensAt = new TimeOnly(11, 0, 0)
+                            Name = "Argent · Kalamaja",
+                            OpensAt = new TimeOnly(17, 0, 0)
                         },
                         new
                         {
@@ -926,12 +926,12 @@ namespace Restoran.Infrastructure.Data.Migrations
                             BarWidth = 22,
                             BarX = 42,
                             BarY = 45,
-                            ClosesAt = new TimeOnly(23, 0, 0),
-                            Description = "Rahulik Aed Kadrioru pargi kõrval.",
+                            ClosesAt = new TimeOnly(23, 30, 0),
+                            Description = "Vaikne saal Kadrioru pargi kõrval. Hooajalised setid ja veinid.",
                             Latitude = 59.438499999999998,
                             Longitude = 24.792000000000002,
-                            Name = "Aed Kadriorg",
-                            OpensAt = new TimeOnly(12, 0, 0)
+                            Name = "Argent · Kadriorg",
+                            OpensAt = new TimeOnly(17, 0, 0)
                         });
                 });
 
