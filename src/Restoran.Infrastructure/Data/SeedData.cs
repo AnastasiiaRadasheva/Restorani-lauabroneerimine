@@ -15,7 +15,7 @@ public static class SeedData
                 Description = "Kõrgköögi restoran vanalinna südames. Degustatsioonimenüü ja lahtine tuli.",
                 Latitude = 59.4370, Longitude = 24.7428,
                 OpensAt = new TimeOnly(17, 0), ClosesAt = new TimeOnly(23, 30),
-                BarX = 42, BarY = 45, BarWidth = 22, BarHeight = 50
+                BarX = 38, BarY = 46, BarWidth = 26, BarHeight = 54
             },
             new Restaurant
             {
@@ -23,7 +23,7 @@ public static class SeedData
                 Description = "Mereäärne saal ja suur terrass. Mereannid ja šampanja.",
                 Latitude = 59.4466, Longitude = 24.7395,
                 OpensAt = new TimeOnly(17, 0), ClosesAt = new TimeOnly(23, 30),
-                BarX = 42, BarY = 5, BarWidth = 22, BarHeight = 40
+                BarX = 38, BarY = 46, BarWidth = 26, BarHeight = 54
             },
             new Restaurant
             {
@@ -31,22 +31,23 @@ public static class SeedData
                 Description = "Vaikne saal Kadrioru pargi kõrval. Hooajalised setid ja veinid.",
                 Latitude = 59.4385, Longitude = 24.7920,
                 OpensAt = new TimeOnly(17, 0), ClosesAt = new TimeOnly(23, 30),
-                BarX = 42, BarY = 45, BarWidth = 22, BarHeight = 50
+                BarX = 38, BarY = 46, BarWidth = 26, BarHeight = 54
             });
 
-        // Ühine saali paigutus: (number, kohad, asukoht, x, y, laius, kõrgus) protsentides
-        var layout = new (int Nr, int Seats, TableLocation Loc, int X, int Y, int W, int H)[]
+        // Ühine paigutus. Saal ja terrass on eraldi plaanid, mõlemas koordinaadid 0-100 %.
+        // (number, kohad, asukoht, x, y, laius, kõrgus, kirjeldus, ümmargune)
+        var layout = new (int Nr, int Seats, TableLocation Loc, int X, int Y, int W, int H, string Spot, bool Round)[]
         {
-            (1, 4, TableLocation.Hall, 4, 6, 16, 22),
-            (2, 2, TableLocation.Hall, 24, 6, 12, 14),
-            (3, 6, TableLocation.Hall, 4, 55, 18, 38),
-            (4, 2, TableLocation.Hall, 24, 30, 12, 14),
-            (5, 8, TableLocation.Hall, 24, 58, 14, 35),
-            (6, 2, TableLocation.Terrace, 78, 4, 18, 12),
-            (7, 4, TableLocation.Terrace, 78, 22, 18, 16),
-            (8, 4, TableLocation.Terrace, 78, 44, 18, 16),
-            (9, 2, TableLocation.Terrace, 78, 66, 18, 12),
-            (10, 6, TableLocation.Terrace, 78, 82, 18, 14),
+            (1, 6, TableLocation.Hall, 5, 6, 22, 36, "akna all", false),
+            (2, 6, TableLocation.Hall, 5, 52, 22, 36, "akna all", false),
+            (3, 2, TableLocation.Hall, 74, 3, 22, 21, "vaikne nurk", false),
+            (4, 2, TableLocation.Hall, 74, 27, 22, 21, "baari juures", false),
+            (5, 4, TableLocation.Hall, 74, 51, 22, 21, "baari juures", false),
+            (6, 4, TableLocation.Hall, 74, 75, 22, 21, "sissepääsu juures", false),
+            (7, 2, TableLocation.Terrace, 8, 8, 18, 32, "varikatuse all", true),
+            (8, 4, TableLocation.Terrace, 38, 8, 18, 32, "vaade tänavale", true),
+            (9, 6, TableLocation.Terrace, 10, 54, 32, 34, "kamina juures", false),
+            (10, 8, TableLocation.Terrace, 74, 30, 18, 58, "pikk laud", false),
         };
 
         var tables = new List<DiningTable>();
@@ -62,6 +63,8 @@ public static class SeedData
                     Seats = t.Seats,
                     Location = t.Loc,
                     X = t.X, Y = t.Y, Width = t.W, Height = t.H,
+                    Spot = t.Spot,
+                    IsRound = t.Round,
                     IsActive = true
                 });
             }

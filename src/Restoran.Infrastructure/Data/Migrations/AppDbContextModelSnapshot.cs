@@ -29,6 +29,9 @@ namespace Restoran.Infrastructure.Data.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsRound")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Location")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -42,6 +45,10 @@ namespace Restoran.Infrastructure.Data.Migrations
 
                     b.Property<int>("Seats")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Spot")
+                        .HasMaxLength(60)
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("Width")
                         .HasColumnType("INTEGER");
@@ -63,392 +70,452 @@ namespace Restoran.Infrastructure.Data.Migrations
                         new
                         {
                             Id = 1,
-                            Height = 22,
+                            Height = 36,
                             IsActive = true,
+                            IsRound = false,
                             Location = "Hall",
                             Number = 1,
                             RestaurantId = 1,
-                            Seats = 4,
-                            Width = 16,
-                            X = 4,
+                            Seats = 6,
+                            Spot = "akna all",
+                            Width = 22,
+                            X = 5,
                             Y = 6
                         },
                         new
                         {
                             Id = 2,
-                            Height = 14,
+                            Height = 36,
                             IsActive = true,
+                            IsRound = false,
                             Location = "Hall",
                             Number = 2,
                             RestaurantId = 1,
-                            Seats = 2,
-                            Width = 12,
-                            X = 24,
-                            Y = 6
+                            Seats = 6,
+                            Spot = "akna all",
+                            Width = 22,
+                            X = 5,
+                            Y = 52
                         },
                         new
                         {
                             Id = 3,
-                            Height = 38,
+                            Height = 21,
                             IsActive = true,
+                            IsRound = false,
                             Location = "Hall",
                             Number = 3,
                             RestaurantId = 1,
-                            Seats = 6,
-                            Width = 18,
-                            X = 4,
-                            Y = 55
+                            Seats = 2,
+                            Spot = "vaikne nurk",
+                            Width = 22,
+                            X = 74,
+                            Y = 3
                         },
                         new
                         {
                             Id = 4,
-                            Height = 14,
+                            Height = 21,
                             IsActive = true,
+                            IsRound = false,
                             Location = "Hall",
                             Number = 4,
                             RestaurantId = 1,
                             Seats = 2,
-                            Width = 12,
-                            X = 24,
-                            Y = 30
+                            Spot = "baari juures",
+                            Width = 22,
+                            X = 74,
+                            Y = 27
                         },
                         new
                         {
                             Id = 5,
-                            Height = 35,
+                            Height = 21,
                             IsActive = true,
+                            IsRound = false,
                             Location = "Hall",
                             Number = 5,
                             RestaurantId = 1,
-                            Seats = 8,
-                            Width = 14,
-                            X = 24,
-                            Y = 58
+                            Seats = 4,
+                            Spot = "baari juures",
+                            Width = 22,
+                            X = 74,
+                            Y = 51
                         },
                         new
                         {
                             Id = 6,
-                            Height = 12,
+                            Height = 21,
                             IsActive = true,
-                            Location = "Terrace",
+                            IsRound = false,
+                            Location = "Hall",
                             Number = 6,
                             RestaurantId = 1,
-                            Seats = 2,
-                            Width = 18,
-                            X = 78,
-                            Y = 4
+                            Seats = 4,
+                            Spot = "sissepääsu juures",
+                            Width = 22,
+                            X = 74,
+                            Y = 75
                         },
                         new
                         {
                             Id = 7,
-                            Height = 16,
+                            Height = 32,
                             IsActive = true,
+                            IsRound = true,
                             Location = "Terrace",
                             Number = 7,
                             RestaurantId = 1,
-                            Seats = 4,
+                            Seats = 2,
+                            Spot = "varikatuse all",
                             Width = 18,
-                            X = 78,
-                            Y = 22
+                            X = 8,
+                            Y = 8
                         },
                         new
                         {
                             Id = 8,
-                            Height = 16,
+                            Height = 32,
                             IsActive = true,
+                            IsRound = true,
                             Location = "Terrace",
                             Number = 8,
                             RestaurantId = 1,
                             Seats = 4,
+                            Spot = "vaade tänavale",
                             Width = 18,
-                            X = 78,
-                            Y = 44
+                            X = 38,
+                            Y = 8
                         },
                         new
                         {
                             Id = 9,
-                            Height = 12,
+                            Height = 34,
                             IsActive = true,
+                            IsRound = false,
                             Location = "Terrace",
                             Number = 9,
                             RestaurantId = 1,
-                            Seats = 2,
-                            Width = 18,
-                            X = 78,
-                            Y = 66
+                            Seats = 6,
+                            Spot = "kamina juures",
+                            Width = 32,
+                            X = 10,
+                            Y = 54
                         },
                         new
                         {
                             Id = 10,
-                            Height = 14,
+                            Height = 58,
                             IsActive = true,
+                            IsRound = false,
                             Location = "Terrace",
                             Number = 10,
                             RestaurantId = 1,
-                            Seats = 6,
+                            Seats = 8,
+                            Spot = "pikk laud",
                             Width = 18,
-                            X = 78,
-                            Y = 82
+                            X = 74,
+                            Y = 30
                         },
                         new
                         {
                             Id = 11,
-                            Height = 22,
+                            Height = 36,
                             IsActive = true,
+                            IsRound = false,
                             Location = "Hall",
                             Number = 1,
                             RestaurantId = 2,
-                            Seats = 4,
-                            Width = 16,
-                            X = 4,
+                            Seats = 6,
+                            Spot = "akna all",
+                            Width = 22,
+                            X = 5,
                             Y = 6
                         },
                         new
                         {
                             Id = 12,
-                            Height = 14,
+                            Height = 36,
                             IsActive = true,
+                            IsRound = false,
                             Location = "Hall",
                             Number = 2,
                             RestaurantId = 2,
-                            Seats = 2,
-                            Width = 12,
-                            X = 24,
-                            Y = 6
+                            Seats = 6,
+                            Spot = "akna all",
+                            Width = 22,
+                            X = 5,
+                            Y = 52
                         },
                         new
                         {
                             Id = 13,
-                            Height = 38,
+                            Height = 21,
                             IsActive = true,
+                            IsRound = false,
                             Location = "Hall",
                             Number = 3,
                             RestaurantId = 2,
-                            Seats = 6,
-                            Width = 18,
-                            X = 4,
-                            Y = 55
+                            Seats = 2,
+                            Spot = "vaikne nurk",
+                            Width = 22,
+                            X = 74,
+                            Y = 3
                         },
                         new
                         {
                             Id = 14,
-                            Height = 14,
+                            Height = 21,
                             IsActive = true,
+                            IsRound = false,
                             Location = "Hall",
                             Number = 4,
                             RestaurantId = 2,
                             Seats = 2,
-                            Width = 12,
-                            X = 24,
-                            Y = 30
+                            Spot = "baari juures",
+                            Width = 22,
+                            X = 74,
+                            Y = 27
                         },
                         new
                         {
                             Id = 15,
-                            Height = 35,
+                            Height = 21,
                             IsActive = true,
+                            IsRound = false,
                             Location = "Hall",
                             Number = 5,
                             RestaurantId = 2,
-                            Seats = 8,
-                            Width = 14,
-                            X = 24,
-                            Y = 58
+                            Seats = 4,
+                            Spot = "baari juures",
+                            Width = 22,
+                            X = 74,
+                            Y = 51
                         },
                         new
                         {
                             Id = 16,
-                            Height = 12,
+                            Height = 21,
                             IsActive = true,
-                            Location = "Terrace",
+                            IsRound = false,
+                            Location = "Hall",
                             Number = 6,
                             RestaurantId = 2,
-                            Seats = 2,
-                            Width = 18,
-                            X = 78,
-                            Y = 4
+                            Seats = 4,
+                            Spot = "sissepääsu juures",
+                            Width = 22,
+                            X = 74,
+                            Y = 75
                         },
                         new
                         {
                             Id = 17,
-                            Height = 16,
+                            Height = 32,
                             IsActive = true,
+                            IsRound = true,
                             Location = "Terrace",
                             Number = 7,
                             RestaurantId = 2,
-                            Seats = 4,
+                            Seats = 2,
+                            Spot = "varikatuse all",
                             Width = 18,
-                            X = 78,
-                            Y = 22
+                            X = 8,
+                            Y = 8
                         },
                         new
                         {
                             Id = 18,
-                            Height = 16,
+                            Height = 32,
                             IsActive = true,
+                            IsRound = true,
                             Location = "Terrace",
                             Number = 8,
                             RestaurantId = 2,
                             Seats = 4,
+                            Spot = "vaade tänavale",
                             Width = 18,
-                            X = 78,
-                            Y = 44
+                            X = 38,
+                            Y = 8
                         },
                         new
                         {
                             Id = 19,
-                            Height = 12,
+                            Height = 34,
                             IsActive = true,
+                            IsRound = false,
                             Location = "Terrace",
                             Number = 9,
                             RestaurantId = 2,
-                            Seats = 2,
-                            Width = 18,
-                            X = 78,
-                            Y = 66
+                            Seats = 6,
+                            Spot = "kamina juures",
+                            Width = 32,
+                            X = 10,
+                            Y = 54
                         },
                         new
                         {
                             Id = 20,
-                            Height = 14,
+                            Height = 58,
                             IsActive = true,
+                            IsRound = false,
                             Location = "Terrace",
                             Number = 10,
                             RestaurantId = 2,
-                            Seats = 6,
+                            Seats = 8,
+                            Spot = "pikk laud",
                             Width = 18,
-                            X = 78,
-                            Y = 82
+                            X = 74,
+                            Y = 30
                         },
                         new
                         {
                             Id = 21,
-                            Height = 22,
+                            Height = 36,
                             IsActive = true,
+                            IsRound = false,
                             Location = "Hall",
                             Number = 1,
                             RestaurantId = 3,
-                            Seats = 4,
-                            Width = 16,
-                            X = 4,
+                            Seats = 6,
+                            Spot = "akna all",
+                            Width = 22,
+                            X = 5,
                             Y = 6
                         },
                         new
                         {
                             Id = 22,
-                            Height = 14,
+                            Height = 36,
                             IsActive = true,
+                            IsRound = false,
                             Location = "Hall",
                             Number = 2,
                             RestaurantId = 3,
-                            Seats = 2,
-                            Width = 12,
-                            X = 24,
-                            Y = 6
+                            Seats = 6,
+                            Spot = "akna all",
+                            Width = 22,
+                            X = 5,
+                            Y = 52
                         },
                         new
                         {
                             Id = 23,
-                            Height = 38,
+                            Height = 21,
                             IsActive = true,
+                            IsRound = false,
                             Location = "Hall",
                             Number = 3,
                             RestaurantId = 3,
-                            Seats = 6,
-                            Width = 18,
-                            X = 4,
-                            Y = 55
+                            Seats = 2,
+                            Spot = "vaikne nurk",
+                            Width = 22,
+                            X = 74,
+                            Y = 3
                         },
                         new
                         {
                             Id = 24,
-                            Height = 14,
+                            Height = 21,
                             IsActive = true,
+                            IsRound = false,
                             Location = "Hall",
                             Number = 4,
                             RestaurantId = 3,
                             Seats = 2,
-                            Width = 12,
-                            X = 24,
-                            Y = 30
+                            Spot = "baari juures",
+                            Width = 22,
+                            X = 74,
+                            Y = 27
                         },
                         new
                         {
                             Id = 25,
-                            Height = 35,
+                            Height = 21,
                             IsActive = true,
+                            IsRound = false,
                             Location = "Hall",
                             Number = 5,
                             RestaurantId = 3,
-                            Seats = 8,
-                            Width = 14,
-                            X = 24,
-                            Y = 58
+                            Seats = 4,
+                            Spot = "baari juures",
+                            Width = 22,
+                            X = 74,
+                            Y = 51
                         },
                         new
                         {
                             Id = 26,
-                            Height = 12,
+                            Height = 21,
                             IsActive = true,
-                            Location = "Terrace",
+                            IsRound = false,
+                            Location = "Hall",
                             Number = 6,
                             RestaurantId = 3,
-                            Seats = 2,
-                            Width = 18,
-                            X = 78,
-                            Y = 4
+                            Seats = 4,
+                            Spot = "sissepääsu juures",
+                            Width = 22,
+                            X = 74,
+                            Y = 75
                         },
                         new
                         {
                             Id = 27,
-                            Height = 16,
+                            Height = 32,
                             IsActive = true,
+                            IsRound = true,
                             Location = "Terrace",
                             Number = 7,
                             RestaurantId = 3,
-                            Seats = 4,
+                            Seats = 2,
+                            Spot = "varikatuse all",
                             Width = 18,
-                            X = 78,
-                            Y = 22
+                            X = 8,
+                            Y = 8
                         },
                         new
                         {
                             Id = 28,
-                            Height = 16,
+                            Height = 32,
                             IsActive = true,
+                            IsRound = true,
                             Location = "Terrace",
                             Number = 8,
                             RestaurantId = 3,
                             Seats = 4,
+                            Spot = "vaade tänavale",
                             Width = 18,
-                            X = 78,
-                            Y = 44
+                            X = 38,
+                            Y = 8
                         },
                         new
                         {
                             Id = 29,
-                            Height = 12,
+                            Height = 34,
                             IsActive = true,
+                            IsRound = false,
                             Location = "Terrace",
                             Number = 9,
                             RestaurantId = 3,
-                            Seats = 2,
-                            Width = 18,
-                            X = 78,
-                            Y = 66
+                            Seats = 6,
+                            Spot = "kamina juures",
+                            Width = 32,
+                            X = 10,
+                            Y = 54
                         },
                         new
                         {
                             Id = 30,
-                            Height = 14,
+                            Height = 58,
                             IsActive = true,
+                            IsRound = false,
                             Location = "Terrace",
                             Number = 10,
                             RestaurantId = 3,
-                            Seats = 6,
+                            Seats = 8,
+                            Spot = "pikk laud",
                             Width = 18,
-                            X = 78,
-                            Y = 82
+                            X = 74,
+                            Y = 30
                         });
                 });
 
@@ -892,10 +959,10 @@ namespace Restoran.Infrastructure.Data.Migrations
                         {
                             Id = 1,
                             Address = "Rataskaevu 8, Tallinn",
-                            BarHeight = 50,
-                            BarWidth = 22,
-                            BarX = 42,
-                            BarY = 45,
+                            BarHeight = 54,
+                            BarWidth = 26,
+                            BarX = 38,
+                            BarY = 46,
                             ClosesAt = new TimeOnly(23, 30, 0),
                             Description = "Kõrgköögi restoran vanalinna südames. Degustatsioonimenüü ja lahtine tuli.",
                             Latitude = 59.436999999999998,
@@ -907,10 +974,10 @@ namespace Restoran.Infrastructure.Data.Migrations
                         {
                             Id = 2,
                             Address = "Kalasadama 8, Tallinn",
-                            BarHeight = 40,
-                            BarWidth = 22,
-                            BarX = 42,
-                            BarY = 5,
+                            BarHeight = 54,
+                            BarWidth = 26,
+                            BarX = 38,
+                            BarY = 46,
                             ClosesAt = new TimeOnly(23, 30, 0),
                             Description = "Mereäärne saal ja suur terrass. Mereannid ja šampanja.",
                             Latitude = 59.446599999999997,
@@ -922,10 +989,10 @@ namespace Restoran.Infrastructure.Data.Migrations
                         {
                             Id = 3,
                             Address = "Weizenbergi 18, Tallinn",
-                            BarHeight = 50,
-                            BarWidth = 22,
-                            BarX = 42,
-                            BarY = 45,
+                            BarHeight = 54,
+                            BarWidth = 26,
+                            BarX = 38,
+                            BarY = 46,
                             ClosesAt = new TimeOnly(23, 30, 0),
                             Description = "Vaikne saal Kadrioru pargi kõrval. Hooajalised setid ja veinid.",
                             Latitude = 59.438499999999998,
