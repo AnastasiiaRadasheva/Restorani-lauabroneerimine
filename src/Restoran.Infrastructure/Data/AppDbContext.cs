@@ -14,6 +14,10 @@ public class AppDbContext : DbContext
     public DbSet<MenuItem> MenuItems => Set<MenuItem>();
     public DbSet<PreOrderItem> PreOrderItems => Set<PreOrderItem>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<ReservationExtra> ReservationExtras => Set<ReservationExtra>();
+    public DbSet<ReservationMessage> ReservationMessages => Set<ReservationMessage>();
+    public DbSet<GastroEvent> Events => Set<GastroEvent>();
+    public DbSet<EventRegistration> EventRegistrations => Set<EventRegistration>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -52,6 +56,54 @@ public class AppDbContext : DbContext
             e.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
             e.Property(x => x.SpecialRequest).HasMaxLength(500);
             e.HasIndex(x => new { x.TableId, x.StartTime });
+            e.Property(x => x.Occasion).HasConversion<string>().HasMaxLength(20);
+            e.Property(x => x.Gift).HasConversion<string>().HasMaxLength(20);
+            e.Property(x => x.HostType).HasConversion<string>().HasMaxLength(20);
+            e.Property(x => x.AddressForm).HasConversion<string>().HasMaxLength(20);
+            e.Property(x => x.HostName).HasMaxLength(100);
+            e.Property(x => x.ServiceLanguage).HasMaxLength(2);
+            e.Property(x => x.SeatFee).HasPrecision(10, 2);
+        });
+
+        b.Entity<ReservationExtra>(e =>
+        {
+            e.HasOne(x => x.Reservation).WithMany(r => r.Extras)
+                .HasForeignKey(x => x.ReservationId).OnDelete(DeleteBehavior.Cascade);
+            e.Property(x => x.Code).HasMaxLength(30);
+            e.Property(x => x.Name).HasMaxLength(100);
+            e.Property(x => x.Price).HasPrecision(10, 2);
+        });
+
+        b.Entity<ReservationMessage>(e =>
+        {
+            e.ToTable("Messages");
+            e.HasOne(x => x.Reservation).WithMany(r => r.Messages)
+                .HasForeignKey(x => x.ReservationId).OnDelete(DeleteBehavior.Cascade);
+            e.Property(x => x.AuthorName).HasMaxLength(100);
+            e.Property(x => x.Text).HasMaxLength(1000).IsRequired();
+        });
+
+        b.Entity<GastroEvent>(e =>
+        {
+            e.ToTable("Events");
+            e.HasOne(x => x.Restaurant).WithMany()
+                .HasForeignKey(x => x.RestaurantId).OnDelete(DeleteBehavior.Cascade);
+            e.Property(x => x.Title).HasMaxLength(100).IsRequired();
+            e.Property(x => x.Kind).HasMaxLength(100);
+            e.Property(x => x.Description).HasMaxLength(1000);
+            e.Property(x => x.DressCode).HasMaxLength(100);
+            e.Property(x => x.Rule).HasMaxLength(1000);
+            e.Property(x => x.ImageUrl).HasMaxLength(300);
+            e.Property(x => x.PricePerGuest).HasPrecision(10, 2);
+        });
+
+        b.Entity<EventRegistration>(e =>
+        {
+            e.HasOne(x => x.Event).WithMany(ev => ev.Registrations)
+                .HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.User).WithMany()
+                .HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(x => new { x.EventId, x.UserId }).IsUnique();
         });
 
         b.Entity<MenuItem>(e =>
