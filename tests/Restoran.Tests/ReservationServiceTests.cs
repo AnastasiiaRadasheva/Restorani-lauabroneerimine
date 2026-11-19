@@ -19,6 +19,7 @@ public class ReservationServiceTests
     private readonly Mock<IMenuRepository> _menu = new();
     private readonly Mock<ICurrentUser> _current = new();
     private readonly Mock<IClock> _clock = new();
+    private readonly Mock<IRealtimeNotifier> _realtime = new();
 
     private readonly Restaurant _restaurant = new()
     {
@@ -48,7 +49,7 @@ public class ReservationServiceTests
 
     private ReservationService CreateService() => new(
         _reservations.Object, _tables.Object, _restaurants.Object, _menu.Object,
-        _current.Object, _clock.Object, NullLogger<ReservationService>.Instance);
+        _current.Object, _clock.Object, NullLogger<ReservationService>.Instance, _realtime.Object);
 
     private static CreateReservationDto Request(int guests, int? tableId = null) => new()
     {
@@ -78,6 +79,7 @@ public class ReservationServiceTests
 
         await Assert.ThrowsAsync<ConflictException>(() => service.CreateAsync(Request(guests: 4, tableId: 2)));
         _reservations.Verify(r => r.AddAsync(It.IsAny<Reservation>()), Times.Never);
+        _realtime.Verify(n => n.ReservationCreatedAsync(It.IsAny<ReservationDto>()), Times.Never);
     }
 
     [Fact]
@@ -95,6 +97,8 @@ public class ReservationServiceTests
         Assert.Equal(2, result.TableId); // 4-kohaline, mitte 8-kohaline
         Assert.Equal(new DateTime(2026, 12, 5, 21, 0, 0), result.EndTime); // kestus 2 h
         _reservations.Verify(r => r.SaveChangesAsync(), Times.Once);
+        // Personalile saadetakse reaalajas teade
+        _realtime.Verify(n => n.ReservationCreatedAsync(It.Is<ReservationDto>(d => d.Id == 99)), Times.Once);
     }
 
     [Fact]
@@ -212,5 +216,47 @@ public class ReservationServiceTests
         Assert.Single(saved!.PreOrderItems);
         Assert.Equal(32m, saved.PreOrderItems[0].UnitPrice);
         Assert.Equal(64m, result.PreOrderTotal);
+    }
+
+    private Reservation OwnedReservation(int userId) => new()
+    {
+        Id = 50, UserId = userId, TableId = 1, Status = ReservationStatus.Active,
+        StartTime = Now.AddHours(5), EndTime = Now.AddHours(7), // alla 24 h
+        Table = _tableList[0], User = new User { Id = userId, Name = "Kati Klient" }
+    };
+
+    [Fact]
+    public async Task AddMessage_FromCustomer_IsAllowedEvenWithin24Hours()
+    {
+        var r = OwnedReservation(10);
+        _reservations.Setup(x => x.GetWithDetailsAsync(50)).ReturnsAsync(r);
+
+        var msg = await CreateService().AddMessageAsync(50, new NewMessageDto { Text = "  Kas tort saab olla pähkliteta?  " });
+
+        Assert.False(msg.FromStaff);
+        Assert.Equal("Kati Klient", msg.AuthorName);
+        Assert.Equal("Kas tort saab olla pähkliteta?", msg.Text);
+        Assert.Single(r.Messages);
+    }
+
+    [Fact]
+    public async Task AddMessage_ToSomeoneElsesReservation_IsForbidden()
+    {
+        _reservations.Setup(x => x.GetWithDetailsAsync(50)).ReturnsAsync(OwnedReservation(99));
+
+        await Assert.ThrowsAsync<ForbiddenException>(() => CreateService().AddMessageAsync(50, new NewMessageDto { Text = "Tere" }));
+    }
+
+    [Fact]
+    public async Task SetExtras_ReplacesExtras_AndUpdatesTotal()
+    {
+        var r = OwnedReservation(10);
+        r.Extras.Add(new ReservationExtra { Code = "violin", Name = "Viiuldaja", Price = 120m });
+        _reservations.Setup(x => x.GetWithDetailsAsync(50)).ReturnsAsync(r);
+
+        var result = await CreateService().SetExtrasAsync(50, new SetExtrasDto { Extras = new() { "flowers", "chair" } });
+
+        Assert.Equal(new[] { "flowers", "chair" }, result.Extras.Select(e => e.Code));
+        Assert.Equal(45m, result.Total);
     }
 }
