@@ -44,6 +44,8 @@ export default function Footer() {
             <span className="head">{t('footer.sections')}</span>
             <Link to="/">{t('nav.home')}</Link>
             <Link to="/broneeri">{t('nav.booking')}</Link>
+            <Link to="/menuu">{t('nav.menu')}</Link>
+            <Link to="/minu">{t('nav.my')}</Link>
           </nav>
 
           <div className="footer-col">

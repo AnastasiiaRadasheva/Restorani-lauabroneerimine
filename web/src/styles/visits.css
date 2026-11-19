@@ -1,0 +1,177 @@
+/* ==========================================================
+   Gastronoomia, detailid, tšekk, minu külastused, menüü
+   ========================================================== */
+
+.center { text-align: center; }
+.card-title { font-size: 30px; line-height: 1.1; }
+
+/* ---------- III. Gastronoomia ---------- */
+
+.gastro { display: flex; flex-wrap: wrap; gap: 64px; }
+.gastro-main { flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; }
+.cat-tabs { display: flex; flex-wrap: wrap; gap: 8px; padding-bottom: 20px; border-bottom: 1px solid var(--ink); }
+.dish { display: flex; align-items: center; gap: 28px; padding: 24px 0; border-bottom: 1px solid var(--line); }
+.dish .n { width: 28px; flex: none; font-style: italic; font-size: 23px; color: var(--muted); }
+.dish .text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.dish .name { font-size: 34px; line-height: 1.15; }
+.dish .desc { font-size: 17px; color: var(--muted); }
+.dish .price { font-size: 28px; white-space: nowrap; }
+.sticky-card { flex: 1 1 320px; min-width: 0; align-self: flex-start; position: sticky; top: 170px; }
+.sticky-card .big { font-size: 48px; }
+
+/* ---------- IV. Detailid ---------- */
+
+.details4 { display: flex; flex-wrap: wrap; gap: 56px; }
+.details4-main { flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 44px; }
+.details4-side { flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 28px; }
+.details4-side .paper { display: flex; flex-direction: column; gap: 16px; }
+.who { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; font-size: 18px; }
+.who dt { font-size: 14px; color: var(--muted); padding-top: 3px; }
+.who dd { margin: 0; }
+.total-card { box-shadow: 0 30px 60px -32px rgba(12, 13, 14, 0.28); }
+.total-line { display: flex; justify-content: space-between; gap: 12px; font-size: 17px; }
+.total-line.ox { color: var(--ox); }
+.grand { display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid var(--ink); padding-top: 16px; }
+.grand .eyebrow { color: var(--ink); }
+.grand .sum { font-size: 48px; line-height: 1; }
+
+/* ---------- Tšekk ---------- */
+
+.receipt-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  overflow-y: auto;
+  background: radial-gradient(circle at 50% 0%, #ffffff 0%, #f1f3f4 70%, #e6e9eb 100%);
+}
+.receipt-close {
+  position: absolute;
+  right: 32px;
+  top: 28px;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--ink);
+  background: transparent;
+}
+.receipt-wrap { min-height: 100%; padding: 72px 24px 80px; display: flex; flex-direction: column; align-items: center; gap: 36px; }
+.receipt-head { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.receipt-head h2 { font-size: 56px; line-height: 1.05; }
+.seal {
+  width: 54px;
+  height: 54px;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink);
+  color: var(--bg);
+  transform: rotate(45deg);
+}
+.seal svg { transform: rotate(-45deg); }
+.receipt { width: 100%; max-width: 480px; filter: drop-shadow(0 40px 50px rgba(12, 13, 14, 0.18)) drop-shadow(0 4px 8px rgba(12, 13, 14, 0.06)); }
+.receipt-body { background: #fff; padding: 40px 40px 28px; display: flex; flex-direction: column; gap: 22px; font-size: 16px; line-height: 1.45; }
+.receipt .brand { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+.receipt .brand .word { font-size: 34px; letter-spacing: 0.4em; padding-left: 0.4em; line-height: 1; }
+.receipt .brand .tag { font-style: italic; font-size: 15px; color: var(--muted); }
+.receipt .brand .eyebrow { margin-top: 10px; font-size: 11px; }
+.receipt .receipt-dl { font-size: 16px; gap: 10px 20px; }
+.cut { border-top: 1px dashed var(--line-3); }
+.cut.solid { border-top: 1px solid var(--ink); }
+.lines { display: flex; flex-direction: column; gap: 8px; }
+.lines .eyebrow { font-size: 11px; }
+.line { display: flex; align-items: baseline; gap: 8px; }
+.line .q { flex: none; width: 28px; color: var(--muted); }
+.line .name { flex: 1; min-width: 0; }
+.gift-line { display: flex; align-items: baseline; gap: 8px; padding: 12px 14px; border: 1px dashed var(--ox); color: var(--ox); }
+.gift-line .name { flex: 1; }
+.wish-box { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; background: #f4f5f6; }
+.wish-box .eyebrow { font-size: 11px; }
+.receipt .grand { border: 0; padding: 0; }
+.receipt .grand .sum { font-size: 40px; }
+.paid { font-size: 14px; color: var(--muted); text-align: right; }
+.barcode { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 8px; }
+.barcode div {
+  width: 100%;
+  height: 56px;
+  background-image: repeating-linear-gradient(90deg, var(--ink) 0 2px, transparent 2px 4px, var(--ink) 4px 5px, transparent 5px 8px, var(--ink) 8px 11px, transparent 11px 13px, var(--ink) 13px 14px, transparent 14px 17px);
+}
+.barcode span { font-size: 12px; letter-spacing: 0.5em; }
+.receipt .note { font-size: 13px; line-height: 1.5; color: var(--muted); text-align: center; }
+.zigzag {
+  height: 14px;
+  background-image: linear-gradient(135deg, #fff 50%, transparent 50%), linear-gradient(225deg, #fff 50%, transparent 50%);
+  background-size: 14px 14px;
+  background-repeat: repeat-x;
+}
+.receipt-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+
+/* ---------- Minu külastused ---------- */
+
+.visits { padding: 72px 0 112px; }
+.visits .container { display: flex; flex-direction: column; gap: 24px; }
+.visits-head { display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; margin-bottom: 32px; }
+.visits-head h1 { font-size: 76px; }
+.visits-head p { max-width: 640px; font-size: 18px; color: var(--muted); }
+.empty { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
+.visit-list { display: flex; flex-direction: column; gap: 20px; }
+.visit { border: 1px solid var(--line-2); }
+.visit.open { border-color: var(--ink); background: #fff; box-shadow: 0 30px 60px -30px rgba(12, 13, 14, 0.3); }
+.visit-head {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 28px;
+  padding: 26px 36px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+.visit.open .visit-head { background: var(--ink); color: var(--bg); }
+.visit.open .visit-head .eyebrow { color: var(--line-3); }
+.visit-head .when { flex: 1 1 320px; display: flex; flex-direction: column; gap: 4px; }
+.visit-head .big { font-size: 38px; line-height: 1.1; }
+.visit-head .where { flex: 1 1 260px; display: flex; flex-direction: column; font-size: 19px; }
+.visit-head .sub { font-size: 16px; opacity: 0.75; }
+.visit-head .toggle { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 600; letter-spacing: 0.26em; text-transform: uppercase; }
+.visit.open .toggle svg { transform: rotate(180deg); }
+.visit-body { display: flex; flex-wrap: wrap; gap: 40px; padding: 36px; }
+.visit-info { flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+.visit-info .sum { font-size: 22px; }
+.past-title { margin-top: 40px; }
+.past-list { border-top: 1px solid var(--line); }
+.past { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 20px 0; border-bottom: 1px solid var(--line); }
+.past > div { display: flex; flex-direction: column; }
+.past .when { font-size: 26px; }
+.link-caps { font-size: 13px; font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase; }
+
+/* ---------- Menüü leht ---------- */
+
+.menu-page .container { display: flex; flex-direction: column; gap: 40px; }
+.menu-cols { columns: 2 420px; column-gap: 72px; }
+.menu-cat { break-inside: avoid; margin-bottom: 48px; }
+.menu-cat h2 { font-style: italic; font-size: 36px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--ink); }
+.menu-row { display: flex; align-items: baseline; gap: 12px; padding: 12px 0; }
+.menu-row > div { display: flex; flex-direction: column; }
+.menu-row .name { font-size: 22px; }
+.menu-row .desc { font-size: 15px; color: var(--muted); }
+.menu-row .dots { flex: 1; border-bottom: 1px dotted var(--line-3); min-width: 20px; }
+.menu-row .price { font-size: 22px; white-space: nowrap; }
+.menu-book { align-self: flex-start; min-width: 360px; }
+
+@media (max-width: 1000px) {
+  .dish { gap: 14px; flex-wrap: wrap; }
+  .dish .name { font-size: 24px; }
+  .dish .price { font-size: 22px; }
+  .sticky-card { position: static; }
+  .receipt-head h2 { font-size: 38px; }
+  .receipt-body { padding: 28px 22px 20px; }
+  .visits-head h1 { font-size: 48px; }
+  .visit-head { padding: 22px; }
+  .visit-head .big { font-size: 28px; }
+  .visit-body { padding: 22px; }
+  .menu-book { min-width: 0; width: 100%; }
+}

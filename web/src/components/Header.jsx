@@ -27,6 +27,7 @@ export default function Header() {
         <nav className="nav" aria-label="Põhimenüü">
           <NavLink to="/" end onClick={close}>{t('nav.home')}</NavLink>
           <NavLink to="/broneeri" onClick={close}>{t('nav.booking')}</NavLink>
+          <NavLink to="/menuu" onClick={close}>{t('nav.menu')}</NavLink>
         </nav>
 
         <Link to="/" className="logo" onClick={close}>ARGENT</Link>
@@ -34,6 +35,7 @@ export default function Header() {
         <div className="nav-right">
           {user ? (
             <>
+              <NavLink to="/minu" onClick={close}>{t('nav.my')}</NavLink>
               <span className="user">{user.name}</span>
               <button className="link underline" onClick={onLogout}>{t('nav.logout')}</button>
             </>

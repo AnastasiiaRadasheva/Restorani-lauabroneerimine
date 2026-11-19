@@ -20,6 +20,7 @@ public interface IReservationRepository : IRepository<Reservation>
 public interface IReservationService
 {
     Task<AvailabilityDto> GetAvailabilityAsync(int restaurantId, DateOnly date, TimeOnly time, int guests);
+    Task<List<DaySlotsDto>> GetSlotsAsync(int restaurantId, DateOnly from, int days, int guests);
     Task<ReservationDto> CreateAsync(CreateReservationDto dto);
     Task<ReservationDto> GetByIdAsync(int id);
     Task<List<ReservationDto>> GetMyAsync();

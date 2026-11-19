@@ -17,5 +17,10 @@ public class DiningTable
     public int Width { get; set; } = 12;
     public int Height { get; set; } = 12;
 
+    /// <summary>Lühike kirjeldus plaanil, nt "akna all" või "baari juures".</summary>
+    public string? Spot { get; set; }
+    /// <summary>Ümmargune laud (terrassil).</summary>
+    public bool IsRound { get; set; }
+
     public List<Reservation> Reservations { get; set; } = new();
 }

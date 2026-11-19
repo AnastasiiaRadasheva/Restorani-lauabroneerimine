@@ -35,6 +35,20 @@ public class TablesController : ControllerBase
         [FromQuery] int restaurantId, [FromQuery] DateOnly date, [FromQuery] TimeOnly time, [FromQuery] int guests) =>
         Ok(await _reservations.GetAvailabilityAsync(restaurantId, date, time, guests));
 
+    /// <summary>Vabade laudade arv iga kellaaja kohta mitmeks päevaks (broneerimise kalender).</summary>
+    /// <remarks>
+    /// Kui mõne kellaaja FreeTables on 0, on see aeg täis. Kui päeva kõik ajad on täis, on päev täis.
+    ///
+    /// Näide: GET /api/tables/slots?restaurantId=1&amp;from=2026-11-20&amp;days=30&amp;guests=2
+    /// </remarks>
+    [HttpGet("slots")]
+    [ProducesResponseType(typeof(List<DaySlotsDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<List<DaySlotsDto>>> Slots(
+        [FromQuery] int restaurantId, [FromQuery] DateOnly from, [FromQuery] int days, [FromQuery] int guests) =>
+        Ok(await _reservations.GetSlotsAsync(restaurantId, from, days, guests));
+
     /// <summary>Päeva laudade plaan: lauad ja nende broneeringud (personal).</summary>
     /// <remarks>Näide: GET /api/tables/plan?restaurantId=1&amp;date=2026-11-20</remarks>
     [Authorize(Roles = "Admin,Waiter")]

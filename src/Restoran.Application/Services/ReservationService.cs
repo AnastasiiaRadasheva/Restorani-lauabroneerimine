@@ -48,11 +48,53 @@ public class ReservationService : IReservationService
         var best = BookingRules.PickBestTable(tables, busy, guests);
 
         var list = tables.Select(t => new TableAvailabilityDto(
-            t.Id, t.Number, t.Seats, t.Location, t.X, t.Y, t.Width, t.Height,
+            t.Id, t.Number, t.Seats, t.Location, t.X, t.Y, t.Width, t.Height, t.Spot, t.IsRound,
             IsFree: !busy.Contains(t.Id),
             FitsGuests: t.Seats >= guests)).ToList();
 
         return new AvailabilityDto(restaurantId, start, end, guests, best?.Id, list);
+    }
+
+    /// <summary>
+    /// Kalendri jaoks: iga päeva iga kellaaja kohta, mitu sobiva suurusega lauda on vaba.
+    /// Kui vabu laudu on 0, näidatakse kellaaeg veebis läbikriipsutatuna.
+    /// </summary>
+    public async Task<List<DaySlotsDto>> GetSlotsAsync(int restaurantId, DateOnly from, int days, int guests)
+    {
+        if (days < 1 || days > 60)
+            throw new BusinessRuleException("Päevade arv peab olema 1 kuni 60.");
+        if (guests < 1 || guests > 20)
+            throw new BusinessRuleException("Inimeste arv peab olema 1 kuni 20.");
+
+        var restaurant = await GetRestaurant(restaurantId);
+        var tables = (await _tables.GetByRestaurantAsync(restaurantId, onlyActive: true))
+            .Where(t => t.Seats >= guests).ToList();
+        var rangeStart = from.ToDateTime(TimeOnly.MinValue);
+        var occupying = (await _reservations.GetOccupyingAsync(
+                tables.Select(t => t.Id), rangeStart, rangeStart.AddDays(days), null))
+            .Where(r => BookingRules.Occupies(r.Status))
+            .ToList();
+
+        var result = new List<DaySlotsDto>();
+        for (int d = 0; d < days; d++)
+        {
+            var date = from.AddDays(d);
+            var slots = new List<SlotDto>();
+            // Kellaajad 30-minutilise sammuga avamisest kuni 2 h enne sulgemist
+            var open = (int)restaurant.OpensAt.ToTimeSpan().TotalMinutes;
+            var lastStart = (int)restaurant.ClosesAt.ToTimeSpan().TotalMinutes - (int)BookingRules.Duration.TotalMinutes;
+            for (int minutes = open; minutes <= lastStart; minutes += 30)
+            {
+                var time = TimeOnly.FromTimeSpan(TimeSpan.FromMinutes(minutes));
+                var start = date.ToDateTime(time);
+                var end = start + BookingRules.Duration;
+                int free = start <= _clock.Now ? 0 : tables.Count(t => !occupying.Any(r =>
+                    r.TableId == t.Id && BookingRules.Overlaps(start, end, r.StartTime, r.EndTime)));
+                slots.Add(new SlotDto(time.ToString("HH:mm"), free));
+            }
+            result.Add(new DaySlotsDto(date, slots));
+        }
+        return result;
     }
 
     // ---------- Broneerimine ----------
@@ -75,6 +117,9 @@ public class ReservationService : IReservationService
             Status = ReservationStatus.Active,
             CreatedAt = _clock.Now
         };
+        // Eeltellimus võib tulla kohe broneeringuga koos (veebis III samm "Gastronoomia")
+        if (dto.Items is { Count: > 0 })
+            await ApplyPreOrderAsync(reservation, dto.RestaurantId, dto.Items);
         await _reservations.AddAsync(reservation);
         await _reservations.SaveChangesAsync();
         _logger.LogInformation("Uus broneering {Id}: restoran {Restaurant}, laud {Table}, {Start}, {Guests} inimest",
@@ -127,34 +172,7 @@ public class ReservationService : IReservationService
         if (r.IsPaid)
             throw new BusinessRuleException("Makstud eeltellimust ei saa muuta.");
 
-        var lines = dto.Items.Where(i => i.Quantity > 0)
-            .GroupBy(i => i.MenuItemId)
-            .Select(g => new { MenuItemId = g.Key, Quantity = g.Sum(x => x.Quantity) })
-            .ToList();
-
-        var menuItems = await _menu.GetByIdsAsync(lines.Select(l => l.MenuItemId));
-        foreach (var line in lines)
-        {
-            var item = menuItems.FirstOrDefault(m => m.Id == line.MenuItemId)
-                       ?? throw new NotFoundException($"Menüüpunkti {line.MenuItemId} ei leitud.");
-            if (item.RestaurantId != r.Table!.RestaurantId)
-                throw new BusinessRuleException($"\"{item.Name}\" ei ole selle restorani menüüs.");
-            if (!item.IsAvailable)
-                throw new BusinessRuleException($"\"{item.Name}\" ei ole praegu saadaval.");
-        }
-
-        r.PreOrderItems.Clear();
-        foreach (var line in lines)
-        {
-            var item = menuItems.First(m => m.Id == line.MenuItemId);
-            r.PreOrderItems.Add(new PreOrderItem
-            {
-                MenuItemId = item.Id,
-                MenuItem = item,
-                Quantity = line.Quantity,
-                UnitPrice = item.Price
-            });
-        }
+        await ApplyPreOrderAsync(r, r.Table!.RestaurantId, dto.Items);
         if (dto.SpecialRequest is not null)
             r.SpecialRequest = Clean(dto.SpecialRequest);
 
@@ -236,6 +254,39 @@ public class ReservationService : IReservationService
     }
 
     // ---------- Abimeetodid ----------
+
+    /// <summary>Kontrollib menüüpunktid ja asendab broneeringu eeltellimuse.</summary>
+    private async Task ApplyPreOrderAsync(Reservation r, int restaurantId, List<PreOrderLineDto> items)
+    {
+        var lines = items.Where(i => i.Quantity > 0)
+            .GroupBy(i => i.MenuItemId)
+            .Select(g => new { MenuItemId = g.Key, Quantity = g.Sum(x => x.Quantity) })
+            .ToList();
+
+        var menuItems = await _menu.GetByIdsAsync(lines.Select(l => l.MenuItemId));
+        foreach (var line in lines)
+        {
+            var item = menuItems.FirstOrDefault(m => m.Id == line.MenuItemId)
+                       ?? throw new NotFoundException($"Menüüpunkti {line.MenuItemId} ei leitud.");
+            if (item.RestaurantId != restaurantId)
+                throw new BusinessRuleException($"\"{item.Name}\" ei ole selle restorani menüüs.");
+            if (!item.IsAvailable)
+                throw new BusinessRuleException($"\"{item.Name}\" ei ole praegu saadaval.");
+        }
+
+        r.PreOrderItems.Clear();
+        foreach (var line in lines)
+        {
+            var item = menuItems.First(m => m.Id == line.MenuItemId);
+            r.PreOrderItems.Add(new PreOrderItem
+            {
+                MenuItemId = item.Id,
+                MenuItem = item,
+                Quantity = line.Quantity,
+                UnitPrice = item.Price
+            });
+        }
+    }
 
     private (DateTime Start, DateTime End) ValidateTime(Restaurant restaurant, DateOnly date, TimeOnly time, int guests)
     {

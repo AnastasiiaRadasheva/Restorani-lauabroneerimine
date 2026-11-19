@@ -36,6 +36,7 @@ public class AppDbContext : DbContext
         b.Entity<DiningTable>(e =>
         {
             e.ToTable("Tables");
+            e.Property(x => x.Spot).HasMaxLength(60);
             e.HasOne(x => x.Restaurant).WithMany(r => r.Tables)
                 .HasForeignKey(x => x.RestaurantId).OnDelete(DeleteBehavior.Cascade);
             e.HasIndex(x => new { x.RestaurantId, x.Number }).IsUnique();
