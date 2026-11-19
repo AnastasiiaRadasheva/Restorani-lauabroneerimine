@@ -18,7 +18,7 @@ Customers pick a restaurant, a date, a time and the number of guests, and the sy
 dotnet test
 ```
 
-21 unit tests (xUnit). `ReservationServiceTests` uses **Moq** mocks instead of the database.
+22 unit tests (xUnit). `ReservationServiceTests` uses **Moq** mocks instead of the database.
 Tested: overlap rule, smallest free table, 409 on double booking, opening hours, past dates, 24 h rule, access rights, pre-order validation.
 
 ## Logging
@@ -53,6 +53,19 @@ npm run dev
 Website: http://localhost:5173 (the API allows this address with CORS).
 
 API requests for testing: `src/Restoran.Api/Restoran.Api.http` (Visual Studio / VS Code REST Client / Rider).
+
+## Website pages
+
+| Page | Who | What |
+|---|---|---|
+| `/` | everyone | Home page, restaurants |
+| `/broneeri` | everyone (login to confirm) | Date strip, guests, time, map with distance, floor plan (auto or manual table) |
+| `/broneering/{id}` | owner / staff | Details, change, cancel, pre-order, fake payment |
+| `/minu` | customer | My reservations |
+| `/menuu` | everyone | Menu with search, filter, sorting, paging |
+| `/personal/plaan` | Admin, Waiter | Floor plan of the day + timeline, mark arrived / no-show |
+| `/personal/broneeringud` | Admin, Waiter | All reservations: search, filter, sort, paging |
+| `/admin` | Admin | Tables (with floor plan editor), menu, statistics |
 
 ## Booking rules
 
@@ -95,6 +108,7 @@ Creating, updating and deleting restaurants, tables and menu items requires the 
 | POST | `/api/reservations/{id}/preorder` | Food pre-order |
 | POST | `/api/reservations/{id}/pay` | Fake payment (test card `4242 4242 4242 4242`) |
 | PATCH | `/api/reservations/{id}/status` | Change status, e.g. `Arrived` (staff) |
+| GET | `/api/stats?restaurantId=&from=&to=` | Busiest weekdays, hours and dates (Admin) |
 | POST | `/api/auth/register` | Register a customer |
 | POST | `/api/auth/login` | Login, returns a JWT token |
 | GET | `/api/auth/me` | Current user |

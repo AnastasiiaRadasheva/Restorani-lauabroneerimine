@@ -254,3 +254,7 @@ Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 { "status": "Arrived" }
+
+### ===== Statistika (Admin) =====
+GET {{api}}/api/stats?restaurantId=1
+Authorization: Bearer {{adminToken}}

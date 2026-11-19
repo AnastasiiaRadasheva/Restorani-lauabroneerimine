@@ -7,6 +7,7 @@ import { I18nProvider } from './i18n'
 import './styles/base.css'
 import './styles/booking.css'
 import './styles/visits.css'
+import './styles/staff.css'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
