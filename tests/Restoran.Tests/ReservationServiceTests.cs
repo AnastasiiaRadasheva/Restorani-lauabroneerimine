@@ -193,4 +193,24 @@ public class ReservationServiceTests
         Assert.Equal(0, slots.Single(s => s.Time == "18:00").FreeTables); // 18-20 kattub 19-21-ga
         Assert.Equal(2, slots.Single(s => s.Time == "17:00").FreeTables);
     }
+
+    [Fact]
+    public async Task Create_WithItems_SavesPreOrderAtPriceOfTheMoment()
+    {
+        Reservation? saved = null;
+        _menu.Setup(m => m.GetByIdsAsync(It.IsAny<IEnumerable<int>>()))
+            .ReturnsAsync(new List<MenuItem> { new() { Id = 5, RestaurantId = 1, Name = "Austrid", Price = 32m, IsAvailable = true } });
+        _reservations.Setup(r => r.AddAsync(It.IsAny<Reservation>()))
+            .Callback<Reservation>(r => { r.Id = 7; saved = r; })
+            .Returns(Task.CompletedTask);
+        _reservations.Setup(r => r.GetWithDetailsAsync(7)).ReturnsAsync(() => saved);
+
+        var request = Request(guests: 2);
+        request.Items = new List<PreOrderLineDto> { new() { MenuItemId = 5, Quantity = 2 } };
+        var result = await CreateService().CreateAsync(request);
+
+        Assert.Single(saved!.PreOrderItems);
+        Assert.Equal(32m, saved.PreOrderItems[0].UnitPrice);
+        Assert.Equal(64m, result.PreOrderTotal);
+    }
 }

@@ -57,6 +57,9 @@ public class CreateReservationDto
     /// <example>Sünnipäev, palun küünlad tordile</example>
     [StringLength(500)]
     public string? SpecialRequest { get; set; }
+
+    /// <summary>Eeltellimus koos broneeringuga (valikuline).</summary>
+    public List<PreOrderLineDto>? Items { get; set; }
 }
 
 /// <summary>Broneeringu muutmine (lubatud rohkem kui 24 h enne algust).</summary>

@@ -117,6 +117,9 @@ public class ReservationService : IReservationService
             Status = ReservationStatus.Active,
             CreatedAt = _clock.Now
         };
+        // Eeltellimus võib tulla kohe broneeringuga koos (veebis III samm "Gastronoomia")
+        if (dto.Items is { Count: > 0 })
+            await ApplyPreOrderAsync(reservation, dto.RestaurantId, dto.Items);
         await _reservations.AddAsync(reservation);
         await _reservations.SaveChangesAsync();
         _logger.LogInformation("Uus broneering {Id}: restoran {Restaurant}, laud {Table}, {Start}, {Guests} inimest",
@@ -169,34 +172,7 @@ public class ReservationService : IReservationService
         if (r.IsPaid)
             throw new BusinessRuleException("Makstud eeltellimust ei saa muuta.");
 
-        var lines = dto.Items.Where(i => i.Quantity > 0)
-            .GroupBy(i => i.MenuItemId)
-            .Select(g => new { MenuItemId = g.Key, Quantity = g.Sum(x => x.Quantity) })
-            .ToList();
-
-        var menuItems = await _menu.GetByIdsAsync(lines.Select(l => l.MenuItemId));
-        foreach (var line in lines)
-        {
-            var item = menuItems.FirstOrDefault(m => m.Id == line.MenuItemId)
-                       ?? throw new NotFoundException($"Menüüpunkti {line.MenuItemId} ei leitud.");
-            if (item.RestaurantId != r.Table!.RestaurantId)
-                throw new BusinessRuleException($"\"{item.Name}\" ei ole selle restorani menüüs.");
-            if (!item.IsAvailable)
-                throw new BusinessRuleException($"\"{item.Name}\" ei ole praegu saadaval.");
-        }
-
-        r.PreOrderItems.Clear();
-        foreach (var line in lines)
-        {
-            var item = menuItems.First(m => m.Id == line.MenuItemId);
-            r.PreOrderItems.Add(new PreOrderItem
-            {
-                MenuItemId = item.Id,
-                MenuItem = item,
-                Quantity = line.Quantity,
-                UnitPrice = item.Price
-            });
-        }
+        await ApplyPreOrderAsync(r, r.Table!.RestaurantId, dto.Items);
         if (dto.SpecialRequest is not null)
             r.SpecialRequest = Clean(dto.SpecialRequest);
 
@@ -278,6 +254,39 @@ public class ReservationService : IReservationService
     }
 
     // ---------- Abimeetodid ----------
+
+    /// <summary>Kontrollib menüüpunktid ja asendab broneeringu eeltellimuse.</summary>
+    private async Task ApplyPreOrderAsync(Reservation r, int restaurantId, List<PreOrderLineDto> items)
+    {
+        var lines = items.Where(i => i.Quantity > 0)
+            .GroupBy(i => i.MenuItemId)
+            .Select(g => new { MenuItemId = g.Key, Quantity = g.Sum(x => x.Quantity) })
+            .ToList();
+
+        var menuItems = await _menu.GetByIdsAsync(lines.Select(l => l.MenuItemId));
+        foreach (var line in lines)
+        {
+            var item = menuItems.FirstOrDefault(m => m.Id == line.MenuItemId)
+                       ?? throw new NotFoundException($"Menüüpunkti {line.MenuItemId} ei leitud.");
+            if (item.RestaurantId != restaurantId)
+                throw new BusinessRuleException($"\"{item.Name}\" ei ole selle restorani menüüs.");
+            if (!item.IsAvailable)
+                throw new BusinessRuleException($"\"{item.Name}\" ei ole praegu saadaval.");
+        }
+
+        r.PreOrderItems.Clear();
+        foreach (var line in lines)
+        {
+            var item = menuItems.First(m => m.Id == line.MenuItemId);
+            r.PreOrderItems.Add(new PreOrderItem
+            {
+                MenuItemId = item.Id,
+                MenuItem = item,
+                Quantity = line.Quantity,
+                UnitPrice = item.Price
+            });
+        }
+    }
 
     private (DateTime Start, DateTime End) ValidateTime(Restaurant restaurant, DateOnly date, TimeOnly time, int guests)
     {
