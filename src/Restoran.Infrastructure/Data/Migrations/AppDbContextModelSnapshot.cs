@@ -560,241 +560,481 @@ namespace Restoran.Infrastructure.Data.Migrations
                         new
                         {
                             Id = 1,
-                            Category = "Supid",
-                            Description = "Metsaseentest koorene supp",
+                            Category = "Külmad road",
+                            Description = "šalott, veiniäädikas, rukkileib · 6 tk",
                             IsAvailable = true,
-                            Name = "Seenesupp",
-                            Price = 6.50m,
+                            Name = "Austrid Fine de Claire",
+                            Price = 32m,
                             RestaurantId = 1
                         },
                         new
                         {
                             Id = 2,
-                            Category = "Supid",
-                            Description = "Klassikaline Põhjamaade lõhesupp",
+                            Category = "Külmad road",
+                            Description = "söel küpsetatud munakollane, kapparid, trühvel",
                             IsAvailable = true,
-                            Name = "Lõhesupp",
-                            Price = 8.90m,
+                            Name = "Marmorveise tartar",
+                            Price = 28m,
                             RestaurantId = 1
                         },
                         new
                         {
                             Id = 3,
                             Category = "Pearoad",
-                            Description = "Veise välisfilee, köögiviljad, punaveinikaste",
+                            Description = "spargel, sidruniõli",
                             IsAvailable = true,
-                            Name = "Veisesteik",
-                            Price = 24.00m,
+                            Name = "Hiidlest, beurre blanc, kalamari",
+                            Price = 46m,
                             RestaurantId = 1
                         },
                         new
                         {
                             Id = 4,
                             Category = "Pearoad",
-                            Description = "Lõhefilee, kartulipüree, tilli-võikaste",
+                            Description = "laagerdatud rind, portveinikaste",
                             IsAvailable = true,
-                            Name = "Ahjulõhe",
-                            Price = 19.50m,
+                            Name = "Part, kirss, suitsupeet",
+                            Price = 39m,
                             RestaurantId = 1
                         },
                         new
                         {
                             Id = 5,
-                            Category = "Pearoad",
-                            Description = "Kreemine risoto metsaseentega",
+                            Category = "Magustoidud",
+                            Description = "tume šokolaad 70%, oliiviõli",
                             IsAvailable = true,
-                            Name = "Seenerisoto",
-                            Price = 15.00m,
+                            Name = "Šokolaad ja meresool",
+                            Price = 18m,
                             RestaurantId = 1
                         },
                         new
                         {
                             Id = 6,
-                            Category = "Magustoidud",
-                            Description = "Kamavaht marjadega",
+                            Category = "Mereannid",
+                            Description = "vetikavõi, laim",
                             IsAvailable = true,
-                            Name = "Kamavaht",
-                            Price = 6.00m,
+                            Name = "Söel küpsetatud carabinero",
+                            Price = 38m,
                             RestaurantId = 1
                         },
                         new
                         {
                             Id = 7,
-                            Category = "Magustoidud",
-                            Description = "Soe šokolaadikook jäätisega",
+                            Category = "Mereannid",
+                            Description = "sarapuupähkel, pruunistatud või",
                             IsAvailable = true,
-                            Name = "Šokolaadikook",
-                            Price = 7.50m,
+                            Name = "Kammkarbid ja lillkapsas",
+                            Price = 34m,
                             RestaurantId = 1
                         },
                         new
                         {
                             Id = 8,
-                            Category = "Joogid",
-                            Description = "Rabarberi-piparmündi limonaad",
+                            Category = "Mereannid",
+                            Description = "roheline õun, nuikapsas, till",
                             IsAvailable = true,
-                            Name = "Kodune limonaad",
-                            Price = 4.00m,
+                            Name = "Kamtšatka krabi",
+                            Price = 36m,
+                            RestaurantId = 1
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Category = "Mereannid",
+                            Description = "tatrablinid, hapukoor",
+                            IsAvailable = true,
+                            Name = "Tuurakalamari, 30 g",
+                            Price = 85m,
+                            RestaurantId = 1
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Category = "Setid",
+                            Description = "maja peamine õhtusöök, muutub hooajaga",
+                            IsAvailable = true,
+                            Name = "Set „Argent“ – 7 käiku",
+                            Price = 120m,
+                            RestaurantId = 1
+                        },
+                        new
+                        {
+                            Id = 101,
+                            Category = "Setid",
+                            Description = "austrid, krabi, kammkarbid, hiidlest, magustoit",
+                            IsAvailable = true,
+                            Name = "Set „Meri“ – 5 käiku",
+                            Price = 95m,
+                            RestaurantId = 1
+                        },
+                        new
+                        {
+                            Id = 102,
+                            Category = "Setid",
+                            Description = "liha ja ulukid lahtisel tulel",
+                            IsAvailable = true,
+                            Name = "Set „Teras“ – 6 käiku",
+                            Price = 110m,
+                            RestaurantId = 1
+                        },
+                        new
+                        {
+                            Id = 103,
+                            Category = "Setid",
+                            Description = "sommeljee klaas igale käigule",
+                            IsAvailable = true,
+                            Name = "Veinisaade",
+                            Price = 65m,
+                            RestaurantId = 1
+                        },
+                        new
+                        {
+                            Id = 104,
+                            Category = "Pearoad",
+                            Description = "Périgueux' kaste, kartulimuss",
+                            IsAvailable = true,
+                            Name = "Veise sisefilee ja mürklid",
+                            Price = 52m,
+                            RestaurantId = 1
+                        },
+                        new
+                        {
+                            Id = 105,
+                            Category = "Magustoidud",
+                            Description = "vaniljekreem, karamell",
+                            IsAvailable = true,
+                            Name = "Pirnisuflee",
+                            Price = 16m,
+                            RestaurantId = 1
+                        },
+                        new
+                        {
+                            Id = 106,
+                            Category = "Veinid",
+                            Description = "brut, Prantsusmaa",
+                            IsAvailable = true,
+                            Name = "Šampanja, klaas",
+                            Price = 18m,
                             RestaurantId = 1
                         },
                         new
                         {
                             Id = 11,
-                            Category = "Supid",
-                            Description = "Metsaseentest koorene supp",
+                            Category = "Külmad road",
+                            Description = "šalott, veiniäädikas, rukkileib · 6 tk",
                             IsAvailable = true,
-                            Name = "Seenesupp",
-                            Price = 6.50m,
+                            Name = "Austrid Fine de Claire",
+                            Price = 32m,
                             RestaurantId = 2
                         },
                         new
                         {
                             Id = 12,
-                            Category = "Supid",
-                            Description = "Klassikaline Põhjamaade lõhesupp",
+                            Category = "Külmad road",
+                            Description = "söel küpsetatud munakollane, kapparid, trühvel",
                             IsAvailable = true,
-                            Name = "Lõhesupp",
-                            Price = 8.90m,
+                            Name = "Marmorveise tartar",
+                            Price = 28m,
                             RestaurantId = 2
                         },
                         new
                         {
                             Id = 13,
                             Category = "Pearoad",
-                            Description = "Veise välisfilee, köögiviljad, punaveinikaste",
+                            Description = "spargel, sidruniõli",
                             IsAvailable = true,
-                            Name = "Veisesteik",
-                            Price = 24.00m,
+                            Name = "Hiidlest, beurre blanc, kalamari",
+                            Price = 46m,
                             RestaurantId = 2
                         },
                         new
                         {
                             Id = 14,
                             Category = "Pearoad",
-                            Description = "Lõhefilee, kartulipüree, tilli-võikaste",
+                            Description = "laagerdatud rind, portveinikaste",
                             IsAvailable = true,
-                            Name = "Ahjulõhe",
-                            Price = 19.50m,
+                            Name = "Part, kirss, suitsupeet",
+                            Price = 39m,
                             RestaurantId = 2
                         },
                         new
                         {
                             Id = 15,
-                            Category = "Pearoad",
-                            Description = "Kreemine risoto metsaseentega",
+                            Category = "Magustoidud",
+                            Description = "tume šokolaad 70%, oliiviõli",
                             IsAvailable = true,
-                            Name = "Seenerisoto",
-                            Price = 15.00m,
+                            Name = "Šokolaad ja meresool",
+                            Price = 18m,
                             RestaurantId = 2
                         },
                         new
                         {
                             Id = 16,
-                            Category = "Magustoidud",
-                            Description = "Kamavaht marjadega",
+                            Category = "Mereannid",
+                            Description = "vetikavõi, laim",
                             IsAvailable = true,
-                            Name = "Kamavaht",
-                            Price = 6.00m,
+                            Name = "Söel küpsetatud carabinero",
+                            Price = 38m,
                             RestaurantId = 2
                         },
                         new
                         {
                             Id = 17,
-                            Category = "Magustoidud",
-                            Description = "Soe šokolaadikook jäätisega",
+                            Category = "Mereannid",
+                            Description = "sarapuupähkel, pruunistatud või",
                             IsAvailable = true,
-                            Name = "Šokolaadikook",
-                            Price = 7.50m,
+                            Name = "Kammkarbid ja lillkapsas",
+                            Price = 34m,
                             RestaurantId = 2
                         },
                         new
                         {
                             Id = 18,
-                            Category = "Joogid",
-                            Description = "Rabarberi-piparmündi limonaad",
+                            Category = "Mereannid",
+                            Description = "roheline õun, nuikapsas, till",
                             IsAvailable = true,
-                            Name = "Kodune limonaad",
-                            Price = 4.00m,
+                            Name = "Kamtšatka krabi",
+                            Price = 36m,
+                            RestaurantId = 2
+                        },
+                        new
+                        {
+                            Id = 19,
+                            Category = "Mereannid",
+                            Description = "tatrablinid, hapukoor",
+                            IsAvailable = true,
+                            Name = "Tuurakalamari, 30 g",
+                            Price = 85m,
+                            RestaurantId = 2
+                        },
+                        new
+                        {
+                            Id = 20,
+                            Category = "Setid",
+                            Description = "maja peamine õhtusöök, muutub hooajaga",
+                            IsAvailable = true,
+                            Name = "Set „Argent“ – 7 käiku",
+                            Price = 120m,
+                            RestaurantId = 2
+                        },
+                        new
+                        {
+                            Id = 111,
+                            Category = "Setid",
+                            Description = "austrid, krabi, kammkarbid, hiidlest, magustoit",
+                            IsAvailable = true,
+                            Name = "Set „Meri“ – 5 käiku",
+                            Price = 95m,
+                            RestaurantId = 2
+                        },
+                        new
+                        {
+                            Id = 112,
+                            Category = "Setid",
+                            Description = "liha ja ulukid lahtisel tulel",
+                            IsAvailable = true,
+                            Name = "Set „Teras“ – 6 käiku",
+                            Price = 110m,
+                            RestaurantId = 2
+                        },
+                        new
+                        {
+                            Id = 113,
+                            Category = "Setid",
+                            Description = "sommeljee klaas igale käigule",
+                            IsAvailable = true,
+                            Name = "Veinisaade",
+                            Price = 65m,
+                            RestaurantId = 2
+                        },
+                        new
+                        {
+                            Id = 114,
+                            Category = "Pearoad",
+                            Description = "Périgueux' kaste, kartulimuss",
+                            IsAvailable = true,
+                            Name = "Veise sisefilee ja mürklid",
+                            Price = 52m,
+                            RestaurantId = 2
+                        },
+                        new
+                        {
+                            Id = 115,
+                            Category = "Magustoidud",
+                            Description = "vaniljekreem, karamell",
+                            IsAvailable = true,
+                            Name = "Pirnisuflee",
+                            Price = 16m,
+                            RestaurantId = 2
+                        },
+                        new
+                        {
+                            Id = 116,
+                            Category = "Veinid",
+                            Description = "brut, Prantsusmaa",
+                            IsAvailable = true,
+                            Name = "Šampanja, klaas",
+                            Price = 18m,
                             RestaurantId = 2
                         },
                         new
                         {
                             Id = 21,
-                            Category = "Supid",
-                            Description = "Metsaseentest koorene supp",
+                            Category = "Külmad road",
+                            Description = "šalott, veiniäädikas, rukkileib · 6 tk",
                             IsAvailable = true,
-                            Name = "Seenesupp",
-                            Price = 6.50m,
+                            Name = "Austrid Fine de Claire",
+                            Price = 32m,
                             RestaurantId = 3
                         },
                         new
                         {
                             Id = 22,
-                            Category = "Supid",
-                            Description = "Klassikaline Põhjamaade lõhesupp",
+                            Category = "Külmad road",
+                            Description = "söel küpsetatud munakollane, kapparid, trühvel",
                             IsAvailable = true,
-                            Name = "Lõhesupp",
-                            Price = 8.90m,
+                            Name = "Marmorveise tartar",
+                            Price = 28m,
                             RestaurantId = 3
                         },
                         new
                         {
                             Id = 23,
                             Category = "Pearoad",
-                            Description = "Veise välisfilee, köögiviljad, punaveinikaste",
+                            Description = "spargel, sidruniõli",
                             IsAvailable = true,
-                            Name = "Veisesteik",
-                            Price = 24.00m,
+                            Name = "Hiidlest, beurre blanc, kalamari",
+                            Price = 46m,
                             RestaurantId = 3
                         },
                         new
                         {
                             Id = 24,
                             Category = "Pearoad",
-                            Description = "Lõhefilee, kartulipüree, tilli-võikaste",
+                            Description = "laagerdatud rind, portveinikaste",
                             IsAvailable = true,
-                            Name = "Ahjulõhe",
-                            Price = 19.50m,
+                            Name = "Part, kirss, suitsupeet",
+                            Price = 39m,
                             RestaurantId = 3
                         },
                         new
                         {
                             Id = 25,
-                            Category = "Pearoad",
-                            Description = "Kreemine risoto metsaseentega",
+                            Category = "Magustoidud",
+                            Description = "tume šokolaad 70%, oliiviõli",
                             IsAvailable = true,
-                            Name = "Seenerisoto",
-                            Price = 15.00m,
+                            Name = "Šokolaad ja meresool",
+                            Price = 18m,
                             RestaurantId = 3
                         },
                         new
                         {
                             Id = 26,
-                            Category = "Magustoidud",
-                            Description = "Kamavaht marjadega",
+                            Category = "Mereannid",
+                            Description = "vetikavõi, laim",
                             IsAvailable = true,
-                            Name = "Kamavaht",
-                            Price = 6.00m,
+                            Name = "Söel küpsetatud carabinero",
+                            Price = 38m,
                             RestaurantId = 3
                         },
                         new
                         {
                             Id = 27,
-                            Category = "Magustoidud",
-                            Description = "Soe šokolaadikook jäätisega",
+                            Category = "Mereannid",
+                            Description = "sarapuupähkel, pruunistatud või",
                             IsAvailable = true,
-                            Name = "Šokolaadikook",
-                            Price = 7.50m,
+                            Name = "Kammkarbid ja lillkapsas",
+                            Price = 34m,
                             RestaurantId = 3
                         },
                         new
                         {
                             Id = 28,
-                            Category = "Joogid",
-                            Description = "Rabarberi-piparmündi limonaad",
+                            Category = "Mereannid",
+                            Description = "roheline õun, nuikapsas, till",
                             IsAvailable = true,
-                            Name = "Kodune limonaad",
-                            Price = 4.00m,
+                            Name = "Kamtšatka krabi",
+                            Price = 36m,
+                            RestaurantId = 3
+                        },
+                        new
+                        {
+                            Id = 29,
+                            Category = "Mereannid",
+                            Description = "tatrablinid, hapukoor",
+                            IsAvailable = true,
+                            Name = "Tuurakalamari, 30 g",
+                            Price = 85m,
+                            RestaurantId = 3
+                        },
+                        new
+                        {
+                            Id = 30,
+                            Category = "Setid",
+                            Description = "maja peamine õhtusöök, muutub hooajaga",
+                            IsAvailable = true,
+                            Name = "Set „Argent“ – 7 käiku",
+                            Price = 120m,
+                            RestaurantId = 3
+                        },
+                        new
+                        {
+                            Id = 121,
+                            Category = "Setid",
+                            Description = "austrid, krabi, kammkarbid, hiidlest, magustoit",
+                            IsAvailable = true,
+                            Name = "Set „Meri“ – 5 käiku",
+                            Price = 95m,
+                            RestaurantId = 3
+                        },
+                        new
+                        {
+                            Id = 122,
+                            Category = "Setid",
+                            Description = "liha ja ulukid lahtisel tulel",
+                            IsAvailable = true,
+                            Name = "Set „Teras“ – 6 käiku",
+                            Price = 110m,
+                            RestaurantId = 3
+                        },
+                        new
+                        {
+                            Id = 123,
+                            Category = "Setid",
+                            Description = "sommeljee klaas igale käigule",
+                            IsAvailable = true,
+                            Name = "Veinisaade",
+                            Price = 65m,
+                            RestaurantId = 3
+                        },
+                        new
+                        {
+                            Id = 124,
+                            Category = "Pearoad",
+                            Description = "Périgueux' kaste, kartulimuss",
+                            IsAvailable = true,
+                            Name = "Veise sisefilee ja mürklid",
+                            Price = 52m,
+                            RestaurantId = 3
+                        },
+                        new
+                        {
+                            Id = 125,
+                            Category = "Magustoidud",
+                            Description = "vaniljekreem, karamell",
+                            IsAvailable = true,
+                            Name = "Pirnisuflee",
+                            Price = 16m,
+                            RestaurantId = 3
+                        },
+                        new
+                        {
+                            Id = 126,
+                            Category = "Veinid",
+                            Description = "brut, Prantsusmaa",
+                            IsAvailable = true,
+                            Name = "Šampanja, klaas",
+                            Price = 18m,
                             RestaurantId = 3
                         });
                 });
