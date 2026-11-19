@@ -134,6 +134,64 @@ export default {
   'status.Cancelled': 'tühistatud',
   'status.NoShow': 'ei saabunud',
 
+  'booking.continue': 'Jätka',
+
+  // Broneerimine: III. Gastronoomia
+  'gastro.title': 'Gastronoomia',
+  'gastro.lead': 'Tellige toidud ette – need serveeritakse Teie saabumisel. Võite selle sammu ka vahele jätta.',
+  'gastro.preorder': 'Eeltellimus',
+  'gastro.served': { one: '{n} roog serveeritakse Teie saabumisel', other: '{n} rooga serveeritakse Teie saabumisel' },
+  'gastro.empty': 'Eeltellimust pole – menüü pakutakse laua taga',
+  'gastro.toDetails': 'Õhtu detailid',
+  'gastro.add': 'Lisa: {name}',
+  'gastro.remove': 'Eemalda: {name}',
+
+  // Broneerimine: IV. Detailid
+  'details4.title': 'Õhtu detailid',
+  'details4.short': 'Detailid',
+  'details4.lead': 'Soovid, broneerija andmed ja makse.',
+  'details4.wish': 'Erisoovid',
+  'details4.wishPlaceholder': 'Näiteks: kiri tordil „Palju õnne, Anna“, ilma pähkliteta',
+  'details4.who': 'Kes broneerib',
+  'details4.whoNote': 'Kontaktisik – kinnitus saadetakse sellele e-postile.',
+  'details4.phone': 'Telefon',
+  'details4.loginFirst': 'Kinnitamisel palume Teil sisse logida või konto luua.',
+  'details4.total': 'Kokku',
+  'details4.payDemo': 'Makse · demorežiim',
+  'details4.cardNumber': 'Kaardi number',
+  'details4.expiry': 'KK/AA',
+  'details4.noCharge': 'Demorežiim: raha ei võeta.',
+  'details4.err.card': 'Kaardi number on vigane.',
+  'details4.err.expiry': 'Kehtivus peab olema kujul KK/AA.',
+  'details4.err.cvc': 'CVC on 3 numbrit.',
+
+  // Tšekk
+  'receipt.confirmed': 'Broneering kinnitatud',
+  'receipt.who': 'Broneerija',
+  'receipt.noPreorder': 'eeltellimuseta – menüü laua taga',
+  'receipt.paid': 'makstud kaardiga · demorežiim',
+  'receipt.note': 'Laud ootab Teid 30 minutit pärast algusaega. Broneeringut saab muuta kuni 24 tundi enne külastust.',
+
+  // Minu külastused
+  'visits.title': 'Teie külastused',
+  'visits.lead': 'Avage broneering, et seda vaadata. Kuupäeva, kellaaega ja lauda saab muuta kuni 24 tundi enne külastust.',
+  'visits.upcoming': 'Tulevased',
+  'visits.past': 'Varasemad',
+  'visits.none': 'Tulevasi broneeringuid pole.',
+  'visits.today': 'alla 24 tunni',
+  'visits.inDays': { one: '{n} päeva pärast', other: '{n} päeva pärast' },
+  'visits.open': 'Ava',
+  'visits.collapse': 'Sulge',
+  'visits.yours': 'Teie broneering',
+  'visits.onName': 'Nimele',
+  'visits.paid': 'makstud',
+  'visits.locked': 'Külastuseni on vähem kui 24 tundi: kuupäeva, kellaaega ja lauda ei saa enam muuta.',
+  'visits.repeat': 'Korda',
+
+  // Menüü leht
+  'menu.lead': 'Menüü muutub koos hooajaga. Kõiki roogi saab broneerimisel ette tellida.',
+  'menu.book': 'Broneeri laud',
+
   // Muu
   'common.loading': 'Laen…',
   'notFound.title': 'Lehte ei leitud',
