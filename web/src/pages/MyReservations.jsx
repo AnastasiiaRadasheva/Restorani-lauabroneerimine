@@ -114,7 +114,10 @@ function VisitCard({ r, open, onToggle, onChanged, setError, renderExtra }) {
     <article className={open ? 'visit open' : 'visit'}>
       <button type="button" className="visit-head" onClick={onToggle} aria-expanded={open}>
         <span className="when">
-          <span className="eyebrow">{badge} · {t(`status.${r.status}`)}</span>
+          <span className="eyebrow">
+            {badge} · {t(`status.${r.status}`)}
+            {r.lastMessageFromStaff && <span className="new-reply"> · {t('visits.newReply')}</span>}
+          </span>
           <span className="big">{formatDate(r.startTime, locale)}, {formatTime(r.startTime, locale)}</span>
         </span>
         <span className="where">
@@ -146,8 +149,20 @@ function VisitCard({ r, open, onToggle, onChanged, setError, renderExtra }) {
                   <dd className="italic">{r.specialRequest}</dd>
                 </>
               )}
+              {r.occasion !== 'None' && (
+                <>
+                  <dt>{t('evening.occasion')}</dt>
+                  <dd>{t(`occasion.${r.occasion}`)}</dd>
+                </>
+              )}
+              {r.extras.length > 0 && (
+                <>
+                  <dt>{t('evening.extras')}</dt>
+                  <dd>{r.extras.map((x) => <div key={x.code}>{t(`extra.${x.code}`)}</div>)}</dd>
+                </>
+              )}
               <dt>{t('details4.total')}</dt>
-              <dd className="sum">{money(r.preOrderTotal)}{r.isPaid ? ` · ${t('visits.paid')}` : ''}</dd>
+              <dd className="sum">{money(r.total)}{r.isPaid ? ` · ${t('visits.paid')}` : ''}</dd>
             </dl>
             {!r.canModify && <p className="lock-note">{t('visits.locked')}</p>}
             <div className="actions">
