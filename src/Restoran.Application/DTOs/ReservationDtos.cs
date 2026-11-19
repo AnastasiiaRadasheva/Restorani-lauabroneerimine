@@ -137,6 +137,8 @@ public record TableAvailabilityDto(
     int Seats,
     TableLocation Location,
     int X, int Y, int Width, int Height,
+    string? Spot,
+    bool IsRound,
     bool IsFree,
     bool FitsGuests);
 
@@ -148,6 +150,12 @@ public record AvailabilityDto(
     int Guests,
     int? SuggestedTableId,
     List<TableAvailabilityDto> Tables);
+
+/// <summary>Üks kellaaeg ja mitu sobivat lauda on siis vaba (0 = täis).</summary>
+public record SlotDto(string Time, int FreeTables);
+
+/// <summary>Ühe päeva kellaajad broneerimise kalendri jaoks.</summary>
+public record DaySlotsDto(DateOnly Date, List<SlotDto> Slots);
 
 /// <summary>Päeva plaani üks broneering.</summary>
 public record PlanReservationDto(

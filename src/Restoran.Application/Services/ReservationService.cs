@@ -48,11 +48,53 @@ public class ReservationService : IReservationService
         var best = BookingRules.PickBestTable(tables, busy, guests);
 
         var list = tables.Select(t => new TableAvailabilityDto(
-            t.Id, t.Number, t.Seats, t.Location, t.X, t.Y, t.Width, t.Height,
+            t.Id, t.Number, t.Seats, t.Location, t.X, t.Y, t.Width, t.Height, t.Spot, t.IsRound,
             IsFree: !busy.Contains(t.Id),
             FitsGuests: t.Seats >= guests)).ToList();
 
         return new AvailabilityDto(restaurantId, start, end, guests, best?.Id, list);
+    }
+
+    /// <summary>
+    /// Kalendri jaoks: iga päeva iga kellaaja kohta, mitu sobiva suurusega lauda on vaba.
+    /// Kui vabu laudu on 0, näidatakse kellaaeg veebis läbikriipsutatuna.
+    /// </summary>
+    public async Task<List<DaySlotsDto>> GetSlotsAsync(int restaurantId, DateOnly from, int days, int guests)
+    {
+        if (days < 1 || days > 60)
+            throw new BusinessRuleException("Päevade arv peab olema 1 kuni 60.");
+        if (guests < 1 || guests > 20)
+            throw new BusinessRuleException("Inimeste arv peab olema 1 kuni 20.");
+
+        var restaurant = await GetRestaurant(restaurantId);
+        var tables = (await _tables.GetByRestaurantAsync(restaurantId, onlyActive: true))
+            .Where(t => t.Seats >= guests).ToList();
+        var rangeStart = from.ToDateTime(TimeOnly.MinValue);
+        var occupying = (await _reservations.GetOccupyingAsync(
+                tables.Select(t => t.Id), rangeStart, rangeStart.AddDays(days), null))
+            .Where(r => BookingRules.Occupies(r.Status))
+            .ToList();
+
+        var result = new List<DaySlotsDto>();
+        for (int d = 0; d < days; d++)
+        {
+            var date = from.AddDays(d);
+            var slots = new List<SlotDto>();
+            // Kellaajad 30-minutilise sammuga avamisest kuni 2 h enne sulgemist
+            var open = (int)restaurant.OpensAt.ToTimeSpan().TotalMinutes;
+            var lastStart = (int)restaurant.ClosesAt.ToTimeSpan().TotalMinutes - (int)BookingRules.Duration.TotalMinutes;
+            for (int minutes = open; minutes <= lastStart; minutes += 30)
+            {
+                var time = TimeOnly.FromTimeSpan(TimeSpan.FromMinutes(minutes));
+                var start = date.ToDateTime(time);
+                var end = start + BookingRules.Duration;
+                int free = start <= _clock.Now ? 0 : tables.Count(t => !occupying.Any(r =>
+                    r.TableId == t.Id && BookingRules.Overlaps(start, end, r.StartTime, r.EndTime)));
+                slots.Add(new SlotDto(time.ToString("HH:mm"), free));
+            }
+            result.Add(new DaySlotsDto(date, slots));
+        }
+        return result;
     }
 
     // ---------- Broneerimine ----------

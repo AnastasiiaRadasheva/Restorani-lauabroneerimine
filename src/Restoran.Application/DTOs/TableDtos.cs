@@ -10,7 +10,9 @@ public record TableDto(
     int Seats,
     TableLocation Location,
     bool IsActive,
-    int X, int Y, int Width, int Height);
+    int X, int Y, int Width, int Height,
+    string? Spot,
+    bool IsRound);
 
 /// <summary>Laua loomine või muutmine.</summary>
 public class SaveTableDto
@@ -41,4 +43,12 @@ public class SaveTableDto
     [Range(0, 100)] public int Y { get; set; }
     [Range(1, 100)] public int Width { get; set; } = 12;
     [Range(1, 100)] public int Height { get; set; } = 12;
+
+    /// <summary>Kirjeldus plaanil.</summary>
+    /// <example>akna all</example>
+    [StringLength(60)]
+    public string? Spot { get; set; }
+
+    /// <summary>Kas laud on ümmargune.</summary>
+    public bool IsRound { get; set; }
 }

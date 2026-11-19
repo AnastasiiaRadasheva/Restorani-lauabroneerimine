@@ -25,7 +25,7 @@ public static class MappingExtensions
     }
 
     public static TableDto ToDto(this DiningTable t) => new(
-        t.Id, t.RestaurantId, t.Number, t.Seats, t.Location, t.IsActive, t.X, t.Y, t.Width, t.Height);
+        t.Id, t.RestaurantId, t.Number, t.Seats, t.Location, t.IsActive, t.X, t.Y, t.Width, t.Height, t.Spot, t.IsRound);
 
     public static void Apply(this DiningTable t, SaveTableDto d)
     {
@@ -35,6 +35,8 @@ public static class MappingExtensions
         t.Location = d.Location;
         t.IsActive = d.IsActive;
         t.X = d.X; t.Y = d.Y; t.Width = d.Width; t.Height = d.Height;
+        t.Spot = string.IsNullOrWhiteSpace(d.Spot) ? null : d.Spot.Trim();
+        t.IsRound = d.IsRound;
     }
 
     public static MenuItemDto ToDto(this MenuItem m) => new(
