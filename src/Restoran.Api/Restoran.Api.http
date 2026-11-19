@@ -160,6 +160,9 @@ Content-Type: application/json
 ### Sobiv vaba laud
 GET {{api}}/api/tables/available?restaurantId=1&date={{date}}&time=19:00&guests=2
 
+### Kalender: vabade laudade arv igal kellaajal 14 päeva jooksul
+GET {{api}}/api/tables/slots?restaurantId=1&from={{date}}&days=14&guests=2
+
 ### Uus broneering (laud valitakse automaatselt)
 # @name created
 POST {{api}}/api/reservations

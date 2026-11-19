@@ -5,6 +5,7 @@ import App from './App'
 import { AuthProvider } from './auth'
 import { I18nProvider } from './i18n'
 import './styles/base.css'
+import './styles/booking.css'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

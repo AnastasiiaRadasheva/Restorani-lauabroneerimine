@@ -7,6 +7,8 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import NotFound from './pages/NotFound'
+import Booking from './pages/Booking'
+import ReservationDetails from './pages/ReservationDetails'
 
 /** Leht ainult sisse loginud kasutajale (soovi korral ainult teatud rollidele). */
 export function RequireAuth({ roles, children }) {
@@ -36,6 +38,8 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/broneeri" element={<Booking />} />
+          <Route path="/broneering/:id" element={<RequireAuth><ReservationDetails /></RequireAuth>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
