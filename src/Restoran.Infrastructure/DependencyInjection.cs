@@ -31,6 +31,7 @@ public static class DependencyInjection
         services.AddScoped<IMenuService, MenuService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IReservationService, ReservationService>();
+        services.AddScoped<IStatsService, StatsService>();
 
         return services;
     }
