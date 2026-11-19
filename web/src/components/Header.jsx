@@ -5,7 +5,7 @@ import { useI18n } from '../i18n'
 import { MenuIcon } from './Icons'
 
 export default function Header() {
-  const { user, logout } = useAuth()
+  const { user, isStaff, isAdmin, logout } = useAuth()
   const { t } = useI18n()
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
@@ -28,6 +28,9 @@ export default function Header() {
           <NavLink to="/" end onClick={close}>{t('nav.home')}</NavLink>
           <NavLink to="/broneeri" onClick={close}>{t('nav.booking')}</NavLink>
           <NavLink to="/menuu" onClick={close}>{t('nav.menu')}</NavLink>
+          {isStaff && <NavLink to="/personal/plaan" onClick={close}>Plaan</NavLink>}
+          {isStaff && <NavLink to="/personal/broneeringud" onClick={close}>Broneeringud</NavLink>}
+          {isAdmin && <NavLink to="/admin" onClick={close}>Admin</NavLink>}
         </nav>
 
         <Link to="/" className="logo" onClick={close}>ARGENT</Link>
@@ -35,7 +38,7 @@ export default function Header() {
         <div className="nav-right">
           {user ? (
             <>
-              <NavLink to="/minu" onClick={close}>{t('nav.my')}</NavLink>
+              {!isStaff && <NavLink to="/minu" onClick={close}>{t('nav.my')}</NavLink>}
               <span className="user">{user.name}</span>
               <button className="link underline" onClick={onLogout}>{t('nav.logout')}</button>
             </>

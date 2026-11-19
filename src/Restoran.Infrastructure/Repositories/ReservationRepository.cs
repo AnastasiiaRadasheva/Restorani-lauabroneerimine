@@ -72,6 +72,15 @@ public class ReservationRepository : Repository<Reservation>, IReservationReposi
         return new PagedResult<Reservation> { Items = items, Page = query.Page, PageSize = query.PageSize, TotalCount = total };
     }
 
+    public Task<List<Reservation>> GetForStatsAsync(int? restaurantId, DateOnly from, DateOnly to)
+    {
+        var start = from.ToDateTime(TimeOnly.MinValue);
+        var end = to.ToDateTime(TimeOnly.MinValue).AddDays(1);
+        var q = Db.Reservations.AsNoTracking().Where(r => r.StartTime >= start && r.StartTime < end);
+        if (restaurantId.HasValue) q = q.Where(r => r.Table!.RestaurantId == restaurantId);
+        return q.ToListAsync();
+    }
+
     public Task<List<Reservation>> GetForDayAsync(int restaurantId, DateOnly date)
     {
         var from = date.ToDateTime(TimeOnly.MinValue);

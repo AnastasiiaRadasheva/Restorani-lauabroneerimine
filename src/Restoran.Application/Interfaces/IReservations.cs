@@ -15,6 +15,9 @@ public interface IReservationRepository : IRepository<Reservation>
     Task<List<Reservation>> GetByUserAsync(int userId);
     Task<PagedResult<Reservation>> GetPagedAsync(ReservationQuery query);
     Task<List<Reservation>> GetForDayAsync(int restaurantId, DateOnly date);
+
+    /// <summary>Broneeringud statistika jaoks (ilma seotud andmeteta).</summary>
+    Task<List<Reservation>> GetForStatsAsync(int? restaurantId, DateOnly from, DateOnly to);
 }
 
 public interface IReservationService
