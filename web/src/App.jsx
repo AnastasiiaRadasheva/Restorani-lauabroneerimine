@@ -9,6 +9,8 @@ import Register from './pages/Register'
 import NotFound from './pages/NotFound'
 import Booking from './pages/Booking'
 import ReservationDetails from './pages/ReservationDetails'
+import MyReservations from './pages/MyReservations'
+import Menu from './pages/Menu'
 
 /** Leht ainult sisse loginud kasutajale (soovi korral ainult teatud rollidele). */
 export function RequireAuth({ roles, children }) {
@@ -40,6 +42,8 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/broneeri" element={<Booking />} />
           <Route path="/broneering/:id" element={<RequireAuth><ReservationDetails /></RequireAuth>} />
+          <Route path="/minu" element={<RequireAuth><MyReservations /></RequireAuth>} />
+          <Route path="/menuu" element={<Menu />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

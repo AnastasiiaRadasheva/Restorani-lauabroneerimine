@@ -85,7 +85,7 @@ export default function ReservationDetails() {
 
       {editing && <EditReservation r={r} onSaved={(x) => updated(x, t('details.saved'))} onError={setError} onClose={() => setEditing(false)} />}
 
-      <p className="back-link"><Link to="/">← {t('nav.home')}</Link></p>
+      <p className="back-link"><Link to="/minu">← {t('nav.my')}</Link></p>
     </div>
   )
 }
