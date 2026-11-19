@@ -170,4 +170,27 @@ public class ReservationServiceTests
 
         await Assert.ThrowsAsync<BusinessRuleException>(() => CreateService().SetPreOrderAsync(5, dto));
     }
+
+    [Fact]
+    public async Task Slots_ShowsZeroFreeTables_WhenAllFittingTablesAreBusy()
+    {
+        // 4 inimest mahuvad lauda 2 (4 kohta) ja lauda 3 (8 kohta). Mõlemad on hõivatud 19:00-21:00.
+        var day = new DateOnly(2026, 12, 5);
+        _reservations
+            .Setup(r => r.GetOccupyingAsync(It.IsAny<IEnumerable<int>>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<int?>()))
+            .ReturnsAsync(new List<Reservation>
+            {
+                new() { TableId = 2, Status = ReservationStatus.Active, StartTime = day.ToDateTime(new TimeOnly(19, 0)), EndTime = day.ToDateTime(new TimeOnly(21, 0)) },
+                new() { TableId = 3, Status = ReservationStatus.Arrived, StartTime = day.ToDateTime(new TimeOnly(19, 0)), EndTime = day.ToDateTime(new TimeOnly(21, 0)) },
+            });
+
+        var result = await CreateService().GetSlotsAsync(1, day, 1, guests: 4);
+
+        var slots = result.Single().Slots;
+        Assert.Equal("12:00", slots.First().Time);
+        Assert.Equal("21:00", slots.Last().Time); // viimane algus 2 h enne sulgemist (23:00)
+        Assert.Equal(0, slots.Single(s => s.Time == "19:00").FreeTables);
+        Assert.Equal(0, slots.Single(s => s.Time == "18:00").FreeTables); // 18-20 kattub 19-21-ga
+        Assert.Equal(2, slots.Single(s => s.Time == "17:00").FreeTables);
+    }
 }
