@@ -34,6 +34,38 @@ public static class DbSeeder
             await db.SaveChangesAsync();
         }
 
+        if (!await db.Events.AnyAsync())
+        {
+            // Gastronoomilised õhtud kolmel järgmisel pühapäeval
+            var sunday = DateTime.Today.AddDays(((int)DayOfWeek.Sunday - (int)DateTime.Today.DayOfWeek + 7) % 7);
+            if (sunday <= DateTime.Today) sunday = sunday.AddDays(7);
+            db.Events.AddRange(
+                new GastroEvent
+                {
+                    RestaurantId = 1, Title = "Terase õhtu", Kind = "Degustatsiooniõhtusöök",
+                    Description = "Seitsmekäiguline degustatsioonimenüü, valmistatud lahtisel tulel.",
+                    StartTime = sunday.AddHours(20), PricePerGuest = 140m, DressCode = "smart elegant",
+                    ImageUrl = "/img/metal.jpg", Capacity = 30
+                },
+                new GastroEvent
+                {
+                    RestaurantId = 1, Title = "Valge õhtusöök", Kind = "Peakoka autorisett",
+                    Description = "Portselanist serveering, koorekastmed ja Burgundia valged veinid. Riietus – valge.",
+                    StartTime = sunday.AddDays(7).AddHours(19.5), PricePerGuest = 160m, DressCode = "täielikult valge",
+                    Rule = "Õhtu riietus on täielikult valge. Teist värvi riietes külalistel võidakse viisakalt paluda lahkuda; osalustasu sel juhul ei tagastata.",
+                    ImageUrl = "/img/sculpture.jpg", Capacity = 24
+                },
+                new GastroEvent
+                {
+                    RestaurantId = 1, Title = "Must ball", Kind = "Pidulik õhtu",
+                    Description = "Riietus black tie, džässitrio ja õhtusöök keskööni.",
+                    StartTime = sunday.AddDays(14).AddHours(21), PricePerGuest = 180m, DressCode = "black tie",
+                    Rule = "Õhtu riietus on black tie: smoking või põrandani õhtukleit. Kui riietus ei vasta nõuetele, võib administratsioon osalemisest keelduda; osalustasu ei tagastata.",
+                    ImageUrl = "/img/couture.jpg", Capacity = 40
+                });
+            await db.SaveChangesAsync();
+        }
+
         if (!await db.Reservations.AnyAsync())
         {
             // Näidisbroneeringud jagatakse näidisklientide vahel (mitte testkliendile klient@restoran.ee)
