@@ -42,7 +42,29 @@ public record ReservationDto(
     List<ExtraDto> Extras,
     decimal ExtrasTotal,
     // Kokku: eeltellimus + lisateenused + laua valimise tasu
-    decimal Total);
+    decimal Total,
+    int MessageCount,
+    // Kas viimane sõnum on personalilt (kliendile "uus vastus")
+    bool LastMessageFromStaff);
+
+/// <summary>Sõnum broneeringu kohta.</summary>
+public record MessageDto(int Id, bool FromStaff, string AuthorName, string Text, DateTime CreatedAt);
+
+/// <summary>Uus sõnum.</summary>
+public class NewMessageDto
+{
+    /// <example>Kas tordi saaks serveerida magustoiduga?</example>
+    [Required, StringLength(1000, MinimumLength = 1)]
+    public string Text { get; set; } = "";
+}
+
+/// <summary>Lisateenuste muutmine olemasoleval broneeringul.</summary>
+public class SetExtrasDto
+{
+    /// <example>["flowers", "chair"]</example>
+    [Required]
+    public List<string> Extras { get; set; } = new();
+}
 
 /// <summary>Uus broneering. Kui TableId puudub, valib süsteem sobiva laua ise.</summary>
 public class CreateReservationDto

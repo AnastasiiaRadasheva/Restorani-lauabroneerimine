@@ -114,7 +114,10 @@ function VisitCard({ r, open, onToggle, onChanged, setError, renderExtra }) {
     <article className={open ? 'visit open' : 'visit'}>
       <button type="button" className="visit-head" onClick={onToggle} aria-expanded={open}>
         <span className="when">
-          <span className="eyebrow">{badge} · {t(`status.${r.status}`)}</span>
+          <span className="eyebrow">
+            {badge} · {t(`status.${r.status}`)}
+            {r.lastMessageFromStaff && <span className="new-reply"> · {t('visits.newReply')}</span>}
+          </span>
           <span className="big">{formatDate(r.startTime, locale)}, {formatTime(r.startTime, locale)}</span>
         </span>
         <span className="where">

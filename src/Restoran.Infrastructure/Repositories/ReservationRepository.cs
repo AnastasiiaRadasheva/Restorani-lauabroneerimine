@@ -15,7 +15,8 @@ public class ReservationRepository : Repository<Reservation>, IReservationReposi
         .Include(r => r.Table).ThenInclude(t => t!.Restaurant)
         .Include(r => r.User)
         .Include(r => r.PreOrderItems).ThenInclude(p => p.MenuItem)
-        .Include(r => r.Extras);
+        .Include(r => r.Extras)
+        .Include(r => r.Messages);
 
     public Task<Reservation?> GetWithDetailsAsync(int id) =>
         WithDetails().FirstOrDefaultAsync(r => r.Id == id);

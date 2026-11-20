@@ -34,4 +34,5 @@ public class Reservation
     /// <summary>Tasu laua ise valimise eest (tipptundidel kallim).</summary>
     public decimal SeatFee { get; set; }
     public List<ReservationExtra> Extras { get; set; } = new();
+    public List<ReservationMessage> Messages { get; set; } = new();
 }

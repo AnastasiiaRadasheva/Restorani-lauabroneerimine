@@ -217,4 +217,46 @@ public class ReservationServiceTests
         Assert.Equal(32m, saved.PreOrderItems[0].UnitPrice);
         Assert.Equal(64m, result.PreOrderTotal);
     }
+
+    private Reservation OwnedReservation(int userId) => new()
+    {
+        Id = 50, UserId = userId, TableId = 1, Status = ReservationStatus.Active,
+        StartTime = Now.AddHours(5), EndTime = Now.AddHours(7), // alla 24 h
+        Table = _tableList[0], User = new User { Id = userId, Name = "Kati Klient" }
+    };
+
+    [Fact]
+    public async Task AddMessage_FromCustomer_IsAllowedEvenWithin24Hours()
+    {
+        var r = OwnedReservation(10);
+        _reservations.Setup(x => x.GetWithDetailsAsync(50)).ReturnsAsync(r);
+
+        var msg = await CreateService().AddMessageAsync(50, new NewMessageDto { Text = "  Kas tort saab olla pähkliteta?  " });
+
+        Assert.False(msg.FromStaff);
+        Assert.Equal("Kati Klient", msg.AuthorName);
+        Assert.Equal("Kas tort saab olla pähkliteta?", msg.Text);
+        Assert.Single(r.Messages);
+    }
+
+    [Fact]
+    public async Task AddMessage_ToSomeoneElsesReservation_IsForbidden()
+    {
+        _reservations.Setup(x => x.GetWithDetailsAsync(50)).ReturnsAsync(OwnedReservation(99));
+
+        await Assert.ThrowsAsync<ForbiddenException>(() => CreateService().AddMessageAsync(50, new NewMessageDto { Text = "Tere" }));
+    }
+
+    [Fact]
+    public async Task SetExtras_ReplacesExtras_AndUpdatesTotal()
+    {
+        var r = OwnedReservation(10);
+        r.Extras.Add(new ReservationExtra { Code = "violin", Name = "Viiuldaja", Price = 120m });
+        _reservations.Setup(x => x.GetWithDetailsAsync(50)).ReturnsAsync(r);
+
+        var result = await CreateService().SetExtrasAsync(50, new SetExtrasDto { Extras = new() { "flowers", "chair" } });
+
+        Assert.Equal(new[] { "flowers", "chair" }, result.Extras.Select(e => e.Code));
+        Assert.Equal(45m, result.Total);
+    }
 }

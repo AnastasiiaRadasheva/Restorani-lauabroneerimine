@@ -163,6 +163,20 @@ GET {{api}}/api/tables/available?restaurantId=1&date={{date}}&time=19:00&guests=
 ### Lisateenuste kataloog
 GET {{api}}/api/reservations/extras
 
+### Sõnum restoranile broneeringu kohta
+POST {{api}}/api/reservations/1/messages
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{ "text": "Kas tordi saaks serveerida magustoiduga?" }
+
+### Broneeringu lisateenused (ka vähem kui 24 h enne)
+PUT {{api}}/api/reservations/1/extras
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{ "extras": ["flowers", "chair"] }
+
 ### Gastronoomilised õhtud
 GET {{api}}/api/events
 

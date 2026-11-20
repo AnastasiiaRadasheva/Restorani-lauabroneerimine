@@ -33,5 +33,10 @@ public interface IReservationService
     Task<ReservationDto> SetPreOrderAsync(int id, PreOrderDto dto);
     Task<ReservationDto> PayAsync(int id, FakePaymentDto dto);
     Task<ReservationDto> ChangeStatusAsync(int id, ReservationStatus status);
+
+    // Sõnumid ja lisateenused (lubatud ka vähem kui 24 h enne)
+    Task<List<MessageDto>> GetMessagesAsync(int id);
+    Task<MessageDto> AddMessageAsync(int id, NewMessageDto dto);
+    Task<ReservationDto> SetExtrasAsync(int id, SetExtrasDto dto);
     Task<TablePlanDto> GetPlanAsync(int restaurantId, DateOnly date);
 }
