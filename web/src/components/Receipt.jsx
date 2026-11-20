@@ -104,6 +104,55 @@ export default function Receipt({ r, total, onClose, rows = [], children }) {
   )
 }
 
+const LANG_NAMES = { et: 'Eesti', ru: 'Русский', en: 'English' }
+
+/** Tšeki lisaread: peakülaline, teeninduse keel ja õhtu põhjus. */
+export function eveningRows(r, t) {
+  const host =
+    r.hostType === 'Social' ? (
+      <>{t('host.Social')}</>
+    ) : (
+      <>
+        {r.hostType === 'Other' ? r.hostName : r.customerName}
+        <br />
+        <span className="muted italic">{t(`address.${r.addressForm}`).toLowerCase()}</span>
+      </>
+    )
+  return [
+    [t('evening.host'), host],
+    [t('evening.language'), LANG_NAMES[r.serviceLanguage] ?? r.serviceLanguage],
+    [t('evening.occasion'), <span className="italic">{t(`occasion.${r.occasion}`)}</span>],
+  ]
+}
+
+/** Tšeki lisateenused, laua valimise tasu ja peakoka kingitus. */
+export function EveningReceiptLines({ r }) {
+  const { t } = useI18n()
+  const lines = [...(r.seatFee ? [[t('fee.line'), r.seatFee]] : []), ...r.extras.map((x) => [t(`extra.${x.code}`), x.price])]
+  return (
+    <>
+      {lines.length > 0 && (
+        <div className="lines">
+          <span className="eyebrow">{t('evening.extras')}</span>
+          {lines.map(([name, price]) => (
+            <div key={name} className="line">
+              <span className="name">{name}</span>
+              <span>{money(price)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {r.gift !== 'None' && (
+        <div className="gift-line">
+          <span className="diamond ox" aria-hidden="true" />
+          <span className="name">{t('evening.gift')}: {t(`gift.${r.gift}`).toLowerCase()}</span>
+          <span>0 €</span>
+        </div>
+      )}
+    </>
+  )
+}
+
 function Row({ k, v }) {
   return (
     <>
