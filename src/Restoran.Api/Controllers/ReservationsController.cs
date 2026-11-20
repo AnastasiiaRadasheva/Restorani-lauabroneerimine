@@ -20,6 +20,13 @@ public class ReservationsController : ControllerBase
         _reservations = reservations;
     }
 
+    /// <summary>Lisateenuste kataloog (lilled, šampanja, viiuldaja …) koos hindadega.</summary>
+    [AllowAnonymous]
+    [HttpGet("extras")]
+    [ProducesResponseType(typeof(IReadOnlyList<Restoran.Application.Services.ExtraInfo>), StatusCodes.Status200OK)]
+    public ActionResult<IReadOnlyList<Restoran.Application.Services.ExtraInfo>> Extras() =>
+        Ok(Restoran.Application.Services.ExtrasCatalog.All);
+
     /// <summary>Kõik broneeringud koos filtri, otsingu, sortimise ja lehekülgedega (personal).</summary>
     /// <remarks>Näide: GET /api/reservations?restaurantId=1&amp;date=2026-11-20&amp;status=Active&amp;search=kati&amp;sort=date&amp;page=1&amp;pageSize=10</remarks>
     [Authorize(Roles = "Admin,Waiter")]
