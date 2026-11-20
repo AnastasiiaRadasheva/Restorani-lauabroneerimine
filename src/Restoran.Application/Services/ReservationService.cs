@@ -17,6 +17,7 @@ public class ReservationService : IReservationService
     private readonly ICurrentUser _current;
     private readonly IClock _clock;
     private readonly ILogger<ReservationService> _logger;
+    private readonly IRealtimeNotifier _realtime;
 
     public ReservationService(
         IReservationRepository reservations,
@@ -25,7 +26,8 @@ public class ReservationService : IReservationService
         IMenuRepository menu,
         ICurrentUser current,
         IClock clock,
-        ILogger<ReservationService> logger)
+        ILogger<ReservationService> logger,
+        IRealtimeNotifier realtime)
     {
         _reservations = reservations;
         _tables = tables;
@@ -34,6 +36,7 @@ public class ReservationService : IReservationService
         _current = current;
         _clock = clock;
         _logger = logger;
+        _realtime = realtime;
     }
 
     // ---------- Vabad lauad ----------
@@ -125,7 +128,11 @@ public class ReservationService : IReservationService
         _logger.LogInformation("Uus broneering {Id}: restoran {Restaurant}, laud {Table}, {Start}, {Guests} inimest",
             reservation.Id, restaurant.Name, table.Number, start, dto.Guests);
 
-        return await GetByIdAsync(reservation.Id);
+        // Reaalajas teade alles pärast salvestamist
+        var result = await GetByIdAsync(reservation.Id);
+        await _realtime.ReservationCreatedAsync(result);
+        await _realtime.TableStatusChangedAsync(result);
+        return result;
     }
 
     public async Task<ReservationDto> UpdateAsync(int id, UpdateReservationDto dto)
@@ -145,7 +152,9 @@ public class ReservationService : IReservationService
         r.SpecialRequest = Clean(dto.SpecialRequest);
         await _reservations.SaveChangesAsync();
 
-        return await GetByIdAsync(id);
+        var result = await GetByIdAsync(id);
+        await _realtime.TableStatusChangedAsync(result);
+        return result;
     }
 
     public async Task<ReservationDto> CancelAsync(int id)
@@ -158,7 +167,9 @@ public class ReservationService : IReservationService
         r.Status = ReservationStatus.Cancelled;
         await _reservations.SaveChangesAsync();
         _logger.LogInformation("Broneering {Id} tühistati", r.Id);
-        return ToDto(r);
+        var result = ToDto(r);
+        await _realtime.TableStatusChangedAsync(result);
+        return result;
     }
 
     // ---------- Eeltellimus ja makse ----------
@@ -232,7 +243,9 @@ public class ReservationService : IReservationService
         r.Status = status;
         await _reservations.SaveChangesAsync();
         _logger.LogInformation("Broneeringu {Id} uus olek: {Status}", r.Id, status);
-        return ToDto(r);
+        var result = ToDto(r);
+        await _realtime.TableStatusChangedAsync(result);
+        return result;
     }
 
     public async Task<TablePlanDto> GetPlanAsync(int restaurantId, DateOnly date)

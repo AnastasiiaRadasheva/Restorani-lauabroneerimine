@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Restoran.Api.Infrastructure;
+using Restoran.Api.Realtime;
 using Restoran.Application.Interfaces;
 using Restoran.Infrastructure;
 using Restoran.Infrastructure.Data;
@@ -18,6 +19,10 @@ builder.Services.AddRestoran(builder.Configuration);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
 builder.Services.AddSingleton<ITokenService, JwtTokenService>();
+
+// Reaalajas uuendused (WebSocket /ws/tables)
+builder.Services.AddSingleton<TableSocketHub>();
+builder.Services.AddSingleton<IRealtimeNotifier>(sp => sp.GetRequiredService<TableSocketHub>());
 
 // JWT autentimine
 var jwt = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()!;
@@ -33,6 +38,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = jwt.Issuer,
             ValidAudience = jwt.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key))
+        };
+        // WebSocket ei saa saata Authorization päist, seepärast token tuleb query-parameetris access_token
+        o.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = ctx =>
+            {
+                var token = ctx.Request.Query["access_token"];
+                if (!string.IsNullOrEmpty(token) && ctx.HttpContext.Request.Path.StartsWithSegments("/ws"))
+                    ctx.Token = token;
+                return Task.CompletedTask;
+            }
         };
     });
 builder.Services.AddAuthorization();
@@ -102,6 +118,20 @@ app.UseCors("web");
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(30) });
+
 app.MapControllers();
+
+// WebSocketi otspunkt: ühendus nõuab JWT-d (ws://localhost:5000/ws/tables?access_token=...)
+app.Map("/ws/tables", async (HttpContext context, TableSocketHub hub) =>
+{
+    if (!context.WebSockets.IsWebSocketRequest)
+        return Results.BadRequest("Ainult WebSocket ühendus.");
+    if (context.User.Identity?.IsAuthenticated != true)
+        return Results.Unauthorized();
+
+    await hub.HandleAsync(context);
+    return Results.Empty;
+});
 
 app.Run();
