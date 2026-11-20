@@ -14,6 +14,8 @@ import Menu from './pages/Menu'
 import StaffPlan from './pages/StaffPlan'
 import StaffReservations from './pages/StaffReservations'
 import Admin from './pages/Admin'
+import VisitExtras from './components/VisitExtras'
+import StaffMessages from './components/StaffMessages'
 
 /** Leht ainult sisse loginud kasutajale (soovi korral ainult teatud rollidele). */
 export function RequireAuth({ roles, children }) {
@@ -45,10 +47,10 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/broneeri" element={<Booking />} />
           <Route path="/broneering/:id" element={<RequireAuth><ReservationDetails /></RequireAuth>} />
-          <Route path="/minu" element={<RequireAuth><MyReservations /></RequireAuth>} />
+          <Route path="/minu" element={<RequireAuth><MyReservations renderExtra={(r, reload) => <VisitExtras r={r} onChanged={reload} />} /></RequireAuth>} />
           <Route path="/menuu" element={<Menu />} />
           <Route path="/personal/plaan" element={<RequireAuth roles={['Admin', 'Waiter']}><StaffPlan /></RequireAuth>} />
-          <Route path="/personal/broneeringud" element={<RequireAuth roles={['Admin', 'Waiter']}><StaffReservations /></RequireAuth>} />
+          <Route path="/personal/broneeringud" element={<RequireAuth roles={['Admin', 'Waiter']}><StaffReservations renderRowExtra={(r) => <StaffMessages r={r} />} /></RequireAuth>} />
           <Route path="/admin" element={<RequireAuth roles={['Admin']}><Admin /></RequireAuth>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
