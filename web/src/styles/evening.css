@@ -1,0 +1,163 @@
+/* ==========================================================
+   Gastronoomilised õhtud ja õhtu detailid
+   ========================================================== */
+
+/* ---------- Avalehe õhtud ---------- */
+
+.events { padding: 80px 0 112px; }
+.events .container { display: flex; flex-direction: column; gap: 48px; }
+.events-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 28px;
+}
+.events-head .title { display: flex; align-items: baseline; gap: 28px; flex-wrap: wrap; }
+.events-head .season { font-style: italic; font-size: 32px; color: var(--ox); }
+.events-head h2 { font-size: 70px; line-height: 1; }
+.events-head p { max-width: 380px; font-size: 17px; color: var(--muted); }
+
+.event-list { display: flex; flex-wrap: wrap; gap: 32px; align-items: stretch; }
+.event { flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 22px; }
+.event-pic { position: relative; }
+.event-pic .frame { height: 500px; padding: 1px; background: var(--ink); }
+.event-pic .frame > div { height: 100%; padding: 10px; background: linear-gradient(160deg, #fbfcfc 0%, #d4d8db 50%, #f4f5f6 100%); }
+.event-pic img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 30%; background: #fff; filter: grayscale(1) contrast(1.05); }
+.date-badge {
+  position: absolute;
+  left: 0;
+  bottom: 28px;
+  display: flex;
+  background: var(--ink);
+  color: var(--bg);
+  box-shadow: 0 18px 36px -12px rgba(12, 13, 14, 0.5);
+}
+.date-badge .day { display: flex; align-items: center; padding: 10px 16px; font-size: 44px; line-height: 1; }
+.date-badge .rest {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 10px 16px 10px 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+.date-badge .sub { color: var(--line-3); }
+.event-text { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.event-text h3 { font-size: 36px; }
+.event-text p { font-size: 17px; line-height: 1.6; color: var(--ink-2); }
+.dress { display: flex; align-items: center; gap: 10px; margin-top: 4px; font-size: 13px; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted); }
+.dress i { width: 8px; height: 8px; transform: rotate(45deg); border: 1px solid currentColor; }
+.dress.strict { color: var(--ox); }
+.dress.strict i { background: var(--ox); }
+.event-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-top: 1px solid var(--line); padding-top: 18px; font-size: 20px; }
+.consent {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 22px;
+  background: #fff;
+  border: 1px solid var(--ox);
+  box-shadow: 0 24px 44px -24px rgba(90, 15, 28, 0.35);
+  font-size: 16px;
+}
+.consent .check { font-size: 15px; }
+.guests-mini { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 16px; }
+
+/* ---------- Õhtu detailid (IV samm) ---------- */
+
+.details-toggle {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 24px;
+  padding: 28px 32px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--bg);
+  text-align: left;
+  box-shadow: 0 30px 60px -24px rgba(12, 13, 14, 0.55);
+}
+.details-toggle.open { background: transparent; color: var(--ink); box-shadow: none; }
+.details-toggle .plus {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 44px;
+  line-height: 1;
+  background: var(--bg);
+  color: var(--ink);
+}
+.details-toggle.open .plus { background: transparent; border: 1px solid var(--ink); }
+.details-toggle .text { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.details-toggle .big { font-size: 32px; line-height: 1.1; }
+.details-toggle .sub { font-size: 16px; opacity: 0.75; }
+
+.evening-details { display: flex; flex-direction: column; gap: 44px; }
+.host-card, .gift-card { display: flex; flex-direction: column; gap: 16px; }
+.gift-card { border-color: var(--ink); }
+.social-note { padding: 14px 16px; background: #f4f5f6; font-size: 16px; font-style: italic; }
+.host-row { display: flex; flex-wrap: wrap; gap: 24px 40px; padding-top: 6px; border-top: 1px solid var(--line-soft); }
+.host-col { flex: 1 1 240px; display: flex; flex-direction: column; gap: 10px; }
+.chip.small { height: 42px; padding: 0 14px; font-size: 15px; }
+.lang-pick { display: flex; gap: 6px; }
+.lang-pick button {
+  width: 96px;
+  height: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: 1px solid var(--line-3);
+  background: transparent;
+  font-size: 14px;
+}
+.lang-pick b { font-size: 12px; font-weight: 600; letter-spacing: 0.16em; }
+.lang-pick .on { background: var(--ink); color: var(--bg); border-color: var(--ink); box-shadow: var(--haze); }
+
+.gifts { display: flex; flex-wrap: wrap; gap: 12px; }
+.gift {
+  flex: 1 1 200px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 20px;
+  border: 1px solid var(--line-3);
+  background: transparent;
+  text-align: left;
+}
+.gift.on { background: var(--ox); border-color: var(--ox); color: #f4f5f6; box-shadow: var(--haze-ox); }
+.gift .dot { flex: none; margin-top: 8px; width: 13px; height: 13px; transform: rotate(45deg); border: 1px solid currentColor; }
+.gift.on .dot { background: var(--bg); box-shadow: inset 0 0 0 3px var(--ox); }
+.gift .text { display: flex; flex-direction: column; gap: 2px; }
+.gift .name { font-size: 22px; line-height: 1.2; }
+.gift .desc { font-size: 14px; opacity: 0.75; }
+.gift .price { margin-top: 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.26em; }
+
+.extras-head { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid var(--ink); font-size: 18px; }
+.extra { display: flex; align-items: center; gap: 24px; padding: 18px 0; border-bottom: 1px solid var(--line-2); }
+.extra .text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.extra .name { font-size: 26px; line-height: 1.2; }
+.extra .desc { font-size: 15px; color: var(--muted); }
+.extra .price { font-size: 22px; white-space: nowrap; }
+.square { flex: none; width: 48px; height: 48px; border: 1px solid var(--ink); background: transparent; font-size: 26px; line-height: 1; }
+.square.on { background: var(--ink); color: var(--bg); box-shadow: var(--haze); }
+
+@media (max-width: 1000px) {
+  .events-head h2 { font-size: 44px; }
+  .event-pic .frame { height: 420px; }
+  .details-toggle { padding: 20px; }
+  .details-toggle .big { font-size: 24px; }
+  .extra { gap: 14px; flex-wrap: wrap; }
+  .extra .name { font-size: 21px; }
+}
