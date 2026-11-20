@@ -6,6 +6,9 @@ namespace Restoran.Application.DTOs;
 
 public record PreOrderItemDto(int MenuItemId, string Name, int Quantity, decimal UnitPrice, decimal Total);
 
+/// <summary>Lisateenus broneeringus.</summary>
+public record ExtraDto(string Code, string Name, decimal Price);
+
 public record ReservationDto(
     int Id,
     int RestaurantId,
@@ -27,7 +30,19 @@ public record ReservationDto(
     List<PreOrderItemDto> PreOrder,
     // CanModify: kas klient saab broneeringut veel muuta (rohkem kui 24 h alguseni)
     bool CanModify,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    // Õhtu detailid
+    Occasion Occasion,
+    ChefGift Gift,
+    HostType HostType,
+    string? HostName,
+    AddressForm AddressForm,
+    string ServiceLanguage,
+    decimal SeatFee,
+    List<ExtraDto> Extras,
+    decimal ExtrasTotal,
+    // Kokku: eeltellimus + lisateenused + laua valimise tasu
+    decimal Total);
 
 /// <summary>Uus broneering. Kui TableId puudub, valib süsteem sobiva laua ise.</summary>
 public class CreateReservationDto
@@ -60,6 +75,37 @@ public class CreateReservationDto
 
     /// <summary>Eeltellimus koos broneeringuga (valikuline).</summary>
     public List<PreOrderLineDto>? Items { get; set; }
+
+    /// <summary>Kas klient valis laua ise plaanilt (siis lisandub laua valimise tasu).</summary>
+    public bool ChosenByGuest { get; set; }
+
+    /// <example>Birthday</example>
+    [EnumDataType(typeof(Occasion))]
+    public Occasion Occasion { get; set; }
+
+    /// <summary>Peakoka kingitus (ainult kui on tähtpäev).</summary>
+    /// <example>Cake</example>
+    [EnumDataType(typeof(ChefGift))]
+    public ChefGift Gift { get; set; }
+
+    [EnumDataType(typeof(HostType))]
+    public HostType HostType { get; set; }
+
+    /// <summary>Peakülalise nimi, kui HostType = Other.</summary>
+    [StringLength(100)]
+    public string? HostName { get; set; }
+
+    [EnumDataType(typeof(AddressForm))]
+    public AddressForm AddressForm { get; set; }
+
+    /// <summary>Teeninduse keel: et, ru või en.</summary>
+    /// <example>et</example>
+    [RegularExpression("^(et|ru|en)$", ErrorMessage = "Keel peab olema et, ru või en.")]
+    public string ServiceLanguage { get; set; } = "et";
+
+    /// <summary>Lisateenuste koodid (vt GET /api/reservations/extras).</summary>
+    /// <example>["flowers"]</example>
+    public List<string>? Extras { get; set; }
 }
 
 /// <summary>Broneeringu muutmine (lubatud rohkem kui 24 h enne algust).</summary>
