@@ -67,6 +67,16 @@ API requests for testing: `src/Restoran.Api/Restoran.Api.http` (Visual Studio / 
 | `/personal/broneeringud` | Admin, Waiter | All reservations: search, filter, sort, paging |
 | `/admin` | Admin | Tables (with floor plan editor), menu, statistics |
 
+## Real-time updates (WebSocket)
+
+- Endpoint in the API project: `ws://localhost:5000/ws/tables?access_token=<JWT>` (the token is required).
+- Messages are sent from the **service layer after saving** to the database:
+  - `ReservationCreated` – only to staff (Admin, Waiter), includes the customer name;
+  - `TableStatusChanged` – to everyone (new, changed, cancelled, arrived, no-show);
+  - `TableSelecting` – someone is choosing this table right now (orange on the floor plan).
+- The website uses the browser `WebSocket` API (`web/src/realtime.js`) and reconnects automatically.
+- Demo: open the staff floor plan in one browser and book a table in another – the plan updates instantly.
+
 ## Booking rules
 
 - A reservation lasts **2 hours** and must fit in the restaurant opening hours.

@@ -17,6 +17,7 @@ public class ReservationService : IReservationService
     private readonly ICurrentUser _current;
     private readonly IClock _clock;
     private readonly ILogger<ReservationService> _logger;
+    private readonly IRealtimeNotifier _realtime;
 
     public ReservationService(
         IReservationRepository reservations,
@@ -25,7 +26,8 @@ public class ReservationService : IReservationService
         IMenuRepository menu,
         ICurrentUser current,
         IClock clock,
-        ILogger<ReservationService> logger)
+        ILogger<ReservationService> logger,
+        IRealtimeNotifier realtime)
     {
         _reservations = reservations;
         _tables = tables;
@@ -34,6 +36,7 @@ public class ReservationService : IReservationService
         _current = current;
         _clock = clock;
         _logger = logger;
+        _realtime = realtime;
     }
 
     // ---------- Vabad lauad ----------
@@ -120,12 +123,17 @@ public class ReservationService : IReservationService
         // Eeltellimus võib tulla kohe broneeringuga koos (veebis III samm "Gastronoomia")
         if (dto.Items is { Count: > 0 })
             await ApplyPreOrderAsync(reservation, dto.RestaurantId, dto.Items);
+        ApplyEvening(reservation, dto);
         await _reservations.AddAsync(reservation);
         await _reservations.SaveChangesAsync();
         _logger.LogInformation("Uus broneering {Id}: restoran {Restaurant}, laud {Table}, {Start}, {Guests} inimest",
             reservation.Id, restaurant.Name, table.Number, start, dto.Guests);
 
-        return await GetByIdAsync(reservation.Id);
+        // Reaalajas teade alles pärast salvestamist
+        var result = await GetByIdAsync(reservation.Id);
+        await _realtime.ReservationCreatedAsync(result);
+        await _realtime.TableStatusChangedAsync(result);
+        return result;
     }
 
     public async Task<ReservationDto> UpdateAsync(int id, UpdateReservationDto dto)
@@ -145,7 +153,9 @@ public class ReservationService : IReservationService
         r.SpecialRequest = Clean(dto.SpecialRequest);
         await _reservations.SaveChangesAsync();
 
-        return await GetByIdAsync(id);
+        var result = await GetByIdAsync(id);
+        await _realtime.TableStatusChangedAsync(result);
+        return result;
     }
 
     public async Task<ReservationDto> CancelAsync(int id)
@@ -158,7 +168,9 @@ public class ReservationService : IReservationService
         r.Status = ReservationStatus.Cancelled;
         await _reservations.SaveChangesAsync();
         _logger.LogInformation("Broneering {Id} tühistati", r.Id);
-        return ToDto(r);
+        var result = ToDto(r);
+        await _realtime.TableStatusChangedAsync(result);
+        return result;
     }
 
     // ---------- Eeltellimus ja makse ----------
@@ -187,8 +199,8 @@ public class ReservationService : IReservationService
             throw new BusinessRuleException("Maksta saab ainult aktiivse broneeringu eest.");
         if (r.IsPaid)
             throw new BusinessRuleException("Broneering on juba makstud.");
-        if (r.PreOrderItems.Count == 0)
-            throw new BusinessRuleException("Eeltellimus on tühi, pole midagi maksta.");
+        if (TotalOf(r) <= 0)
+            throw new BusinessRuleException("Pole midagi maksta: eeltellimus ja lisateenused puuduvad.");
 
         // Võltsmakse: kontrollime ainult vormingut, kaardiandmeid ei salvestata.
         var digits = new string(dto.CardNumber.Where(char.IsDigit).ToArray());
@@ -197,7 +209,7 @@ public class ReservationService : IReservationService
 
         r.IsPaid = true;
         await _reservations.SaveChangesAsync();
-        _logger.LogInformation("Broneering {Id} makstud (võltsmakse), summa {Total}", r.Id, r.PreOrderItems.Sum(p => p.UnitPrice * p.Quantity));
+        _logger.LogInformation("Broneering {Id} makstud (võltsmakse), summa {Total}", r.Id, TotalOf(r));
         return ToDto(r);
     }
 
@@ -232,7 +244,9 @@ public class ReservationService : IReservationService
         r.Status = status;
         await _reservations.SaveChangesAsync();
         _logger.LogInformation("Broneeringu {Id} uus olek: {Status}", r.Id, status);
-        return ToDto(r);
+        var result = ToDto(r);
+        await _realtime.TableStatusChangedAsync(result);
+        return result;
     }
 
     public async Task<TablePlanDto> GetPlanAsync(int restaurantId, DateOnly date)
@@ -254,6 +268,34 @@ public class ReservationService : IReservationService
     }
 
     // ---------- Abimeetodid ----------
+
+    /// <summary>Õhtu detailid: tähtpäev, kingitus, peakülaline, keel, lisateenused ja laua valimise tasu.</summary>
+    private static void ApplyEvening(Reservation r, CreateReservationDto dto)
+    {
+        r.Occasion = dto.Occasion;
+        // Kingitus ainult tähtpäeva puhul
+        r.Gift = dto.Occasion == Occasion.None ? ChefGift.None : dto.Gift;
+        r.HostType = dto.HostType;
+        r.HostName = dto.HostType == HostType.Other ? Clean(dto.HostName) : null;
+        r.AddressForm = dto.AddressForm;
+        r.ServiceLanguage = dto.ServiceLanguage is "et" or "ru" or "en" ? dto.ServiceLanguage : "et";
+        r.SeatFee = BookingRules.SeatFee(dto.TableId is not null && dto.ChosenByGuest, TimeOnly.FromDateTime(r.StartTime));
+        AddExtras(r, dto.Extras);
+    }
+
+    /// <summary>Lisab lisateenused kataloogist (hind tellimise hetkel).</summary>
+    private static void AddExtras(Reservation r, IEnumerable<string>? codes)
+    {
+        foreach (var code in (codes ?? Enumerable.Empty<string>()).Distinct())
+        {
+            if (r.Extras.Any(x => x.Code == code)) continue;
+            var info = ExtrasCatalog.Find(code) ?? throw new BusinessRuleException($"Tundmatu lisateenus \"{code}\".");
+            r.Extras.Add(new ReservationExtra { Code = info.Code, Name = info.Name, Price = info.Price });
+        }
+    }
+
+    private static decimal TotalOf(Reservation r) =>
+        r.PreOrderItems.Sum(p => p.UnitPrice * p.Quantity) + r.Extras.Sum(e => e.Price) + r.SeatFee;
 
     /// <summary>Kontrollib menüüpunktid ja asendab broneeringu eeltellimuse.</summary>
     private async Task ApplyPreOrderAsync(Reservation r, int restaurantId, List<PreOrderLineDto> items)
@@ -390,6 +432,16 @@ public class ReservationService : IReservationService
             items.Sum(i => i.Total),
             items,
             r.Status == ReservationStatus.Active && BookingRules.CanCustomerModify(r.StartTime, _clock.Now),
-            r.CreatedAt);
+            r.CreatedAt,
+            r.Occasion,
+            r.Gift,
+            r.HostType,
+            r.HostName,
+            r.AddressForm,
+            r.ServiceLanguage,
+            r.SeatFee,
+            r.Extras.Select(e => new ExtraDto(e.Code, e.Name, e.Price)).ToList(),
+            r.Extras.Sum(e => e.Price),
+            TotalOf(r));
     }
 }

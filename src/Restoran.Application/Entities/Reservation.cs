@@ -20,4 +20,18 @@ public class Reservation
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     public List<PreOrderItem> PreOrderItems { get; set; } = new();
+
+    // ----- Õhtu detailid -----
+    public Occasion Occasion { get; set; }
+    /// <summary>Peakoka tasuta kingitus (ainult tähtpäeva puhul).</summary>
+    public ChefGift Gift { get; set; }
+    public HostType HostType { get; set; }
+    /// <summary>Peakülalise nimi, kui see pole broneerija ise.</summary>
+    public string? HostName { get; set; }
+    public AddressForm AddressForm { get; set; }
+    /// <summary>Teeninduse keel: et, ru või en.</summary>
+    public string ServiceLanguage { get; set; } = "et";
+    /// <summary>Tasu laua ise valimise eest (tipptundidel kallim).</summary>
+    public decimal SeatFee { get; set; }
+    public List<ReservationExtra> Extras { get; set; } = new();
 }

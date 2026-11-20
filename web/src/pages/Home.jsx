@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import EventsSection from '../components/EventsSection'
 import { Arrow } from '../components/Icons'
 import { useI18n } from '../i18n'
 
@@ -53,6 +54,9 @@ export default function Home() {
           <p className="eyebrow">{t('home.houseSub')}</p>
         </div>
       </section>
+
+      {/* ===== Gastronoomilised õhtud ===== */}
+      <EventsSection />
 
       {/* ===== Tsitaat ===== */}
       <section className="quote">

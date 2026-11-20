@@ -36,6 +36,16 @@ public static class BookingRules
             .ThenBy(t => t.Number)
             .FirstOrDefault();
 
+    /// <summary>Tipptunnid: algus 18:00 kuni 20:00 (kaasa arvatud).</summary>
+    public static bool IsPeak(TimeOnly time) => time >= new TimeOnly(18, 0) && time <= new TimeOnly(20, 0);
+
+    /// <summary>
+    /// Laua ise valimise tasu: metrdoteli valik on tasuta, ise valides 10 €,
+    /// tipptundidel (18:00-20:00) 30 €.
+    /// </summary>
+    public static decimal SeatFee(bool chosenByGuest, TimeOnly time) =>
+        !chosenByGuest ? 0m : IsPeak(time) ? 30m : 10m;
+
     /// <summary>Klient saab muuta ainult siis, kui alguseni on rohkem kui 24 tundi.</summary>
     public static bool CanCustomerModify(DateTime start, DateTime now) => start - now > ChangeLock;
 }
