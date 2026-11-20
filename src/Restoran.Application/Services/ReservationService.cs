@@ -267,6 +267,52 @@ public class ReservationService : IReservationService
         return new TablePlanDto(restaurant.ToDto(tables.Count), date, planTables);
     }
 
+    // ---------- Sõnumid ja lisateenused ----------
+
+    public async Task<List<MessageDto>> GetMessagesAsync(int id)
+    {
+        var r = await GetOwned(id);
+        return r.Messages.OrderBy(m => m.CreatedAt).Select(ToMessageDto).ToList();
+    }
+
+    /// <summary>Klient kirjutab restoranile või personal vastab.</summary>
+    public async Task<MessageDto> AddMessageAsync(int id, NewMessageDto dto)
+    {
+        var r = await GetOwned(id);
+        var text = dto.Text.Trim();
+        if (text.Length == 0)
+            throw new BusinessRuleException("Sõnum on tühi.");
+
+        var message = new ReservationMessage
+        {
+            FromStaff = _current.IsStaff,
+            AuthorName = _current.IsStaff ? "Argent" : r.User?.Name ?? "",
+            Text = text,
+            CreatedAt = _clock.Now
+        };
+        r.Messages.Add(message);
+        await _reservations.SaveChangesAsync();
+        _logger.LogInformation("Uus sõnum broneeringule {Id} ({Who})", r.Id, message.FromStaff ? "personal" : "klient");
+        return ToMessageDto(message);
+    }
+
+    /// <summary>Lisateenuseid saab muuta ka vähem kui 24 h enne – need valmistatakse kohapeal.</summary>
+    public async Task<ReservationDto> SetExtrasAsync(int id, SetExtrasDto dto)
+    {
+        var r = await GetOwned(id);
+        if (r.Status != ReservationStatus.Active)
+            throw new BusinessRuleException("Lisateenuseid saab muuta ainult aktiivsel broneeringul.");
+
+        var wanted = dto.Extras.Distinct().ToList();
+        r.Extras.RemoveAll(x => !wanted.Contains(x.Code));
+        AddExtras(r, wanted);
+        await _reservations.SaveChangesAsync();
+        return ToDto(r);
+    }
+
+    private static MessageDto ToMessageDto(ReservationMessage m) =>
+        new(m.Id, m.FromStaff, m.AuthorName, m.Text, m.CreatedAt);
+
     // ---------- Abimeetodid ----------
 
     /// <summary>Õhtu detailid: tähtpäev, kingitus, peakülaline, keel, lisateenused ja laua valimise tasu.</summary>
@@ -442,6 +488,8 @@ public class ReservationService : IReservationService
             r.SeatFee,
             r.Extras.Select(e => new ExtraDto(e.Code, e.Name, e.Price)).ToList(),
             r.Extras.Sum(e => e.Price),
-            TotalOf(r));
+            TotalOf(r),
+            r.Messages.Count,
+            r.Messages.OrderBy(m => m.CreatedAt).LastOrDefault()?.FromStaff ?? false);
     }
 }
