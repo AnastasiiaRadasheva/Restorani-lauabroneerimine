@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { api, qs } from '../../api'
 import { useI18n } from '../../i18n'
+import { useTableSocket } from '../../realtime'
 import { toIsoDate } from '../../utils'
 
 const DRAFT_KEY = 'argent-booking-draft'
@@ -39,6 +40,7 @@ export function useBooking() {
   const [zone, setZone] = useState(draft.zone ?? 'Hall')
   const [tableId, setTableId] = useState(draft.tableId ?? null)
   const [error, setError] = useState('')
+  const [othersSelecting, setOthersSelecting] = useState({}) // tableId -> aeg
 
   const restaurant = restaurants.find((r) => r.id === restaurantId)
 
@@ -96,11 +98,42 @@ export function useBooking() {
     if (mode === 'auto' && suggested) setZone(suggested.location)
   }, [mode, suggested?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Reaalajas: kui keegi teine broneerib või valib lauda, uuendame plaani kohe
+  const send = useTableSocket((msg) => {
+    if (msg.restaurantId !== restaurantId || !availability) return
+    if (msg.type === 'TableSelecting') {
+      if (msg.startTime?.slice(0, 16) === availability.startTime.slice(0, 16)) {
+        setOthersSelecting((s) => ({ ...s, [msg.tableId]: msg.selecting ? Date.now() : undefined }))
+      }
+    } else if (msg.type === 'TableStatusChanged') {
+      const overlaps = new Date(msg.startTime) < new Date(availability.endTime) &&
+        (!msg.endTime || new Date(msg.endTime) > new Date(availability.startTime))
+      if (overlaps) loadAvailability()
+    }
+  })
+
+  // Teatame teistele, millist lauda praegu valime (nemad näevad seda viirutatuna)
+  useEffect(() => {
+    if (!availability || !tableId || mode !== 'manual') return undefined
+    const msg = { type: 'Selecting', restaurantId, tableId, startTime: availability.startTime }
+    send({ ...msg, selecting: true })
+    return () => send({ ...msg, selecting: false })
+  }, [tableId, mode, availability?.startTime]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // "Valib praegu" kaob 30 sekundi pärast
+  useEffect(() => {
+    const t = setInterval(() => {
+      setOthersSelecting((s) => Object.fromEntries(Object.entries(s).filter(([, v]) => v && Date.now() - v < 30000)))
+    }, 5000)
+    return () => clearInterval(t)
+  }, [])
+
   const tables = (availability?.tables ?? []).map((tb) => ({
     ...tb,
-    state: !tb.isFree ? 'busy' : !tb.fitsGuests ? 'small' : 'free',
+    state: !tb.isFree ? 'busy' : !tb.fitsGuests ? 'small' : othersSelecting[tb.id] ? 'hold' : 'free',
+    clickable: tb.isFree && tb.fitsGuests, // viirutatud lauda saab ka valida, aga teine võib ette jõuda
   }))
-  const manualTable = tables.find((tb) => tb.id === tableId && tb.state === 'free') ?? null
+  const manualTable = tables.find((tb) => tb.id === tableId && tb.clickable) ?? null
   const chosenTable = mode === 'auto' ? suggested : manualTable
 
   function setGeo(on) {
@@ -155,6 +188,7 @@ export function useBooking() {
     reload: loadAvailability,
     legend: [
       ['free', t('booking.legendFree')],
+      ['hold', t('booking.legendHold')],
       ['busy', t('booking.legendBusy')],
       ['selected', t('booking.legendMine')],
       ['chair', t('booking.legendSeat')],

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api, qs } from '../api'
 import FloorPlan, { FloorLegend } from '../components/FloorPlan'
+import { useTableSocket } from '../realtime'
 import { fmtTime, nowSlot, STATUS_TEXT, timeSlots } from '../staff'
 import { toIsoDate } from '../utils'
 
@@ -14,6 +15,8 @@ export default function StaffPlan() {
   const [plan, setPlan] = useState(null)
   const [selected, setSelected] = useState(null)
   const [error, setError] = useState('')
+  const [toast, setToast] = useState(null)
+  const [selecting, setSelecting] = useState({}) // tableId -> aeg, kui keegi valib lauda
 
   useEffect(() => {
     api('/api/restaurants').then(setRestaurants).catch((e) => setError(e.message))
@@ -31,6 +34,29 @@ export default function StaffPlan() {
   useEffect(() => {
     load()
   }, [load])
+
+  // Reaalajas: uus broneering või laua oleku muutus -> plaan uueneb kohe
+  useTableSocket((msg) => {
+    if (msg.restaurantId !== Number(restaurantId)) return
+    if (msg.type === 'TableSelecting') {
+      setSelecting((s) => ({ ...s, [msg.tableId]: msg.selecting ? Date.now() : undefined }))
+      return
+    }
+    if (!msg.startTime?.startsWith(date)) return
+    load()
+    if (msg.type === 'ReservationCreated') {
+      setToast(`Uus broneering: laud ${msg.tableNumber}, ${fmtTime(msg.startTime)}, ${msg.customerName} (${msg.guests} in.)`)
+      setTimeout(() => setToast(null), 6000)
+    }
+  })
+
+  // "Keegi valib praegu" kaob 30 sekundi pärast
+  useEffect(() => {
+    const t = setInterval(() => {
+      setSelecting((s) => Object.fromEntries(Object.entries(s).filter(([, v]) => v && Date.now() - v < 30000)))
+    }, 5000)
+    return () => clearInterval(t)
+  }, [])
 
   async function setStatus(reservationId, status) {
     try {
@@ -50,7 +76,7 @@ export default function StaffPlan() {
       ...table,
       reservations,
       current: now,
-      state: table.id === selected ? 'selected' : !now ? 'free' : now.status === 'Arrived' ? 'arrived' : 'busy',
+      state: table.id === selected ? 'selected' : !now ? (selecting[table.id] ? 'hold' : 'free') : now.status === 'Arrived' ? 'arrived' : 'busy',
       clickable: true,
     }
   })
@@ -61,11 +87,12 @@ export default function StaffPlan() {
       <div className="sec-head">
         <div className="title">
           <span className="num">◆</span>
-          <h1>Laudade plaan</h1>
+          <h1>Laudade plaan <span className="live">reaalajas</span></h1>
         </div>
         <p>Klõpsake laual, et näha selle päeva broneeringuid ja märkida külaline saabunuks.</p>
       </div>
       {error && <p className="alert alert-error">{error}</p>}
+      {toast && <div className="toast" role="status">{toast}</div>}
 
       <div className="filters">
         <select value={restaurantId} onChange={(e) => setRestaurantId(Number(e.target.value))}>
@@ -101,7 +128,7 @@ export default function StaffPlan() {
           </div>
 
           <aside className="plan-side">
-            <FloorLegend items={[['free', 'vaba'], ['busy', 'broneeritud'], ['arrived', 'külaline kohal'], ['selected', 'valitud']]} />
+            <FloorLegend items={[['free', 'vaba'], ['hold', 'keegi valib praegu'], ['busy', 'broneeritud'], ['arrived', 'külaline kohal'], ['selected', 'valitud']]} />
             <div className="paper white side-card">
               {!selectedTable && <p className="italic muted">Valige plaanilt laud.</p>}
               {selectedTable && (
