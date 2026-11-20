@@ -279,6 +279,10 @@ export default {
   'visits.payOnSite': 'Pärast makset lisatud teenuste eest tasutakse kohapeal.',
   'visits.newReply': 'uus vastus',
 
+  // Teated
+  'bell.title': 'Teated',
+  'bell.empty': 'Teateid pole.',
+
   // Muu
   'common.loading': 'Laen…',
   'notFound.title': 'Lehte ei leitud',

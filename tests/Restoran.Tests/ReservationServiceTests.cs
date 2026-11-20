@@ -259,4 +259,17 @@ public class ReservationServiceTests
         Assert.Equal(new[] { "flowers", "chair" }, result.Extras.Select(e => e.Code));
         Assert.Equal(45m, result.Total);
     }
+
+    [Fact]
+    public async Task MarkNoShows_MarksLateActiveReservations_AndNotifies()
+    {
+        var late = new Reservation { Id = 1, TableId = 1, Table = _tableList[0], Status = ReservationStatus.Active, StartTime = Now.AddMinutes(-45), EndTime = Now.AddMinutes(75) };
+        _reservations.Setup(r => r.GetNoShowCandidatesAsync(Now.AddMinutes(-30))).ReturnsAsync(new List<Reservation> { late });
+
+        var result = await CreateService().MarkNoShowsAsync();
+
+        Assert.Equal(1, result.Count);
+        Assert.Equal(ReservationStatus.NoShow, late.Status);
+        _realtime.Verify(n => n.TableStatusChangedAsync(It.IsAny<ReservationDto>()), Times.Once);
+    }
 }
