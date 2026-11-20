@@ -267,6 +267,18 @@ export default {
   'extra.chair': 'Lastetool',
   'extra.chair.desc': 'valmistatakse ette Teie saabumiseks',
 
+  // Sõnumid ja broneeringu täiendamine
+  'messages.title': 'Sõnum restoranile',
+  'messages.empty': 'Sõnumeid veel pole. Kirjutage, kui soovite midagi täpsustada.',
+  'messages.you': 'Teie',
+  'messages.yours': 'Teie sõnum',
+  'messages.send': 'Saada',
+  'visits.addTitle': 'Täienda broneeringut',
+  'visits.add': 'Lisa',
+  'visits.added': 'Lisatud',
+  'visits.payOnSite': 'Pärast makset lisatud teenuste eest tasutakse kohapeal.',
+  'visits.newReply': 'uus vastus',
+
   // Muu
   'common.loading': 'Laen…',
   'notFound.title': 'Lehte ei leitud',

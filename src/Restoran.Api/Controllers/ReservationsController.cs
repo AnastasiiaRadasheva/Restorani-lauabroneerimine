@@ -20,6 +20,34 @@ public class ReservationsController : ControllerBase
         _reservations = reservations;
     }
 
+    /// <summary>Broneeringu sõnumid (klient ja personal).</summary>
+    [HttpGet("{id:int}/messages")]
+    [ProducesResponseType(typeof(List<MessageDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<List<MessageDto>>> Messages(int id) => Ok(await _reservations.GetMessagesAsync(id));
+
+    /// <summary>Saada sõnum: klient restoranile või personal kliendile.</summary>
+    /// <remarks>
+    ///     POST /api/reservations/5/messages
+    ///     { "text": "Kas tordi saaks serveerida magustoiduga?" }
+    /// </remarks>
+    [HttpPost("{id:int}/messages")]
+    [ProducesResponseType(typeof(MessageDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<MessageDto>> AddMessage(int id, NewMessageDto dto) => Ok(await _reservations.AddMessageAsync(id, dto));
+
+    /// <summary>Muuda broneeringu lisateenuseid (lubatud ka vähem kui 24 h enne).</summary>
+    /// <remarks>
+    ///     PUT /api/reservations/5/extras
+    ///     { "extras": ["flowers", "chair"] }
+    /// </remarks>
+    [HttpPut("{id:int}/extras")]
+    [ProducesResponseType(typeof(ReservationDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ReservationDto>> SetExtras(int id, SetExtrasDto dto) => Ok(await _reservations.SetExtrasAsync(id, dto));
+
     /// <summary>Lisateenuste kataloog (lilled, šampanja, viiuldaja …) koos hindadega.</summary>
     [AllowAnonymous]
     [HttpGet("extras")]
