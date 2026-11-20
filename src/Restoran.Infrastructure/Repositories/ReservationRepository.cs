@@ -83,6 +83,17 @@ public class ReservationRepository : Repository<Reservation>, IReservationReposi
         return q.ToListAsync();
     }
 
+    public Task<List<Reservation>> GetRemindDueAsync(DateTime from, DateTime to) =>
+        WithDetails()
+            .Where(r => r.Status == ReservationStatus.Active && !r.Reminded && r.StartTime >= from && r.StartTime < to)
+            .OrderBy(r => r.StartTime)
+            .ToListAsync();
+
+    public Task<List<Reservation>> GetNoShowCandidatesAsync(DateTime startedBefore) =>
+        WithDetails()
+            .Where(r => r.Status == ReservationStatus.Active && r.StartTime < startedBefore)
+            .ToListAsync();
+
     public Task<List<Reservation>> GetForDayAsync(int restaurantId, DateOnly date)
     {
         var from = date.ToDateTime(TimeOnly.MinValue);

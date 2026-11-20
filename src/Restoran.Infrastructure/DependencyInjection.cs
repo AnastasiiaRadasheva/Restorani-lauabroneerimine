@@ -25,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IReservationRepository, ReservationRepository>();
         services.AddScoped<IEventRepository, EventRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
 
         // Teenused (äriloogika)
         services.AddScoped<IRestaurantService, RestaurantService>();
@@ -34,6 +35,7 @@ public static class DependencyInjection
         services.AddScoped<IReservationService, ReservationService>();
         services.AddScoped<IStatsService, StatsService>();
         services.AddScoped<IEventService, EventService>();
+        services.AddScoped<INotificationService, NotificationService>();
 
         return services;
     }
