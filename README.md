@@ -9,6 +9,7 @@ Customers pick a restaurant, a date, a time and the number of guests, and the sy
 
 - ASP.NET Core Web API (.NET 10), EF Core, SQLite
 - React 19 + Vite + React Router (website, works only through the API)
+- Worker Service (`Restoran.Worker`) – separate process, talks to the API over HTTP
 - Layers: `Restoran.Api` → `Restoran.Application` (entities, services, DTOs) → `Restoran.Infrastructure` (EF Core, repositories)
 - xUnit + Moq tests
 
@@ -18,7 +19,7 @@ Customers pick a restaurant, a date, a time and the number of guests, and the sy
 dotnet test
 ```
 
-22 unit tests (xUnit). `ReservationServiceTests` uses **Moq** mocks instead of the database.
+23 unit tests (xUnit). `ReservationServiceTests` uses **Moq** mocks instead of the database.
 Tested: overlap rule, smallest free table, 409 on double booking, opening hours, past dates, 24 h rule, access rights, pre-order validation.
 
 ## Logging
@@ -52,6 +53,13 @@ npm run dev
 
 Website: http://localhost:5173 (the API allows this address with CORS).
 
+3. Background worker (separate process), in a third terminal:
+
+```bash
+cd src/Restoran.Worker
+dotnet run
+```
+
 API requests for testing: `src/Restoran.Api/Restoran.Api.http` (Visual Studio / VS Code REST Client / Rider).
 
 ## Website pages
@@ -66,6 +74,20 @@ API requests for testing: `src/Restoran.Api/Restoran.Api.http` (Visual Studio / 
 | `/personal/plaan` | Admin, Waiter | Floor plan of the day + timeline, mark arrived / no-show |
 | `/personal/broneeringud` | Admin, Waiter | All reservations: search, filter, sort, paging |
 | `/admin` | Admin | Tables (with floor plan editor), menu, statistics |
+
+## Background worker (`Restoran.Worker`)
+
+A separate Worker Service process (`BackgroundService` + `PeriodicTimer`, every **15 minutes**).
+It logs in to the API with the `Service` role account and uses only `HttpClient` –
+it has **no reference** to the database, `DbContext` or other projects. All business logic stays in the API.
+
+Each run:
+
+1. `GET /api/reservations/remind-due` – tomorrow's reservations without a reminder;
+2. for each: `POST /api/notifications` and `PATCH /api/reservations/{id}/reminded`;
+3. `POST /api/reservations/mark-no-show` – frees tables where the guest did not arrive within 30 minutes.
+
+Customers see the reminders under the 🔔 icon on the website.
 
 ## Real-time updates (WebSocket)
 
@@ -119,6 +141,11 @@ Creating, updating and deleting restaurants, tables and menu items requires the 
 | POST | `/api/reservations/{id}/pay` | Fake payment (test card `4242 4242 4242 4242`) |
 | PATCH | `/api/reservations/{id}/status` | Change status, e.g. `Arrived` (staff) |
 | GET | `/api/stats?restaurantId=&from=&to=` | Busiest weekdays, hours and dates (Admin) |
+| GET | `/api/reservations/remind-due` | Tomorrow's reservations without reminder (Service) |
+| PATCH | `/api/reservations/{id}/reminded` | Mark reminder sent (Service) |
+| POST | `/api/reservations/mark-no-show` | Free tables of guests 30 min late (Service) |
+| POST | `/api/notifications` | Send a notification (Service, Admin) |
+| GET | `/api/notifications/my` | My notifications |
 | POST | `/api/auth/register` | Register a customer |
 | POST | `/api/auth/login` | Login, returns a JWT token |
 | GET | `/api/auth/me` | Current user |

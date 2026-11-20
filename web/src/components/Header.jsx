@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth'
 import { useI18n } from '../i18n'
 import { MenuIcon } from './Icons'
+import Notifications from './Notifications'
 
 export default function Header() {
   const { user, isStaff, isAdmin, logout } = useAuth()
@@ -39,6 +40,7 @@ export default function Header() {
           {user ? (
             <>
               {!isStaff && <NavLink to="/minu" onClick={close}>{t('nav.my')}</NavLink>}
+              <Notifications />
               <span className="user">{user.name}</span>
               <button className="link underline" onClick={onLogout}>{t('nav.logout')}</button>
             </>
