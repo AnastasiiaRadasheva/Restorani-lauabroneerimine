@@ -18,6 +18,12 @@ public interface IReservationRepository : IRepository<Reservation>
 
     /// <summary>Broneeringud statistika jaoks (ilma seotud andmeteta).</summary>
     Task<List<Reservation>> GetForStatsAsync(int? restaurantId, DateOnly from, DateOnly to);
+
+    /// <summary>Aktiivsed broneeringud ajavahemikus, millele pole meeldetuletust saadetud.</summary>
+    Task<List<Reservation>> GetRemindDueAsync(DateTime from, DateTime to);
+
+    /// <summary>Aktiivsed broneeringud, mis algasid enne antud aega (klient pole saabunud).</summary>
+    Task<List<Reservation>> GetNoShowCandidatesAsync(DateTime startedBefore);
 }
 
 public interface IReservationService
@@ -39,4 +45,9 @@ public interface IReservationService
     Task<MessageDto> AddMessageAsync(int id, NewMessageDto dto);
     Task<ReservationDto> SetExtrasAsync(int id, SetExtrasDto dto);
     Task<TablePlanDto> GetPlanAsync(int restaurantId, DateOnly date);
+
+    // Taustateenuse jaoks
+    Task<List<RemindDueDto>> GetRemindDueAsync();
+    Task MarkRemindedAsync(int id);
+    Task<NoShowResultDto> MarkNoShowsAsync();
 }

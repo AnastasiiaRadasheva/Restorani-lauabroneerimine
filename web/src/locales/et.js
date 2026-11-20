@@ -7,6 +7,7 @@ export default {
   'nav.login': 'Sisene',
   'nav.logout': 'Logi välja',
   'nav.menu': 'Menüü',
+  'nav.language': 'Keel',
   'brand.tagline': 'Õhtusöök kui rituaal',
   'footer.sections': 'Jaotised',
   'footer.addresses': 'Aadressid',
@@ -32,6 +33,7 @@ export default {
   'home.privateTitle': 'Saal täielikult Teie päralt',
   'home.privateText': 'Pidulikud õhtusöögid, juubelid ja ärilõunad. Menüü ja istumiskorra koostame koos Teiega.',
   'home.privateSend': 'Saada päring',
+  'home.nearest': 'Lähim restoran',
 
   // Sisselogimine ja registreerimine
   'auth.welcome': 'Tere tulemast',
@@ -279,7 +281,12 @@ export default {
   'visits.payOnSite': 'Pärast makset lisatud teenuste eest tasutakse kohapeal.',
   'visits.newReply': 'uus vastus',
 
+  // Teated
+  'bell.title': 'Teated',
+  'bell.empty': 'Teateid pole.',
+
   // Muu
+  'mobile.step': 'Samm {n} / {total}',
   'common.loading': 'Laen…',
   'notFound.title': 'Lehte ei leitud',
   'notFound.text': 'Seda lehte pole (veel) olemas.',

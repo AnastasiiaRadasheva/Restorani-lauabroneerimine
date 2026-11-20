@@ -63,6 +63,29 @@ public class ReservationsController : ControllerBase
     public async Task<ActionResult<PagedResult<ReservationDto>>> GetAll([FromQuery] ReservationQuery query) =>
         Ok(await _reservations.GetPagedAsync(query));
 
+    /// <summary>Homsed broneeringud, millele pole meeldetuletust saadetud (taustateenus).</summary>
+    [Authorize(Roles = "Service,Admin")]
+    [HttpGet("remind-due")]
+    [ProducesResponseType(typeof(List<RemindDueDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<RemindDueDto>>> RemindDue() => Ok(await _reservations.GetRemindDueAsync());
+
+    /// <summary>Märgi meeldetuletus saadetuks (taustateenus).</summary>
+    [Authorize(Roles = "Service,Admin")]
+    [HttpPatch("{id:int}/reminded")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Reminded(int id)
+    {
+        await _reservations.MarkRemindedAsync(id);
+        return NoContent();
+    }
+
+    /// <summary>Vabasta lauad, kuhu klient 30 minuti jooksul ei ilmunud (taustateenus).</summary>
+    [Authorize(Roles = "Service,Admin")]
+    [HttpPost("mark-no-show")]
+    [ProducesResponseType(typeof(NoShowResultDto), StatusCodes.Status200OK)]
+    public async Task<ActionResult<NoShowResultDto>> MarkNoShow() => Ok(await _reservations.MarkNoShowsAsync());
+
     /// <summary>Minu broneeringud.</summary>
     [HttpGet("my")]
     [ProducesResponseType(typeof(List<ReservationDto>), StatusCodes.Status200OK)]

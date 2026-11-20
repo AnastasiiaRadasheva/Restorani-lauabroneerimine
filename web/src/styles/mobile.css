@@ -1,0 +1,152 @@
+/* ==========================================================
+   Keelevalik ja mobiilivaade (sama veebileht telefonis)
+   ========================================================== */
+
+.lang-switch { display: flex; gap: 4px; }
+.lang-switch button {
+  width: 36px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line-3);
+  background: transparent;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+.lang-switch button.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+.user-icon { display: none; }
+.mobile-menu { display: none; }
+.nearest { display: none; }
+
+@media (max-width: 760px) {
+  :root { --gutter: 20px; }
+  body { font-size: 17px; }
+
+  /* ----- Päis: keeled üleval, all menüü | ARGENT | kasutaja ----- */
+  .header { position: sticky; }
+  .header-inner {
+    grid-template-columns: 44px 1fr 44px;
+    grid-template-rows: auto auto;
+    row-gap: 10px;
+    padding-top: 12px;
+    padding-bottom: 14px;
+  }
+  .nav-right {
+    display: flex !important;
+    grid-column: 1 / -1;
+    grid-row: 1;
+    justify-content: flex-end;
+    padding: 0;
+  }
+  .nav-right > :not(.lang-switch) { display: none; }
+  .menu-toggle { grid-row: 2; display: flex; align-items: center; justify-content: flex-start; }
+  .logo { grid-row: 2; grid-column: 2; font-size: 26px; text-align: center; }
+  .user-icon { grid-row: 2; grid-column: 3; display: flex; align-items: center; justify-content: flex-end; color: var(--ink); }
+  .header.open .nav { display: none; }
+  .header.open .nav-right { flex-direction: row; }
+
+  .mobile-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 24px var(--gutter) 32px;
+    border-top: 1px solid var(--line);
+    background: var(--bg);
+  }
+  .mobile-menu nav { display: flex; flex-direction: column; }
+  .mobile-menu a, .mobile-menu button {
+    padding: 14px 0;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: none;
+    text-align: left;
+    text-decoration: none;
+    font-size: 30px;
+    line-height: 1.1;
+  }
+  .mobile-menu a.active { font-style: italic; color: var(--ox); }
+
+  /* ----- Avaleht: vapp üleval, tekst keskel ----- */
+  .hero { padding: 20px 0 40px; }
+  .hero-frame { border-radius: 30px; padding: 8px; }
+  .hero-inner { border-radius: 24px; min-height: 0; flex-direction: column; background: linear-gradient(170deg, #fbfcfc 0%, #e4e7ea 45%, #f4f5f6 60%, #d4d8db 100%); }
+  .hero-figure { order: -1; border: 0; background: none; padding: 32px 20px 0; }
+  .hero-figure figcaption { display: none; }
+  .crest { width: 200px; height: 290px; }
+  .hero-text { padding: 20px 24px 32px; gap: 20px; text-align: center; align-items: center; justify-content: flex-start; }
+  .hero-text .kicker { order: -2; margin-top: -8px; font-size: 11px; letter-spacing: 0.3em; }
+  .hero-figure { margin-top: 0; }
+  .hero-title { font-size: 64px; }
+  .hero-tag { font-size: 30px; }
+  .hero-cta p { font-size: 17px; }
+  .btn-chamfer { height: 58px; padding: 0 22px; font-size: 12px; letter-spacing: 0.28em; }
+
+  .nearest {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 0 var(--gutter) 24px;
+    padding: 6px 0 18px;
+    border-bottom: 1px solid var(--line);
+    text-decoration: none;
+  }
+  .nearest .text { flex: 1; display: flex; flex-direction: column; }
+  .nearest .name { font-size: 24px; line-height: 1.15; }
+  .nearest .dist { font-style: italic; font-size: 20px; }
+
+  .house { padding: 64px 0 24px; }
+  .house h2 { font-size: 40px; }
+  .events-head h2 { font-size: 38px; }
+  .events-head .season { font-size: 24px; }
+  .event-pic .frame { height: 380px; }
+  .quote blockquote p { font-size: 26px; }
+  .private .big { font-size: 30px; }
+  .footer-brand .word { font-size: 52px; }
+
+  /* ----- Broneerimine ----- */
+  .steps-bar { top: 104px; }
+  .steps-bar .container { flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+  .sec-head h1, .sec-head h2 { font-size: 40px; }
+  .sec-head .num { font-size: 24px; }
+  .section { padding: 56px 0; }
+  .section.first { padding-top: 40px; }
+  .day-strip { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
+  .day { flex: 0 0 64px; scroll-snap-align: start; }
+  .time-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .month-row .btn { width: 100%; height: auto; min-height: 52px; padding: 10px 16px; white-space: normal; letter-spacing: 0.18em; }
+  .btn { white-space: normal; text-align: center; }
+  .stepper .value { font-size: 40px; }
+  .map-box { height: 300px; }
+  .place { padding: 12px; gap: 14px; }
+  .place .name { font-size: 22px; }
+  .how li { flex-basis: 100%; border-right: 0; border-bottom: 1px solid var(--line-2); }
+  .mode button { padding: 14px 18px; }
+  .plan { padding: 6px; overflow-x: auto; }
+  .plan-room { min-width: 520px; height: 440px; }
+  .plan-table em { display: none; }
+  .dark-card .big { font-size: 34px; }
+  .dish { padding: 18px 0; }
+  .dish .n { display: none; }
+  .lang-pick button { width: 84px; }
+  .grand .sum { font-size: 38px; }
+
+  /* ----- Külastused: kaardid nagu kujunduses ----- */
+  .visits-head h1 { font-size: 40px; }
+  .visit { border-radius: 28px; overflow: hidden; }
+  .visit:first-child:not(.open) { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .visit:first-child:not(.open) .eyebrow { color: var(--line-3); }
+  .visit:first-child:not(.open) .new-reply { color: #e8b4bd; }
+  .visit:not(:first-child):not(.open) { background: linear-gradient(135deg, #fbfcfc 0%, #d9dde0 40%, #f4f5f6 55%, #c3c8cc 100%); }
+  .visit-head .big { font-size: 30px; }
+  .visit-body { flex-direction: column; }
+  .visit .actions .btn { flex: 1; border-radius: 999px; }
+  .past .when { font-size: 22px; }
+
+  .receipt-close { right: 16px; top: 16px; }
+  .receipt-wrap { padding-top: 64px; }
+  .staff .sec-head h1 { font-size: 34px; }
+  .bell-menu { width: calc(100vw - 40px); right: -60px; }
+}

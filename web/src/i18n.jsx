@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import et from './locales/et'
+import ru from './locales/ru'
+import en from './locales/en'
 
 /**
  * Kõik lehe tekstid on ühes kohas (src/locales). Komponendis: const { t } = useI18n(); t('home.title')
@@ -8,6 +10,8 @@ import et from './locales/et'
  */
 export const LANGUAGES = [
   { code: 'et', short: 'ET', name: 'Eesti', locale: 'et-EE', dict: et },
+  { code: 'ru', short: 'RU', name: 'Русский', locale: 'ru-RU', dict: ru },
+  { code: 'en', short: 'EN', name: 'English', locale: 'en-GB', dict: en },
 ]
 
 const STORAGE_KEY = 'argent-lang'

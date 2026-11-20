@@ -285,3 +285,40 @@ Content-Type: application/json
 ### ===== Statistika (Admin) =====
 GET {{api}}/api/stats?restaurantId=1
 Authorization: Bearer {{adminToken}}
+
+### ===== Taustateenus (Service roll) =====
+# @name serviceLogin
+POST {{api}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "service@restoran.ee", "password": "Service123!" }
+
+###
+@serviceToken = {{serviceLogin.response.body.$.token}}
+
+### Homsed meeldetuletamata broneeringud
+GET {{api}}/api/reservations/remind-due
+Authorization: Bearer {{serviceToken}}
+
+### Saada teade
+POST {{api}}/api/notifications
+Authorization: Bearer {{serviceToken}}
+Content-Type: application/json
+
+{ "userId": 3, "reservationId": {{reservationId}}, "message": "Meeldetuletus: homme ootame sind!" }
+
+### Märgi meeldetuletus saadetuks
+PATCH {{api}}/api/reservations/{{reservationId}}/reminded
+Authorization: Bearer {{serviceToken}}
+
+### Vabasta lauad, kuhu klient ei tulnud
+POST {{api}}/api/reservations/mark-no-show
+Authorization: Bearer {{serviceToken}}
+
+### Klient ei saa taustateenuse otspunkti kasutada (403)
+GET {{api}}/api/reservations/remind-due
+Authorization: Bearer {{customerToken}}
+
+### Minu teated
+GET {{api}}/api/notifications/my
+Authorization: Bearer {{customerToken}}

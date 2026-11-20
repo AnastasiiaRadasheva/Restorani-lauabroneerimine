@@ -313,6 +313,41 @@ public class ReservationService : IReservationService
     private static MessageDto ToMessageDto(ReservationMessage m) =>
         new(m.Id, m.FromStaff, m.AuthorName, m.Text, m.CreatedAt);
 
+    // ---------- Taustateenus (Worker kutsub API kaudu) ----------
+
+    /// <summary>Homsed aktiivsed broneeringud, millele pole veel meeldetuletust saadetud.</summary>
+    public async Task<List<RemindDueDto>> GetRemindDueAsync()
+    {
+        var tomorrow = _clock.Now.Date.AddDays(1);
+        var list = await _reservations.GetRemindDueAsync(tomorrow, tomorrow.AddDays(1));
+        return list.Select(r => new RemindDueDto(
+            r.Id, r.UserId, r.User?.Name ?? "", r.Table?.Restaurant?.Name ?? "",
+            r.Table?.Number ?? 0, r.Guests, r.StartTime)).ToList();
+    }
+
+    public async Task MarkRemindedAsync(int id)
+    {
+        var r = await _reservations.GetByIdAsync(id) ?? throw NotFound(id);
+        r.Reminded = true;
+        await _reservations.SaveChangesAsync();
+    }
+
+    /// <summary>Kui klient pole 30 minuti jooksul saabunud, märgitakse NoShow ja laud vabaneb.</summary>
+    public async Task<NoShowResultDto> MarkNoShowsAsync()
+    {
+        var cutoff = _clock.Now - BookingRules.NoShowAfter;
+        var list = await _reservations.GetNoShowCandidatesAsync(cutoff);
+        foreach (var r in list) r.Status = ReservationStatus.NoShow;
+        await _reservations.SaveChangesAsync();
+
+        foreach (var r in list)
+        {
+            _logger.LogInformation("Broneering {Id} märgiti NoShow, laud {Table} vabanes", r.Id, r.Table?.Number);
+            await _realtime.TableStatusChangedAsync(ToDto(r));
+        }
+        return new NoShowResultDto(list.Count, list.Select(r => r.Id).ToList());
+    }
+
     // ---------- Abimeetodid ----------
 
     /// <summary>Õhtu detailid: tähtpäev, kingitus, peakülaline, keel, lisateenused ja laua valimise tasu.</summary>
