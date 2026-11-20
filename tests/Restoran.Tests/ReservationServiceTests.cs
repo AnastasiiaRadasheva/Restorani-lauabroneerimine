@@ -19,6 +19,7 @@ public class ReservationServiceTests
     private readonly Mock<IMenuRepository> _menu = new();
     private readonly Mock<ICurrentUser> _current = new();
     private readonly Mock<IClock> _clock = new();
+    private readonly Mock<IRealtimeNotifier> _realtime = new();
 
     private readonly Restaurant _restaurant = new()
     {
@@ -48,7 +49,7 @@ public class ReservationServiceTests
 
     private ReservationService CreateService() => new(
         _reservations.Object, _tables.Object, _restaurants.Object, _menu.Object,
-        _current.Object, _clock.Object, NullLogger<ReservationService>.Instance);
+        _current.Object, _clock.Object, NullLogger<ReservationService>.Instance, _realtime.Object);
 
     private static CreateReservationDto Request(int guests, int? tableId = null) => new()
     {
@@ -78,6 +79,7 @@ public class ReservationServiceTests
 
         await Assert.ThrowsAsync<ConflictException>(() => service.CreateAsync(Request(guests: 4, tableId: 2)));
         _reservations.Verify(r => r.AddAsync(It.IsAny<Reservation>()), Times.Never);
+        _realtime.Verify(n => n.ReservationCreatedAsync(It.IsAny<ReservationDto>()), Times.Never);
     }
 
     [Fact]
@@ -95,6 +97,8 @@ public class ReservationServiceTests
         Assert.Equal(2, result.TableId); // 4-kohaline, mitte 8-kohaline
         Assert.Equal(new DateTime(2026, 12, 5, 21, 0, 0), result.EndTime); // kestus 2 h
         _reservations.Verify(r => r.SaveChangesAsync(), Times.Once);
+        // Personalile saadetakse reaalajas teade
+        _realtime.Verify(n => n.ReservationCreatedAsync(It.Is<ReservationDto>(d => d.Id == 99)), Times.Once);
     }
 
     [Fact]

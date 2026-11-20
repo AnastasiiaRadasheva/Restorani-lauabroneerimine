@@ -97,6 +97,7 @@ export default {
   'booking.table': 'Laud {n}',
   'booking.legendFree': 'vaba',
   'booking.legendBusy': 'broneeritud',
+  'booking.legendHold': 'keegi broneerib praegu',
   'booking.legendMine': 'Teie valik',
   'booking.legendSeat': 'üks istekoht',
   'booking.pickAuto': 'metrdoteli soovitus',
