@@ -160,6 +160,19 @@ Content-Type: application/json
 ### Sobiv vaba laud
 GET {{api}}/api/tables/available?restaurantId=1&date={{date}}&time=19:00&guests=2
 
+### Lisateenuste kataloog
+GET {{api}}/api/reservations/extras
+
+### Gastronoomilised õhtud
+GET {{api}}/api/events
+
+### Registreeru õhtule (kui õhtul on riietuse reegel, peab acceptRules olema true)
+POST {{api}}/api/events/2/join
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{ "guests": 2, "acceptRules": true }
+
 ### Kalender: vabade laudade arv igal kellaajal 14 päeva jooksul
 GET {{api}}/api/tables/slots?restaurantId=1&from={{date}}&days=14&guests=2
 
