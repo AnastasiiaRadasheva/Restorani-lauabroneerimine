@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import EventsSection from '../components/EventsSection'
+import NearestRestaurant from '../components/NearestRestaurant'
 import { Arrow } from '../components/Icons'
 import { useI18n } from '../i18n'
 
@@ -45,6 +46,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <NearestRestaurant />
 
       {/* ===== Maja ===== */}
       <section className="house">

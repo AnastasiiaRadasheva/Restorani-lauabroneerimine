@@ -9,6 +9,7 @@ import './styles/booking.css'
 import './styles/visits.css'
 import './styles/staff.css'
 import './styles/evening.css'
+import './styles/mobile.css'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

@@ -1,9 +1,12 @@
-# Restaurant Table Booking
+# Argent – Restaurant Table Booking
 
 A restaurant table reservation system (school final project for *Programming* and *Distributed Applications*).
+The restaurant is called **Argent** ("silver" in heraldry): three fine-dining restaurants in Tallinn.
 
 Customers pick a restaurant, a date, a time and the number of guests, and the system offers a suitable free table
-(or lets them pick one on the floor plan). A reservation can include a food pre-order and special requests.
+(or lets them pick one on the floor plan). A reservation can include a food pre-order, an occasion with a free
+compliment from the chef, extra services (flowers, champagne, violinist …) and special requests.
+Customers can also sign up for **gastronomic evenings** (special dinners with a dress code) and send messages to the restaurant.
 
 ## Tech stack
 
@@ -66,11 +69,11 @@ API requests for testing: `src/Restoran.Api/Restoran.Api.http` (Visual Studio / 
 
 | Page | Who | What |
 |---|---|---|
-| `/` | everyone | Home page, restaurants |
-| `/broneeri` | everyone (login to confirm) | Date strip, guests, time, map with distance, floor plan (auto or manual table) |
-| `/broneering/{id}` | owner / staff | Details, change, cancel, pre-order, fake payment |
-| `/minu` | customer | My reservations |
-| `/menuu` | everyone | Menu with search, filter, sorting, paging |
+| `/` | everyone | Home page, gastronomic evenings (sign up, dress code consent) |
+| `/broneeri` | everyone (login to confirm) | I. date, time, guests, map with distance · II. floor plan (maître d’ or manual choice, hall / terrace) · III. pre-order · IV. occasion, chef’s compliment, extras, fake payment → receipt |
+| `/broneering/{id}` | owner / staff | Details, change date / time / guests, cancel |
+| `/minu` | customer | My visits: details, change / cancel, messages to the restaurant, add extras |
+| `/menuu` | everyone | Menu by category |
 | `/personal/plaan` | Admin, Waiter | Floor plan of the day + timeline, mark arrived / no-show |
 | `/personal/broneeringud` | Admin, Waiter | All reservations: search, filter, sort, paging |
 | `/admin` | Admin | Tables (with floor plan editor), menu, statistics |
@@ -87,7 +90,7 @@ Each run:
 2. for each: `POST /api/notifications` and `PATCH /api/reservations/{id}/reminded`;
 3. `POST /api/reservations/mark-no-show` – frees tables where the guest did not arrive within 30 minutes.
 
-Customers see the reminders under the 🔔 icon on the website.
+Customers see the reminders under the bell icon on the website.
 
 ## Real-time updates (WebSocket)
 
@@ -99,6 +102,32 @@ Customers see the reminders under the 🔔 icon on the website.
 - The website uses the browser `WebSocket` API (`web/src/realtime.js`) and reconnects automatically.
 - Demo: open the staff floor plan in one browser and book a table in another – the plan updates instantly.
 
+## Mobile view
+
+The **same website** is responsive and looks like a mobile app on a phone (no separate client):
+language buttons on top, hamburger menu and a user icon, the crest picture above the title,
+swipeable date strip, floor plan that scrolls with a finger, rounded visit cards and tables that turn into cards.
+Test it in the browser DevTools (device toolbar, e.g. 375 px wide).
+
+## Languages
+
+The website is available in **Estonian, Russian and English** (ET / RU / EN buttons in the header).
+All texts are in `web/src/locales/*.js`; plural forms use `Intl.PluralRules`. The staff pages are in Estonian.
+
+## Project structure
+
+```
+Restoran.sln
+src/
+  Restoran.Api/             controllers, JWT, Swagger, ProblemDetails, WebSocket /ws/tables
+  Restoran.Application/     entities, DTOs, interfaces, services (business logic)
+  Restoran.Infrastructure/  EF Core DbContext, migrations, seed data, repositories
+  Restoran.Worker/          background worker (separate process, HTTP only)
+tests/
+  Restoran.Tests/           xUnit + Moq unit tests
+web/                        React website (Vite)
+```
+
 ## Booking rules
 
 - A reservation lasts **2 hours** and must fit in the restaurant opening hours.
@@ -106,6 +135,10 @@ Customers see the reminders under the 🔔 icon on the website.
   `Cancelled` and `NoShow` reservations do not occupy a table.
 - Automatic table choice: the **smallest free table** with `Seats >= guests`.
 - Customers can change or cancel a reservation only **more than 24 hours** before it starts.
+  Messages and extra services can be added at any time.
+- Choosing the table yourself costs **10 €**, in peak hours **18:00–20:00** it costs **30 €**. The maître d’s choice is free.
+- A chef’s compliment (mini cake, champagne or dessert) is free and only available with an occasion.
+- Gastronomic evenings with a strict dress code require accepting the rules when signing up; seats are limited.
 
 ## Test users
 
@@ -140,6 +173,12 @@ Creating, updating and deleting restaurants, tables and menu items requires the 
 | POST | `/api/reservations/{id}/preorder` | Food pre-order |
 | POST | `/api/reservations/{id}/pay` | Fake payment (test card `4242 4242 4242 4242`) |
 | PATCH | `/api/reservations/{id}/status` | Change status, e.g. `Arrived` (staff) |
+| GET | `/api/tables/slots?restaurantId=&from=&days=&guests=` | Free tables per time slot (crossed-out days and times) |
+| GET | `/api/reservations/extras` | Extra services catalogue with prices |
+| GET/POST | `/api/reservations/{id}/messages` | Messages between the customer and the restaurant |
+| PUT | `/api/reservations/{id}/extras` | Change extra services of a reservation |
+| GET | `/api/events` | Upcoming gastronomic evenings with free seats |
+| POST/DELETE | `/api/events/{id}/join` | Sign up / cancel (dress code rules must be accepted) |
 | GET | `/api/stats?restaurantId=&from=&to=` | Busiest weekdays, hours and dates (Admin) |
 | GET | `/api/reservations/remind-due` | Tomorrow's reservations without reminder (Service) |
 | PATCH | `/api/reservations/{id}/reminded` | Mark reminder sent (Service) |
