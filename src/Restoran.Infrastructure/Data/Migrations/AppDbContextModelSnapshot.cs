@@ -1293,6 +1293,38 @@ namespace Restoran.Infrastructure.Data.Migrations
                     b.ToTable("ReservationExtras");
                 });
 
+            modelBuilder.Entity("Restoran.Application.Entities.ReservationMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("AuthorName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("FromStaff")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ReservationId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReservationId");
+
+                    b.ToTable("Messages", (string)null);
+                });
+
             modelBuilder.Entity("Restoran.Application.Entities.Restaurant", b =>
                 {
                     b.Property<int>("Id")
@@ -1542,6 +1574,17 @@ namespace Restoran.Infrastructure.Data.Migrations
                     b.Navigation("Reservation");
                 });
 
+            modelBuilder.Entity("Restoran.Application.Entities.ReservationMessage", b =>
+                {
+                    b.HasOne("Restoran.Application.Entities.Reservation", "Reservation")
+                        .WithMany("Messages")
+                        .HasForeignKey("ReservationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Reservation");
+                });
+
             modelBuilder.Entity("Restoran.Application.Entities.DiningTable", b =>
                 {
                     b.Navigation("Reservations");
@@ -1555,6 +1598,8 @@ namespace Restoran.Infrastructure.Data.Migrations
             modelBuilder.Entity("Restoran.Application.Entities.Reservation", b =>
                 {
                     b.Navigation("Extras");
+
+                    b.Navigation("Messages");
 
                     b.Navigation("PreOrderItems");
                 });

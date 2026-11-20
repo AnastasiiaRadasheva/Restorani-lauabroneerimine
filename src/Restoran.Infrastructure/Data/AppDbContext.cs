@@ -15,6 +15,7 @@ public class AppDbContext : DbContext
     public DbSet<PreOrderItem> PreOrderItems => Set<PreOrderItem>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<ReservationExtra> ReservationExtras => Set<ReservationExtra>();
+    public DbSet<ReservationMessage> ReservationMessages => Set<ReservationMessage>();
     public DbSet<GastroEvent> Events => Set<GastroEvent>();
     public DbSet<EventRegistration> EventRegistrations => Set<EventRegistration>();
 
@@ -71,6 +72,15 @@ public class AppDbContext : DbContext
             e.Property(x => x.Code).HasMaxLength(30);
             e.Property(x => x.Name).HasMaxLength(100);
             e.Property(x => x.Price).HasPrecision(10, 2);
+        });
+
+        b.Entity<ReservationMessage>(e =>
+        {
+            e.ToTable("Messages");
+            e.HasOne(x => x.Reservation).WithMany(r => r.Messages)
+                .HasForeignKey(x => x.ReservationId).OnDelete(DeleteBehavior.Cascade);
+            e.Property(x => x.AuthorName).HasMaxLength(100);
+            e.Property(x => x.Text).HasMaxLength(1000).IsRequired();
         });
 
         b.Entity<GastroEvent>(e =>
