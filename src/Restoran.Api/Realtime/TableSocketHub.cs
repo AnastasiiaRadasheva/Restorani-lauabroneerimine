@@ -134,6 +134,9 @@ public class TableSocketHub : IRealtimeNotifier
             r.Status
         }, _ => true);
 
+    public Task UserNotifiedAsync(int userId) =>
+        BroadcastAsync(new { type = "Notification", userId }, c => c.UserId == userId);
+
     private async Task BroadcastAsync(object message, Func<Client, bool> filter, Guid? except = null)
     {
         var bytes = JsonSerializer.SerializeToUtf8Bytes(message, Json);

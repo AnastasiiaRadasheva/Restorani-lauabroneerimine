@@ -72,7 +72,23 @@ builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 builder.Services.AddControllers()
-    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()))
+    .ConfigureApiBehaviorOptions(o =>
+    {
+        // Valideerimisvead saidi keeles (Accept-Language: et/ru/en)
+        var defaultFactory = o.InvalidModelStateResponseFactory;
+        o.InvalidModelStateResponseFactory = context =>
+        {
+            var lang = ErrorTranslator.LanguageOf(context.HttpContext);
+            foreach (var entry in context.ModelState.Values)
+            {
+                var translated = entry.Errors.Select(e => ErrorTranslator.TranslateValidation(e.ErrorMessage, lang)).ToList();
+                entry.Errors.Clear();
+                foreach (var t in translated) entry.Errors.Add(t);
+            }
+            return defaultFactory(context);
+        };
+    });
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(o =>

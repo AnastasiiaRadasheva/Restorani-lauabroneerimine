@@ -36,10 +36,25 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<AuthResponseDto>> Login(LoginDto dto) => Ok(await _auth.LoginAsync(dto));
 
+    /// <summary>Parooli loomise link: kellele see kuulub (personali loodud klient).</summary>
+    [HttpGet("password/{token}")]
+    public async Task<ActionResult<PasswordLinkDto>> PasswordLink(string token) => Ok(await _auth.GetPasswordLinkAsync(token));
+
+    /// <summary>Klient loob lingi kaudu parooli ja on kohe sisse logitud.</summary>
+    [HttpPost("password")]
+    public async Task<ActionResult<AuthResponseDto>> SetPassword(SetPasswordDto dto) => Ok(await _auth.SetPasswordAsync(dto));
+
     /// <summary>Sisse loginud kasutaja andmed.</summary>
     [Authorize]
     [HttpGet("me")]
     [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<UserDto>> Me() => Ok(await _auth.GetMeAsync());
+
+    /// <summary>Muuda oma profiili: nimi, telefon, SMS-ide nõusolek ja pilt.</summary>
+    [Authorize]
+    [HttpPut("me")]
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<UserDto>> UpdateMe(UpdateProfileDto dto) => Ok(await _auth.UpdateMeAsync(dto));
 }
