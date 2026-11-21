@@ -13,4 +13,6 @@ public class MenuItem
     public bool IsAvailable { get; set; } = true;
     /// <summary>Foto aadress, nt /img/menu/austrid.jpg.</summary>
     public string? ImageUrl { get; set; }
+    /// <summary>Sildid komaga: gluten, milk, egg, nuts, fish, shellfish, vegan, vegetarian.</summary>
+    public string? Tags { get; set; }
 }

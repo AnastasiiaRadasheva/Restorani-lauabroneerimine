@@ -17,6 +17,8 @@ public class Reservation
     public string? SpecialRequest { get; set; }
     public bool IsPaid { get; set; }
     public bool Reminded { get; set; }
+    /// <summary>Makselingi kood personali tehtud broneeringule (null, kui pole vaja).</summary>
+    public string? PaymentToken { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     public List<PreOrderItem> PreOrderItems { get; set; } = new();
@@ -40,4 +42,10 @@ public class Reservation
     public DateTime? CancelledAt { get; set; }
     /// <summary>Kui palju raha tagastatakse (alla 24 h enne tühistades 0).</summary>
     public decimal? RefundAmount { get; set; }
+
+    // ----- Allergeenid ja toitumine -----
+    /// <summary>Koodid komaga, nt "glutenfree,vegan".</summary>
+    public string? Allergies { get; set; }
+    /// <summary>Külalise enda kommentaar köögile.</summary>
+    public string? AllergyNote { get; set; }
 }

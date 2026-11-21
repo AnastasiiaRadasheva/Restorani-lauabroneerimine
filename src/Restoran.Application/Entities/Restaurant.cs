@@ -17,6 +17,13 @@ public class Restaurant
     public int BarWidth { get; set; }
     public int BarHeight { get; set; }
 
+    /// <summary>Lava (muusika, esinejad) – restorani püsiv osa, näidatakse plaanil. Protsentides nagu lauad.</summary>
+    public TableLocation StageZone { get; set; } = TableLocation.Hall;
+    public int StageX { get; set; }
+    public int StageY { get; set; }
+    public int StageWidth { get; set; }
+    public int StageHeight { get; set; }
+
     public List<DiningTable> Tables { get; set; } = new();
     public List<MenuItem> MenuItems { get; set; } = new();
 }
