@@ -10,6 +10,7 @@ public static class MappingExtensions
         r.Id, r.Name, r.Address, r.Description, r.Latitude, r.Longitude,
         r.OpensAt.ToString("HH:mm"), r.ClosesAt.ToString("HH:mm"),
         r.BarX, r.BarY, r.BarWidth, r.BarHeight,
+        r.StageZone.ToString(), r.StageX, r.StageY, r.StageWidth, r.StageHeight,
         tableCount, distance is null ? null : Math.Round(distance.Value));
 
     public static void Apply(this Restaurant r, SaveRestaurantDto d)
@@ -40,7 +41,8 @@ public static class MappingExtensions
     }
 
     public static MenuItemDto ToDto(this MenuItem m) => new(
-        m.Id, m.RestaurantId, m.Name, m.Description, m.Category, m.Price, m.IsAvailable, m.ImageUrl);
+        m.Id, m.RestaurantId, m.Name, m.Description, m.Category, m.Price, m.IsAvailable, m.ImageUrl,
+        (m.Tags ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries).ToList());
 
     public static void Apply(this MenuItem m, SaveMenuItemDto d)
     {
@@ -51,5 +53,6 @@ public static class MappingExtensions
         m.Price = d.Price;
         m.IsAvailable = d.IsAvailable;
         m.ImageUrl = string.IsNullOrWhiteSpace(d.ImageUrl) ? null : d.ImageUrl.Trim();
+        m.Tags = d.Tags is { Count: > 0 } ? string.Join(',', d.Tags.Select(t => t.Trim().ToLowerInvariant()).Distinct()) : null;
     }
 }

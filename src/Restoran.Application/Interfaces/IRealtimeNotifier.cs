@@ -13,4 +13,7 @@ public interface IRealtimeNotifier
 
     /// <summary>Laua olek muutus (uus broneering, tühistamine, saabus, no-show). Läheb kõigile.</summary>
     Task TableStatusChangedAsync(ReservationDto reservation);
+
+    /// <summary>Kasutajale tuli uus teade (kelluke uueneb kohe).</summary>
+    Task UserNotifiedAsync(int userId);
 }
