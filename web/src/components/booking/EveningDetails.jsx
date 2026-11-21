@@ -29,6 +29,9 @@ export function useExtrasCatalog() {
 export default function EveningDetails({ ev, setEv, catalog, userName }) {
   const { t } = useI18n()
   const [open, setOpen] = useState(ev.occasion !== 'None' || ev.extras.length > 0)
+  const [langOpen, setLangOpen] = useState(false)
+  // Kas on vaja tordi kirjeldust (tellimustort või kingitusena minitort)
+  const cake = ev.extras.includes('bigcake') || (ev.occasion !== 'None' && ev.gift === 'Cake')
   const set = (patch) => setEv({ ...ev, ...patch })
   const toggleExtra = (code) =>
     set({ extras: ev.extras.includes(code) ? ev.extras.filter((c) => c !== code) : [...ev.extras, code] })
@@ -103,6 +106,13 @@ export default function EveningDetails({ ev, setEv, catalog, userName }) {
                 </div>
                 <div className="host-col">
                   <span className="eyebrow">{t('evening.language')}</span>
+                  {!langOpen && (
+                    <span className="lang-current">
+                      {SERVICE_LANGS.find(([c]) => c === ev.serviceLanguage)?.[2]}
+                      <button type="button" className="link-under" onClick={() => setLangOpen(true)}>{t('evening.change')}</button>
+                    </span>
+                  )}
+                  {langOpen && (
                   <div className="lang-pick" role="radiogroup">
                     {SERVICE_LANGS.map(([code, short, name]) => (
                       <button key={code} type="button" role="radio" lang={code} aria-checked={ev.serviceLanguage === code} className={ev.serviceLanguage === code ? 'on' : ''} onClick={() => set({ serviceLanguage: code })}>
@@ -111,6 +121,7 @@ export default function EveningDetails({ ev, setEv, catalog, userName }) {
                       </button>
                     ))}
                   </div>
+                  )}
                 </div>
               </div>
             )}
@@ -160,6 +171,21 @@ export default function EveningDetails({ ev, setEv, catalog, userName }) {
               )
             })}
           </div>
+
+          {cake && (
+            <div className="paper white cake-card">
+              <p className="card-title">{t('cake.title')}</p>
+              <p className="muted small">{t('cake.note')}</p>
+              <textarea
+                className="box"
+                rows={3}
+                maxLength={250}
+                value={ev.cakeNote ?? ''}
+                onChange={(e) => set({ cakeNote: e.target.value })}
+                placeholder={t('cake.placeholder')}
+              />
+            </div>
+          )}
         </div>
       )}
     </>
