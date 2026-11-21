@@ -95,7 +95,7 @@ public class ReservationServiceTests
         var result = await CreateService().CreateAsync(Request(guests: 3));
 
         Assert.Equal(2, result.TableId); // 4-kohaline, mitte 8-kohaline
-        Assert.Equal(new DateTime(2026, 12, 5, 21, 0, 0), result.EndTime); // kestus 2 h
+        Assert.Equal(new DateTime(2026, 12, 5, 23, 0, 0), result.EndTime); // laud on hõivatud kuni sulgemiseni
         _reservations.Verify(r => r.SaveChangesAsync(), Times.Once);
         // Personalile saadetakse reaalajas teade
         _realtime.Verify(n => n.ReservationCreatedAsync(It.Is<ReservationDto>(d => d.Id == 99)), Times.Once);
@@ -125,12 +125,26 @@ public class ReservationServiceTests
         var reservation = new Reservation
         {
             Id = 5, UserId = 10, TableId = 1, Table = _tableList[0], Status = ReservationStatus.Active,
-            StartTime = Now.AddHours(5), EndTime = Now.AddHours(7)
+            StartTime = Now.AddHours(5), EndTime = Now.AddHours(7), IsPaid = true, SeatFee = 30m
         };
         _reservations.Setup(r => r.GetWithDetailsAsync(5)).ReturnsAsync(reservation);
 
         await Assert.ThrowsAsync<BusinessRuleException>(() => CreateService().CancelAsync(5));
         Assert.Equal(ReservationStatus.Active, reservation.Status);
+    }
+
+    [Fact]
+    public async Task Cancel_LessThan24Hours_NothingPaid_NeedsNoConsent()
+    {
+        var reservation = new Reservation
+        {
+            Id = 5, UserId = 10, TableId = 1, Table = _tableList[0], Status = ReservationStatus.Active,
+            StartTime = Now.AddHours(5), EndTime = Now.AddHours(7)
+        };
+        _reservations.Setup(r => r.GetWithDetailsAsync(5)).ReturnsAsync(reservation);
+
+        await CreateService().CancelAsync(5);
+        Assert.Equal(ReservationStatus.Cancelled, reservation.Status);
     }
 
     [Fact]
@@ -207,7 +221,7 @@ public class ReservationServiceTests
     }
 
     [Fact]
-    public async Task Slots_ShowsZeroFreeTables_WhenAllFittingTablesAreBusy()
+    public async Task Slots_TableIsBusyTheWholeEvening()
     {
         // 4 inimest mahuvad lauda 2 (4 kohta) ja lauda 3 (8 kohta). Mõlemad on hõivatud 19:00-21:00.
         var day = new DateOnly(2026, 12, 5);
@@ -215,18 +229,17 @@ public class ReservationServiceTests
             .Setup(r => r.GetOccupyingAsync(It.IsAny<IEnumerable<int>>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<int?>()))
             .ReturnsAsync(new List<Reservation>
             {
-                new() { TableId = 2, Status = ReservationStatus.Active, StartTime = day.ToDateTime(new TimeOnly(19, 0)), EndTime = day.ToDateTime(new TimeOnly(21, 0)) },
-                new() { TableId = 3, Status = ReservationStatus.Arrived, StartTime = day.ToDateTime(new TimeOnly(19, 0)), EndTime = day.ToDateTime(new TimeOnly(21, 0)) },
+                new() { TableId = 2, Status = ReservationStatus.Active, StartTime = day.ToDateTime(new TimeOnly(19, 0)), EndTime = day.ToDateTime(new TimeOnly(23, 0)) },
+                new() { TableId = 3, Status = ReservationStatus.Arrived, StartTime = day.ToDateTime(new TimeOnly(19, 0)), EndTime = day.ToDateTime(new TimeOnly(23, 0)) },
             });
 
         var result = await CreateService().GetSlotsAsync(1, day, 1, guests: 4);
 
         var slots = result.Single().Slots;
         Assert.Equal("12:00", slots.First().Time);
-        Assert.Equal("21:00", slots.Last().Time); // viimane algus 2 h enne sulgemist (23:00)
-        Assert.Equal(0, slots.Single(s => s.Time == "19:00").FreeTables);
-        Assert.Equal(0, slots.Single(s => s.Time == "18:00").FreeTables); // 18-20 kattub 19-21-ga
-        Assert.Equal(2, slots.Single(s => s.Time == "17:00").FreeTables);
+        Assert.Equal("21:00", slots.Last().Time); // viimane saabumine 2 h enne sulgemist (23:00)
+        // Laud on hõivatud kogu õhtu: kui laudu 2 ja 3 on õhtul broneeritud, pole ka 17:00 vaba
+        Assert.All(slots, s => Assert.Equal(0, s.FreeTables));
     }
 
     [Fact]
@@ -242,11 +255,84 @@ public class ReservationServiceTests
 
         var request = Request(guests: 2);
         request.Items = new List<PreOrderLineDto> { new() { MenuItemId = 5, Quantity = 2 } };
+        // Ilma kaardita maksmisega broneeringut ei tehta
+        await Assert.ThrowsAsync<BusinessRuleException>(() => CreateService().CreateAsync(request));
+        request.Card = new FakePaymentDto { CardHolder = "Kati", CardNumber = "4242 4242 4242 4242", Expiry = "12/28", Cvc = "123" };
         var result = await CreateService().CreateAsync(request);
+        Assert.True(saved!.IsPaid);
 
         Assert.Single(saved!.PreOrderItems);
         Assert.Equal(32m, saved.PreOrderItems[0].UnitPrice);
         Assert.Equal(64m, result.PreOrderTotal);
+    }
+
+    [Fact]
+    public async Task Slots_TableBookedLateIsClosedForTheWholeDay()
+    {
+        // Laud 2 on broneeritud alles 21:00 – ometi pole see vaba ka 17:00 (laud on suletud kogu päevaks)
+        var day = new DateOnly(2026, 12, 5);
+        _reservations
+            .Setup(r => r.GetOccupyingAsync(It.IsAny<IEnumerable<int>>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<int?>()))
+            .ReturnsAsync(new List<Reservation>
+            {
+                new() { TableId = 2, Status = ReservationStatus.Active, StartTime = day.ToDateTime(new TimeOnly(21, 0)), EndTime = day.ToDateTime(new TimeOnly(23, 0)) },
+            });
+
+        var result = await CreateService().GetSlotsAsync(1, day, 1, guests: 4);
+
+        var at17 = result.Single().Slots.Single(s => s.Time == "17:00");
+        Assert.Equal(1, at17.FreeTables); // ainult laud 3
+    }
+
+    [Fact]
+    public void DayStart_NightBookingBelongsToPreviousDay()
+    {
+        Assert.Equal(new DateTime(2026, 12, 5, 6, 0, 0), BookingRules.DayStart(new DateTime(2026, 12, 5, 19, 0, 0)));
+        Assert.Equal(new DateTime(2026, 12, 4, 6, 0, 0), BookingRules.DayStart(new DateTime(2026, 12, 5, 1, 30, 0)));
+    }
+
+    [Fact]
+    public async Task PreOrder_ChangeAfterPayment_MoreExpensive_RequiresCard()
+    {
+        var reservation = new Reservation
+        {
+            Id = 5, UserId = 10, TableId = 1, Table = _tableList[0], Status = ReservationStatus.Active, IsPaid = true,
+            StartTime = Now.AddDays(3), EndTime = Now.AddDays(3).AddHours(2)
+        };
+        _reservations.Setup(r => r.GetWithDetailsAsync(5)).ReturnsAsync(reservation);
+        _menu.Setup(m => m.GetByIdsAsync(It.IsAny<IEnumerable<int>>()))
+            .ReturnsAsync(new List<MenuItem> { new() { Id = 3, RestaurantId = 1, Name = "Steik", IsAvailable = true, Price = 20 } });
+        var dto = new PreOrderDto { Items = { new PreOrderLineDto { MenuItemId = 3, Quantity = 1 } } };
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() => CreateService().SetPreOrderAsync(5, dto));
+
+        dto.Card = new FakePaymentDto { CardHolder = "Kati", CardNumber = "4242 4242 4242 4242", Expiry = "12/28", Cvc = "123" };
+        await CreateService().SetPreOrderAsync(5, dto);
+        Assert.True(reservation.IsPaid);
+        Assert.Single(reservation.PreOrderItems);
+    }
+
+    [Fact]
+    public async Task StaffBooking_WithNothingToPay_IsConfirmedImmediately()
+    {
+        Reservation? saved = null;
+        _current.Setup(c => c.IsStaff).Returns(true);
+        _reservations.Setup(r => r.AddAsync(It.IsAny<Reservation>()))
+            .Callback<Reservation>(r => { r.Id = 9; saved = r; })
+            .Returns(Task.CompletedTask);
+        _reservations.Setup(r => r.GetWithDetailsAsync(9)).ReturnsAsync(() => saved);
+
+        await CreateService().CreatePendingForUserAsync(20, Request(guests: 2)); // laud valimata -> 0 €
+
+        Assert.Equal(ReservationStatus.Active, saved!.Status);
+        Assert.Null(saved.PaymentToken);
+    }
+
+    [Fact]
+    public async Task Create_ByStaffForThemselves_IsForbidden()
+    {
+        _current.Setup(c => c.IsStaff).Returns(true);
+        await Assert.ThrowsAsync<ForbiddenException>(() => CreateService().CreateAsync(Request(guests: 2)));
     }
 
     private Reservation OwnedReservation(int userId) => new()
@@ -279,16 +365,55 @@ public class ReservationServiceTests
     }
 
     [Fact]
-    public async Task SetExtras_ReplacesExtras_AndUpdatesTotal()
+    public async Task SetExtras_AddsExtras_AndUpdatesTotal()
     {
         var r = OwnedReservation(10);
         r.Extras.Add(new ReservationExtra { Code = "violin", Name = "Viiuldaja", Price = 120m });
         _reservations.Setup(x => x.GetWithDetailsAsync(50)).ReturnsAsync(r);
 
-        var result = await CreateService().SetExtrasAsync(50, new SetExtrasDto { Extras = new() { "flowers", "chair" } });
+        var result = await CreateService().SetExtrasAsync(50, new SetExtrasDto { Extras = new() { "violin", "flowers", "chair" } });
 
-        Assert.Equal(new[] { "flowers", "chair" }, result.Extras.Select(e => e.Code));
-        Assert.Equal(45m, result.Total);
+        Assert.Equal(new[] { "violin", "flowers", "chair" }, result.Extras.Select(e => e.Code));
+        Assert.Equal(165m, result.Total);
+    }
+
+    [Fact]
+    public async Task SetExtras_PaidAtBookingLocked_LaterAddedRemovable_StaffCanRemove()
+    {
+        var r = OwnedReservation(10);
+        r.StartTime = Now.AddDays(3); r.EndTime = Now.AddDays(3).AddHours(2);
+        // Šampanja lisati broneerimisel ja maksti – see on lukus
+        r.Extras.Add(new ReservationExtra { Code = "bottle", Name = "Šampanja", Price = 95m, Locked = true });
+        _reservations.Setup(x => x.GetWithDetailsAsync(50)).ReturnsAsync(r);
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() => CreateService().SetExtrasAsync(50, new SetExtrasDto { Extras = new() { "flowers" } }));
+        await CreateService().SetExtrasAsync(50, new SetExtrasDto { Extras = new() { "bottle", "flowers" } });
+        Assert.Equal(2, r.Extras.Count);
+        Assert.False(r.Extras.Single(x => x.Code == "flowers").Locked);
+        // Hiljem lisatud lilled saab klient ise eemaldada
+        await CreateService().SetExtrasAsync(50, new SetExtrasDto { Extras = new() { "bottle" } });
+        Assert.Single(r.Extras);
+        await CreateService().SetExtrasAsync(50, new SetExtrasDto { Extras = new() { "bottle", "flowers" } });
+
+        _current.Setup(c => c.IsStaff).Returns(true);
+        _current.Setup(c => c.UserId).Returns(1);
+        await CreateService().SetExtrasAsync(50, new SetExtrasDto { Extras = new() { "flowers" } });
+        Assert.Single(r.Extras);
+    }
+
+    [Fact]
+    public async Task Cancel_RefundsOnlyCardPayment_NotLaterAddedExtras()
+    {
+        var r = OwnedReservation(10);
+        r.StartTime = Now.AddDays(3); r.EndTime = Now.AddDays(3).AddHours(2);
+        r.IsPaid = true; r.SeatFee = 30m;
+        r.Extras.Add(new ReservationExtra { Code = "flowers", Name = "Roosid", Price = 45m, Locked = true });   // makstud broneerimisel
+        r.Extras.Add(new ReservationExtra { Code = "bottle", Name = "Konjak", Price = 95m, Locked = false });   // lisatud hiljem, kohapeal
+        _reservations.Setup(x => x.GetWithDetailsAsync(50)).ReturnsAsync(r);
+
+        var result = await CreateService().CancelAsync(50);
+
+        Assert.Equal(75m, result.RefundAmount);
     }
 
     [Fact]
@@ -302,5 +427,17 @@ public class ReservationServiceTests
         Assert.Equal(1, result.Count);
         Assert.Equal(ReservationStatus.NoShow, late.Status);
         _realtime.Verify(n => n.TableStatusChangedAsync(It.IsAny<ReservationDto>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Create_Throws_WhenGuestAlreadyHasThreeTablesThatEvening()
+    {
+        var day = new DateOnly(2026, 12, 5);
+        _reservations.Setup(r => r.GetByUserAsync(10)).ReturnsAsync(Enumerable.Range(1, 3).Select(i => new Reservation
+        {
+            Id = i, UserId = 10, Status = ReservationStatus.Active, StartTime = day.ToDateTime(new TimeOnly(18, 0))
+        }).ToList());
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() => CreateService().CreateAsync(Request(guests: 2)));
     }
 }
