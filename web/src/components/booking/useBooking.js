@@ -36,7 +36,6 @@ export function useBooking() {
   const [slots, setSlots] = useState([])
   const [availability, setAvailability] = useState(null)
 
-  const [mode, setModeState] = useState(draft.mode ?? 'auto') // auto | manual
   const [zone, setZone] = useState(draft.zone ?? 'Hall')
   const [tableId, setTableId] = useState(draft.tableId ?? null)
   const [error, setError] = useState('')
@@ -71,7 +70,10 @@ export function useBooking() {
     if (current && current.freeTables > 0) return
     const free = daySlots.filter((s) => s.freeTables > 0)
     const next = free.find((s) => s.time === '19:00') ?? free.find((s) => s.time > time) ?? free[0]
-    if (next) setTime(next.time)
+    if (next) return setTime(next.time)
+    // Sel päeval pole ühtegi vaba aega (nt täna on juba hilja): liigume järgmisele vabale päevale
+    const nextDay = slots.find((d) => d.date > date && d.slots.some((s) => s.freeTables > 0))
+    if (nextDay) setDateState(nextDay.date)
   }, [daySlots]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const timeOk = daySlots?.some((s) => s.time === time && s.freeTables > 0)
@@ -94,6 +96,8 @@ export function useBooking() {
 
   // Automaatse valiku korral näitame plaanil seda tsooni, kus pakutud laud asub
   const suggested = availability?.tables.find((tb) => tb.id === availability.suggestedTableId) ?? null
+  // Vaikimisi on valitud metrdoteli soovitus. Kui külaline klõpsab muul laual, on see tema enda valik (lisatasu).
+  const mode = tableId && tableId !== availability?.suggestedTableId ? 'manual' : 'auto'
   useEffect(() => {
     if (mode === 'auto' && suggested) setZone(suggested.location)
   }, [mode, suggested?.id]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -133,8 +137,12 @@ export function useBooking() {
     state: !tb.isFree ? 'busy' : !tb.fitsGuests ? 'small' : othersSelecting[tb.id] ? 'hold' : 'free',
     clickable: tb.isFree && tb.fitsGuests, // viirutatud lauda saab ka valida, aga teine võib ette jõuda
   }))
+  useEffect(() => {
+    if (tables.length && !tables.some((tb) => tb.location === zone)) setZone(tables[0].location)
+  }, [restaurantId, availability?.startTime]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const manualTable = tables.find((tb) => tb.id === tableId && tb.clickable) ?? null
-  const chosenTable = mode === 'auto' ? suggested : manualTable
+  const chosenTable = manualTable ?? suggested
 
   function setGeo(on) {
     setGeoState(on)
@@ -177,11 +185,11 @@ export function useBooking() {
     slots,
     availability: availability ? { ...availability, tables } : null,
     mode,
-    setMode: setModeState,
+    suggested,
     zone,
     setZone,
     tableId,
-    setTableId,
+    setTableId: (id) => setTableId(id === availability?.suggestedTableId ? null : id),
     chosenTable,
     error,
     setError,
@@ -193,7 +201,7 @@ export function useBooking() {
       ['selected', t('booking.legendMine')],
       ['chair', t('booking.legendSeat')],
     ],
-    saveDraft: () => sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ restaurantId, date, time, guests, mode, zone, tableId })),
+    saveDraft: () => sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ restaurantId, date, time, guests, zone, tableId })),
     clearDraft: () => sessionStorage.removeItem(DRAFT_KEY),
   }
 }
