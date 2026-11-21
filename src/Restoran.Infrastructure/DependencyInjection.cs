@@ -25,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IReservationRepository, ReservationRepository>();
         services.AddScoped<IEventRepository, EventRepository>();
+        services.AddScoped<ISupportRepository, SupportRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
 
         // Teenused (äriloogika)
@@ -35,6 +36,13 @@ public static class DependencyInjection
         services.AddScoped<IReservationService, ReservationService>();
         services.AddScoped<IStatsService, StatsService>();
         services.AddScoped<IEventService, EventService>();
+        services.AddScoped<ISupportService, SupportService>();
+        services.AddScoped<ICustomerService, CustomerService>();
+
+        // SMS ja e-kiri (demo, kui võtmeid pole seadistatud)
+        services.AddSingleton<ISmsSender, Messaging.SmsSender>();
+        services.AddSingleton<IEmailSender, Messaging.EmailSender>();
+        services.AddScoped<IBookingMessenger, Messaging.BookingMessenger>();
         services.AddScoped<INotificationService, NotificationService>();
 
         return services;
