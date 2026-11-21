@@ -23,9 +23,11 @@ public class NotificationService : INotificationService
     private readonly IUserRepository _users;
     private readonly ICurrentUser _current;
     private readonly IClock _clock;
+    private readonly IRealtimeNotifier _realtime;
 
-    public NotificationService(INotificationRepository notifications, IUserRepository users, ICurrentUser current, IClock clock)
+    public NotificationService(INotificationRepository notifications, IUserRepository users, ICurrentUser current, IClock clock, IRealtimeNotifier realtime)
     {
+        _realtime = realtime;
         _notifications = notifications;
         _users = users;
         _current = current;
@@ -39,11 +41,13 @@ public class NotificationService : INotificationService
         {
             UserId = dto.UserId,
             ReservationId = dto.ReservationId,
+            Link = dto.Link,
             Message = dto.Message.Trim(),
             CreatedAt = _clock.Now
         };
         await _notifications.AddAsync(n);
         await _notifications.SaveChangesAsync();
+        await _realtime.UserNotifiedAsync(n.UserId);
         return ToDto(n);
     }
 
@@ -63,5 +67,5 @@ public class NotificationService : INotificationService
     }
 
     private static NotificationDto ToDto(Notification n) =>
-        new(n.Id, n.UserId, n.ReservationId, n.Message, n.IsRead, n.CreatedAt);
+        new(n.Id, n.UserId, n.ReservationId, n.Message, n.IsRead, n.CreatedAt, n.Link);
 }
