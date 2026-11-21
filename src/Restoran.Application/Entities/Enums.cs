@@ -9,11 +9,12 @@ public enum UserRole
     Service
 }
 
-/// <summary>Laua asukoht: saal või terrass.</summary>
+/// <summary>Laua asukoht: saal, terrass või teine korrus.</summary>
 public enum TableLocation
 {
     Hall,
-    Terrace
+    Terrace,
+    Upstairs
 }
 
 /// <summary>Broneeringu olek.</summary>

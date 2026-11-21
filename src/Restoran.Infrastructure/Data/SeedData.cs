@@ -23,7 +23,7 @@ public static class SeedData
                 Description = "Mereäärne saal ja suur terrass. Mereannid ja šampanja.",
                 Latitude = 59.4466, Longitude = 24.7395,
                 OpensAt = new TimeOnly(17, 0), ClosesAt = new TimeOnly(23, 30),
-                BarX = 38, BarY = 46, BarWidth = 26, BarHeight = 54
+                BarX = 34, BarY = 58, BarWidth = 30, BarHeight = 36
             },
             new Restaurant
             {
@@ -31,27 +31,62 @@ public static class SeedData
                 Description = "Vaikne saal Kadrioru pargi kõrval. Hooajalised setid ja veinid.",
                 Latitude = 59.4385, Longitude = 24.7920,
                 OpensAt = new TimeOnly(17, 0), ClosesAt = new TimeOnly(23, 30),
-                BarX = 38, BarY = 46, BarWidth = 26, BarHeight = 54
+                BarX = 36, BarY = 56, BarWidth = 26, BarHeight = 40
             });
 
-        // Ühine paigutus. Saal ja terrass on eraldi plaanid, mõlemas koordinaadid 0-100 %.
+        // Igal restoranil on oma paigutus. Iga tsoon (saal, terrass, teine korrus) on eraldi plaan, koordinaadid 0-100 %.
         // (number, kohad, asukoht, x, y, laius, kõrgus, kirjeldus, ümmargune)
-        var layout = new (int Nr, int Seats, TableLocation Loc, int X, int Y, int W, int H, string Spot, bool Round)[]
+        var H = TableLocation.Hall;
+        var T = TableLocation.Terrace;
+        var U = TableLocation.Upstairs;
+        var layouts = new Dictionary<int, (int Nr, int Seats, TableLocation Loc, int X, int Y, int W, int H, string Spot, bool Round)[]>
         {
-            (1, 6, TableLocation.Hall, 5, 6, 22, 36, "akna all", false),
-            (2, 6, TableLocation.Hall, 5, 52, 22, 36, "akna all", false),
-            (3, 2, TableLocation.Hall, 74, 3, 22, 21, "vaikne nurk", false),
-            (4, 2, TableLocation.Hall, 74, 27, 22, 21, "baari juures", false),
-            (5, 4, TableLocation.Hall, 74, 51, 22, 21, "baari juures", false),
-            (6, 4, TableLocation.Hall, 74, 75, 22, 21, "sissepääsu juures", false),
-            (7, 2, TableLocation.Terrace, 8, 8, 18, 32, "varikatuse all", true),
-            (8, 4, TableLocation.Terrace, 38, 8, 18, 32, "vaade tänavale", true),
-            (9, 6, TableLocation.Terrace, 10, 54, 32, 34, "kamina juures", false),
-            (10, 8, TableLocation.Terrace, 74, 30, 18, 58, "pikk laud", false),
+            // Vanalinn: saal ja teine korrus (vanalinnas terrassi pole)
+            [1] = new[]
+            {
+                (1, 6, H, 5, 6, 22, 36, "akna all", false),
+                (2, 6, H, 5, 52, 22, 36, "akna all", false),
+                (3, 2, H, 74, 3, 22, 21, "vaikne nurk", false),
+                (4, 2, H, 74, 27, 22, 21, "baari juures", false),
+                (5, 4, H, 74, 51, 22, 21, "baari juures", false),
+                (6, 4, H, 74, 75, 22, 21, "sissepääsu juures", false),
+                (7, 2, U, 8, 8, 18, 30, "akna all", true),
+                (8, 4, U, 36, 8, 22, 30, "kamina juures", false),
+                (9, 6, U, 68, 6, 26, 40, "privaatne nurk", false),
+                (10, 8, U, 10, 56, 54, 32, "pikk laud", false),
+            },
+            // Kalamaja: saal ja suur terrass mere ääres
+            [2] = new[]
+            {
+                (1, 4, H, 6, 6, 20, 26, "akna all", false),
+                (2, 4, H, 6, 38, 20, 26, "akna all", false),
+                (3, 2, H, 6, 72, 20, 22, "sissepääsu juures", false),
+                (4, 6, H, 70, 6, 24, 40, "vaade merele", false),
+                (5, 2, H, 72, 60, 20, 24, "baari juures", false),
+                (6, 2, T, 6, 8, 16, 30, "mere ääres", true),
+                (7, 2, T, 28, 8, 16, 30, "mere ääres", true),
+                (8, 4, T, 50, 8, 18, 32, "päikese käes", true),
+                (9, 6, T, 8, 56, 34, 32, "varikatuse all", false),
+                (10, 8, T, 58, 52, 36, 36, "pikk laud", false),
+            },
+            // Kadriorg: saal, terrass pargi poole ja teine korrus
+            [3] = new[]
+            {
+                (1, 2, H, 6, 8, 20, 24, "akna all", false),
+                (2, 4, H, 6, 42, 22, 28, "akna all", false),
+                (3, 4, H, 72, 8, 22, 28, "vaikne nurk", false),
+                (4, 6, H, 70, 52, 24, 40, "baari juures", false),
+                (5, 2, T, 10, 14, 18, 34, "vaade pargile", true),
+                (6, 4, T, 40, 14, 18, 34, "vaade pargile", true),
+                (7, 4, T, 70, 14, 18, 34, "purskkaevu juures", true),
+                (8, 2, U, 10, 12, 20, 26, "akna all", false),
+                (9, 6, U, 40, 12, 26, 40, "kamina juures", false),
+                (10, 8, U, 12, 60, 60, 30, "pidulik laud", false),
+            },
         };
 
         var tables = new List<DiningTable>();
-        for (int r = 1; r <= 3; r++)
+        foreach (var (r, layout) in layouts)
         {
             foreach (var t in layout)
             {
@@ -92,6 +127,9 @@ public static class SeedData
             ("Šampanja, klaas", "brut, Prantsusmaa", "Veinid", 18m),
         };
 
+        // Fotod (Unsplash, tasuta litsents) samas järjekorras nagu menüü
+        var photos = new[] { "austrid", "tartar", "hiidlest", "part", "sokolaad", "carabinero", "kammkarbid", "krabi", "kalamari", "set-argent", "set-meri", "set-teras", "veinisaade", "sisefilee", "suflee", "sampanja" };
+
         var items = new List<MenuItem>();
         for (int r = 1; r <= 3; r++)
         {
@@ -107,6 +145,7 @@ public static class SeedData
                     Description = m.Desc,
                     Category = m.Cat,
                     Price = m.Price,
+                    ImageUrl = $"/img/menu/{photos[i]}.jpg",
                     IsAvailable = true
                 });
             }
