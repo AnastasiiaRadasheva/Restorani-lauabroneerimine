@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { api, qs } from '../api'
 import FloorPlan, { FloorLegend } from '../components/FloorPlan'
 import { useTableSocket } from '../realtime'
-import { fmtTime, nowSlot, STATUS_TEXT, timeSlots } from '../staff'
+import { EDGE_TEXT, fmtTime, LOCATION_TEXT, nowSlot, STATUS_TEXT, timeSlots, ZONE_LIST } from '../staff'
 import { toIsoDate } from '../utils'
 
 /** Päeva laudade plaan teenindajale. */
@@ -108,9 +108,9 @@ export default function StaffPlan() {
         <div className="plan-wrap">
           <div className="plan-col">
             <div className="zone-tabs" role="tablist">
-              {['Hall', 'Terrace'].map((z) => (
+              {ZONE_LIST.filter((z) => tables.some((tb) => tb.location === z)).map((z) => (
                 <button key={z} type="button" role="tab" aria-selected={zone === z} className={zone === z ? 'on' : ''} onClick={() => setZone(z)}>
-                  {z === 'Hall' ? 'Saal' : 'Terrass'}
+                  {LOCATION_TEXT[z]}
                 </button>
               ))}
             </div>
@@ -118,8 +118,8 @@ export default function StaffPlan() {
               tables={tables}
               zone={zone}
               bar={{ x: plan.restaurant.barX, y: plan.restaurant.barY, width: plan.restaurant.barWidth, height: plan.restaurant.barHeight }}
-              edgeLabel={zone === 'Hall' ? 'tänav · aknad' : 'tänav · varikatus'}
-              entranceLabel="Sissepääs"
+              edgeLabel={EDGE_TEXT[zone]}
+              entranceLabel={zone === 'Upstairs' ? 'Trepp' : 'Sissepääs'}
               barLabel="Baar"
               seatsLabel={(n) => `${n} kohta`}
               onSelect={(t) => setSelected(t.id)}

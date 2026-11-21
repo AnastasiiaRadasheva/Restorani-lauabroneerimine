@@ -7,7 +7,9 @@ export const STATUS_TEXT = {
   NoShow: 'Ei tulnud',
 }
 
-export const LOCATION_TEXT = { Hall: 'Saal', Terrace: 'Terrass' }
+export const LOCATION_TEXT = { Hall: 'Saal', Terrace: 'Terrass', Upstairs: 'Teine korrus' }
+export const EDGE_TEXT = { Hall: 'tänav · aknad', Terrace: 'tänav · varikatus', Upstairs: 'trepp · aknad' }
+export const ZONE_LIST = ['Hall', 'Terrace', 'Upstairs']
 
 export const fmtDate = (v) => new Date(v).toLocaleDateString('et-EE', { weekday: 'short', day: 'numeric', month: 'short' })
 export const fmtTime = (v) => new Date(v).toLocaleTimeString('et-EE', { hour: '2-digit', minute: '2-digit' })
