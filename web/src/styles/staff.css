@@ -25,8 +25,8 @@
 .state-arrived > button { border: 2px solid var(--ox); }
 
 .admin-dish { display: flex; align-items: center; gap: 14px; }
-.admin-dish img { width: 64px; height: 48px; object-fit: cover; flex: none; }
-.block { display: block; }
+.admin-dish img { width: 132px; height: 96px; object-fit: cover; flex: none; border: 1px solid var(--line); filter: saturate(0.9) contrast(1.05); }
+.d-block { display: block; }
 .admin-form { display: flex; flex-direction: column; gap: 16px; }
 .admin-form .field-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
@@ -61,7 +61,9 @@
 .data-table th.sortable { cursor: pointer; }
 .data-table th.sortable:hover { color: var(--ink); }
 .data-table td { padding: 14px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
-.data-table td.actions { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.data-table td.actions { display: table-cell; text-align: right; vertical-align: middle; }
+.row-actions { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.data-table td { vertical-align: middle; }
 .pager { display: flex; align-items: center; justify-content: center; gap: 16px; font-size: 16px; }
 
 /* Ajatelg */
@@ -150,6 +152,102 @@
   .data-table tr { display: block; padding: 10px 0; border-bottom: 1px solid var(--line); }
   .data-table td { display: flex; justify-content: space-between; gap: 12px; border: 0; padding: 4px 0; }
   .data-table td[data-label]::before { content: attr(data-label); color: var(--muted); font-size: 14px; }
-  .data-table td.actions { justify-content: flex-start; }
+  .data-table td.actions { display: block; text-align: left; }
+  .row-actions { justify-content: flex-start; }
+  .admin-dish img { width: 96px; height: 72px; }
   .charts { grid-template-columns: 1fr; }
 }
+
+/* Admini töölaud */
+.dash-search { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; position: relative; margin-bottom: 20px; }
+.dash-search input { flex: 1; min-width: 260px; font-size: 18px; padding: 14px 16px; }
+.dash-found { position: absolute; top: 100%; left: 0; right: 0; z-index: 20; background: #fff; border: 1px solid var(--line); box-shadow: var(--deep); display: grid; }
+.dash-found a { padding: 10px 16px; border-bottom: 1px solid var(--line); text-decoration: none; color: var(--ink); }
+.dash-found a:hover { background: var(--bg, #f4f4f2); }
+.dash-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px; }
+.dash-tiles .tile { display: grid; gap: 4px; text-align: left; text-decoration: none; color: var(--ink); cursor: pointer; border: 1px solid var(--line); font: inherit; }
+.dash-tiles .tile strong { font-size: 40px; font-family: 'Playfair Display', serif; }
+.dash-tiles .alert-tile { border-left: 4px solid var(--ox); }
+.dash-tiles .alert-tile strong { color: var(--ox); }
+.dash-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 18px; margin-bottom: 26px; }
+.dash-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.admin-tabs { margin: 10px 0 18px; }
+/* Telefonibroneering */
+.phone-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.phone-col { display: grid; gap: 14px; align-content: start; }
+.phone-col .script { font-style: italic; border-left: 3px solid var(--ox); padding: 6px 14px; background: #faf8f6; }
+.cust-list { display: grid; gap: 6px; max-height: 320px; overflow: auto; }
+.phone-done { max-width: 760px; display: grid; gap: 10px; }
+.phone-done a { word-break: break-all; }
+.guest.later { opacity: 0.7; font-size: 0.85em; }
+@media (max-width: 1000px) {
+  .phone-grid, .dash-cols { grid-template-columns: 1fr; }
+}
+
+/* Kiirvastused */
+.quick-replies { display: grid; gap: 6px; margin-bottom: 8px; }
+.quick-replies .chips { gap: 6px; }
+
+/* Gastronoomiliste õhtute haldus */
+.admin-events { display: grid; gap: 12px; margin-top: 18px; }
+.ae-row { display: grid; grid-template-columns: 120px 1fr auto; gap: 16px; align-items: center; }
+.ae-row img { width: 120px; height: 80px; object-fit: cover; }
+.ae-text { display: grid; gap: 4px; }
+.ae-guests { grid-column: 1 / -1; display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
+.ae-signup { display: grid; gap: 10px; background: #faf8f6; }
+.ae-signup .price, .ae-item .price { width: 80px; }
+.ae-form { display: grid; gap: 14px; margin: 16px 0; }
+.ae-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 26px; }
+.ae-col { display: grid; gap: 12px; align-content: start; }
+.ae-photo { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.ae-photo img { width: 160px; height: 110px; object-fit: cover; border: 1px solid var(--line); }
+.ae-menu { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+.ae-dish { display: flex; align-items: center; gap: 10px; padding: 6px; border: 1px solid var(--line); background: #fff; text-align: left; font: inherit; cursor: pointer; }
+.ae-dish img { width: 64px; height: 48px; object-fit: cover; flex: none; }
+.ae-dish span:first-of-type { flex: 1; }
+.ae-dish .tick { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--ink); display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.ae-dish.on { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.ae-dish.on .tick { background: var(--ink); color: #fff; }
+.ae-item { display: flex; gap: 8px; align-items: center; }
+.ae-item img { width: 48px; height: 36px; object-fit: cover; }
+.mini-cal { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); background: #fff; }
+.mc-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.mc-grid .wd { text-align: center; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+.mc-day { aspect-ratio: 1; border: 1px solid transparent; background: #f4f4f2; font: inherit; font-size: 15px; cursor: pointer; }
+.mc-day:hover:not(:disabled) { border-color: var(--ink); }
+.mc-day.other { opacity: 0.45; }
+.mc-day:disabled { background: transparent; color: #bbb; cursor: not-allowed; text-decoration: line-through; }
+.mc-day.on { background: var(--ox); color: #fff; }
+@media (max-width: 1000px) { .ae-grid { grid-template-columns: 1fr; } .ae-row { grid-template-columns: 1fr; } .ae-row img { width: 100%; height: 160px; } }
+
+/* Laudade lohistamine (admin) */
+.plan-room.editable { touch-action: none; user-select: none; }
+.plan-table.draggable, .plan-table.draggable > button { cursor: grab; }
+.plan-table.dragging { z-index: 5; opacity: 0.85; }
+.plan-table.dragging > button { cursor: grabbing; box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.5); }
+.plan-table.bad > button { border-color: #b3261e; background: #fbe9e7; }
+.plan-msg { margin: 0 0 10px; padding: 10px 14px; border-left: 4px solid var(--ink); background: #fff; font-size: 15px; }
+.plan-msg.err { border-left-color: #b3261e; color: #b3261e; }
+.plan-msg.ok { border-left-color: #2e7d32; }
+
+/* Telefonibroneering: eeltellimus, lisateenused, õhtu */
+.phone-mode { margin-bottom: 16px; }
+.phone-form { display: grid; gap: 20px; }
+.phone-extra, .phone-event { display: grid; gap: 12px; }
+.phone-menu { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; max-height: 420px; overflow: auto; }
+.pm-item { display: flex; align-items: center; gap: 10px; padding: 6px; border: 1px solid var(--line); background: #fff; }
+.pm-item.on { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.pm-item img { width: 72px; height: 54px; object-fit: cover; flex: none; }
+.pm-item .name { flex: 1; font-weight: 600; font-size: 15px; }
+
+/* Laudade kiirmuudatused */
+.admin-block .plan-room { height: 560px; }
+.tbl-quick { display: grid; gap: 10px; padding: 12px; background: #faf8f6; border: 1px solid var(--line); }
+.tq-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; justify-content: space-between; }
+.tq-arrows { display: flex; gap: 4px; }
+.tq-arrows .btn { min-width: 36px; font-size: 16px; }
+
+/* Sõnum kõigile päeva külalistele */
+.broadcast { display: grid; gap: 10px; margin-bottom: 14px; }
+.broadcast-form { display: grid; gap: 10px; }
+.broadcast-form textarea { white-space: pre-line; }

@@ -184,3 +184,32 @@
   .visit-body { padding: 22px; }
   .menu-book { min-width: 0; width: 100%; }
 }
+
+/* Eeltellimuse muutmine */
+.po-dialog { max-width: 720px; width: 100%; max-height: 90vh; overflow: auto; display: grid; gap: 14px; }
+.po-list { display: grid; gap: 10px; }
+.po-row { display: flex; align-items: center; gap: 14px; padding: 8px; border: 1px solid var(--line); background: #fff; text-align: left; font: inherit; color: var(--ink); }
+.po-list.pick .po-row { cursor: pointer; }
+.po-list.pick .po-row:hover { border-color: var(--ink); }
+.po-row img { width: 120px; height: 88px; object-fit: cover; flex: none; }
+.po-row .name { flex: 1; font-weight: 600; }
+.po-row .price { font-weight: 700; }
+.po-add { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1.5px dashed var(--ink); background: transparent; font: inherit; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 0.08em; font-size: 14px; }
+.po-add .plus { width: 32px; height: 32px; border-radius: 50%; background: var(--ink); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 22px; }
+.po-add:hover { background: #f4f4f2; }
+@media (max-width: 700px) { .po-row img { width: 80px; height: 60px; } }
+
+/* Gastronoomilised õhtud "Minu broneeringutes" */
+.event-visits { display: grid; gap: 14px; margin-bottom: 34px; }
+.ev-card { display: grid; grid-template-columns: 200px 1fr; gap: 22px; align-items: start; }
+.ev-card.pending { border-left: 4px solid var(--ox); }
+.ev-card.cancelled { opacity: 0.6; }
+.ev-img { width: 200px; height: 150px; object-fit: cover; filter: grayscale(0.2); }
+.ev-body { display: grid; gap: 6px; }
+.ev-body .sum { font-size: 22px; font-weight: 700; }
+.ev-pay, .ev-cancel { display: grid; gap: 10px; max-width: 460px; }
+.ev-past summary { cursor: pointer; margin: 6px 0; }
+.ej-card { display: grid; gap: 8px; }
+.addon-photo { width: 64px; height: 48px; object-fit: cover; flex: none; }
+@media (max-width: 700px) { .ev-card { grid-template-columns: 1fr; } .ev-img { width: 100%; height: 180px; } }
+.ev-body .badge { justify-self: start; }
