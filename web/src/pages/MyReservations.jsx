@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api'
+import CancelDialog from '../components/CancelDialog'
 import { ChevronDown } from '../components/Icons'
 import { useI18n } from '../i18n'
-import { formatDate, formatTime, money } from '../utils'
+import { formatDate, formatTime, money, ZONE_KEY } from '../utils'
 
 /** Teie külastused: tulevased (avatavad kaardid) ja varasemad. */
 export default function MyReservations({ renderExtra }) {
@@ -76,6 +77,8 @@ export default function MyReservations({ renderExtra }) {
                     <span className="muted small">
                       {r.restaurantName} · {t('booking.table', { n: r.tableNumber })} · {t('booking.guestsN', { n: r.guests })} · {t(`status.${r.status}`)}
                     </span>
+                    {r.status === 'Cancelled' && r.refundAmount > 0 && <span className="small refund">{t('cancel.refundNote', { sum: money(r.refundAmount) })}</span>}
+                    {r.status === 'Cancelled' && r.isPaid && r.refundAmount === 0 && <span className="small refund no">{t('cancel.noRefundNote')}</span>}
                   </div>
                   <Link to={`/broneeri?restaurant=${r.restaurantId}&guests=${r.guests}`} className="link-caps">
                     {t('visits.repeat')}
@@ -98,17 +101,9 @@ function VisitCard({ r, open, onToggle, onChanged, setError, renderExtra }) {
   const navigate = useNavigate()
   const hours = (new Date(r.startTime) - new Date()) / 3600000
   const badge = hours < 24 ? t('visits.today') : t('visits.inDays', { n: Math.round(hours / 24) })
-  const zone = r.tableLocation === 'Hall' ? t('booking.hall') : t('booking.terrace')
+  const zone = t(ZONE_KEY[r.tableLocation])
 
-  async function cancel() {
-    if (!window.confirm(t('details.cancelConfirm'))) return
-    try {
-      await api(`/api/reservations/${r.id}/cancel`, { method: 'PATCH' })
-      onChanged()
-    } catch (e) {
-      setError(e.message)
-    }
-  }
+  const [cancelOpen, setCancelOpen] = useState(false)
 
   return (
     <article className={open ? 'visit open' : 'visit'}>
@@ -169,10 +164,20 @@ function VisitCard({ r, open, onToggle, onChanged, setError, renderExtra }) {
               <button className="btn btn-dark" disabled={!r.canModify} onClick={() => navigate(`/broneering/${r.id}`)}>
                 {t('details.change')}
               </button>
-              <button className="btn btn-ox-line" disabled={!r.canModify} onClick={cancel}>{t('details.cancel')}</button>
+              <button className="btn btn-ox-line" onClick={() => setCancelOpen(true)}>{t('details.cancel')}</button>
             </div>
           </div>
           {renderExtra && renderExtra(r, onChanged)}
+          {cancelOpen && (
+            <CancelDialog
+              r={r}
+              onClose={() => setCancelOpen(false)}
+              onCancelled={() => {
+                setCancelOpen(false)
+                onChanged()
+              }}
+            />
+          )}
         </div>
       )}
     </article>

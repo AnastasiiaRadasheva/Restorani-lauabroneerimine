@@ -107,7 +107,6 @@
   .footer-brand .word { font-size: 52px; }
 
   /* ----- Broneerimine ----- */
-  .steps-bar { top: 104px; }
   .steps-bar .container { flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
   .sec-head h1, .sec-head h2 { font-size: 40px; }
   .sec-head .num { font-size: 24px; }

@@ -45,16 +45,18 @@ export default function Menu() {
             {categories.map((c) => (
               <div key={c} className="menu-cat">
                 <h2>{c}</h2>
-                {menu.filter((m) => m.category === c).map((m) => (
-                  <div key={m.id} className="menu-row">
-                    <div>
-                      <span className="name">{m.name}</span>
-                      <span className="desc">{m.description}</span>
-                    </div>
-                    <span className="dots" />
-                    <span className="price">{money(m.price)}</span>
-                  </div>
-                ))}
+                <div className="menu-cards">
+                  {menu.filter((m) => m.category === c).map((m) => (
+                    <article key={m.id} className="menu-card">
+                      {m.imageUrl && <img src={m.imageUrl} alt={m.name} loading="lazy" />}
+                      <div className="body">
+                        <span className="name">{m.name}</span>
+                        <span className="desc">{m.description}</span>
+                        <span className="price">{money(m.price)}</span>
+                      </div>
+                    </article>
+                  ))}
+                </div>
               </div>
             ))}
           </div>

@@ -120,7 +120,7 @@ public class ReservationServiceTests
     }
 
     [Fact]
-    public async Task Cancel_Throws_WhenLessThan24HoursBefore()
+    public async Task Cancel_LessThan24Hours_WithoutConsent_Throws()
     {
         var reservation = new Reservation
         {
@@ -131,6 +131,37 @@ public class ReservationServiceTests
 
         await Assert.ThrowsAsync<BusinessRuleException>(() => CreateService().CancelAsync(5));
         Assert.Equal(ReservationStatus.Active, reservation.Status);
+    }
+
+    [Fact]
+    public async Task Cancel_LessThan24Hours_WithConsent_CancelsWithoutRefund()
+    {
+        var reservation = new Reservation
+        {
+            Id = 5, UserId = 10, TableId = 1, Table = _tableList[0], Status = ReservationStatus.Active,
+            StartTime = Now.AddHours(5), EndTime = Now.AddHours(7), IsPaid = true, SeatFee = 30m
+        };
+        _reservations.Setup(r => r.GetWithDetailsAsync(5)).ReturnsAsync(reservation);
+
+        var result = await CreateService().CancelAsync(5, new CancelReservationDto { AcceptNoRefund = true });
+
+        Assert.Equal(ReservationStatus.Cancelled, result.Status);
+        Assert.Equal(0m, result.RefundAmount);
+    }
+
+    [Fact]
+    public async Task Cancel_MoreThan24Hours_RefundsPaidAmount()
+    {
+        var reservation = new Reservation
+        {
+            Id = 5, UserId = 10, TableId = 1, Table = _tableList[0], Status = ReservationStatus.Active,
+            StartTime = Now.AddDays(3), EndTime = Now.AddDays(3).AddHours(2), IsPaid = true, SeatFee = 30m
+        };
+        _reservations.Setup(r => r.GetWithDetailsAsync(5)).ReturnsAsync(reservation);
+
+        var result = await CreateService().CancelAsync(5);
+
+        Assert.Equal(30m, result.RefundAmount);
     }
 
     [Fact]

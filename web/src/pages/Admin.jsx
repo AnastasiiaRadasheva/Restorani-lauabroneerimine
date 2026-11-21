@@ -3,7 +3,7 @@ import { api, qs } from '../api'
 import BarChart from '../components/BarChart'
 import FloorPlan from '../components/FloorPlan'
 import Pager from '../components/Pager'
-import { LOCATION_TEXT } from '../staff'
+import { EDGE_TEXT, LOCATION_TEXT, ZONE_LIST } from '../staff'
 import { money } from '../utils'
 
 const TABS = [
@@ -140,7 +140,7 @@ function TablesAdmin({ restaurant }) {
       <div className="plan-wrap">
         <div className="plan-col">
           <div className="zone-tabs" role="tablist">
-            {['Hall', 'Terrace'].map((z) => (
+            {ZONE_LIST.map((z) => (
               <button key={z} type="button" className={zone === z ? 'on' : ''} onClick={() => setZone(z)}>{LOCATION_TEXT[z]}</button>
             ))}
           </div>
@@ -148,8 +148,8 @@ function TablesAdmin({ restaurant }) {
             tables={preview}
             zone={zone}
             bar={{ x: restaurant.barX, y: restaurant.barY, width: restaurant.barWidth, height: restaurant.barHeight }}
-            edgeLabel={zone === 'Hall' ? 'tänav · aknad' : 'tänav · varikatus'}
-            entranceLabel="Sissepääs"
+            edgeLabel={EDGE_TEXT[zone]}
+            entranceLabel={zone === 'Upstairs' ? 'Trepp' : 'Sissepääs'}
             barLabel="Baar"
             seatsLabel={(n) => `${n} kohta`}
             onSelect={(t) => t.id > 0 && edit(tables.find((x) => x.id === t.id))}
@@ -171,6 +171,7 @@ function TablesAdmin({ restaurant }) {
                 <select value={form.location} onChange={set('location')}>
                   <option value="Hall">Saal</option>
                   <option value="Terrace">Terrass</option>
+                  <option value="Upstairs">Teine korrus</option>
                 </select>
               </label>
               <label className="field">Kirjeldus plaanil<input value={form.spot} onChange={set('spot')} placeholder="nt akna all" /></label>
@@ -289,6 +290,7 @@ function MenuAdmin({ restaurantId }) {
           </div>
           <datalist id="cats">{CATEGORIES.map((c) => <option key={c} value={c} />)}</datalist>
           <label className="field">Kirjeldus<textarea rows={2} value={form.description} onChange={set('description')} /></label>
+          <label className="field">Foto aadress<input value={form.imageUrl ?? ''} onChange={set('imageUrl')} placeholder="/img/menu/austrid.jpg" /></label>
           <label className="check"><input type="checkbox" checked={form.isAvailable} onChange={set('isAvailable')} /> Saadaval</label>
           <div className="actions">
             <button className="btn btn-dark">Salvesta</button>
@@ -303,7 +305,12 @@ function MenuAdmin({ restaurantId }) {
           <tbody>
             {data?.items.map((m) => (
               <tr key={m.id}>
-                <td data-label="Nimi">{m.name}<div className="muted small">{m.description}</div></td>
+                <td data-label="Nimi">
+                  <div className="admin-dish">
+                    {m.imageUrl && <img src={m.imageUrl} alt="" />}
+                    <span>{m.name}<span className="muted small block">{m.description}</span></span>
+                  </div>
+                </td>
                 <td data-label="Kategooria">{m.category}</td>
                 <td data-label="Hind">{money(m.price)}</td>
                 <td data-label="Saadaval">{m.isAvailable ? 'jah' : 'ei'}</td>

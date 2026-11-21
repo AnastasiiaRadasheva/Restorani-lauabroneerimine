@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth'
 import { useI18n } from '../i18n'
@@ -25,6 +25,18 @@ export default function Header() {
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
   const { pathname } = useLocation()
+  const ref = useRef(null)
+
+  // Päise kõrgus CSS-i muutujasse, et sammude riba jääks alati päise alla
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return undefined
+    const update = () => document.documentElement.style.setProperty('--header-h', `${el.offsetHeight}px`)
+    update()
+    const observer = new ResizeObserver(update)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   // Menüü sulgub lehe vahetusel
   useEffect(() => {
@@ -49,7 +61,7 @@ export default function Header() {
   )
 
   return (
-    <header className={open ? 'header open' : 'header'}>
+    <header ref={ref} className={open ? 'header open' : 'header'}>
       <div className="header-inner">
         <button className="menu-toggle" onClick={() => setOpen(!open)} aria-label={t('nav.menu')} aria-expanded={open}>
           {open ? <CloseIcon /> : <MenuIcon />}
@@ -65,8 +77,7 @@ export default function Header() {
             <>
               {!isStaff && <NavLink to="/minu">{t('nav.my')}</NavLink>}
               <Notifications />
-              <span className="user">{user.name}</span>
-              <button className="link underline" onClick={onLogout}>{t('nav.logout')}</button>
+              <button className="link underline" onClick={onLogout} title={user.name}>{t('nav.logout')}</button>
             </>
           ) : (
             <NavLink to="/login" className="link underline">{t('nav.login')}</NavLink>

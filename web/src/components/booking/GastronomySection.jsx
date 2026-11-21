@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { api, qs } from '../../api'
 import { useI18n } from '../../i18n'
 import { money } from '../../utils'
-import { Arrow } from '../Icons'
 
 const ROMAN = ['i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii']
 
@@ -28,6 +27,8 @@ export default function GastronomySection({ menu, qty, setQty, extra }) {
   const change = (id, d) => setQty((q) => ({ ...q, [id]: Math.max(0, Math.min(50, (q[id] ?? 0) + d)) }))
   const total = menu.reduce((sum, m) => sum + (qty[m.id] ?? 0) * m.price, 0)
   const count = Object.values(qty).reduce((a, b) => a + b, 0)
+  // Kõige pikema kategooria jagu ruumi, et leht ei hüppaks kategooriat vahetades
+  const maxRows = Math.max(1, ...categories.map((c) => menu.filter((m) => m.category === c).length))
 
   return (
     <section id="menu" className="section">
@@ -50,9 +51,11 @@ export default function GastronomySection({ menu, qty, setQty, extra }) {
               ))}
             </div>
 
+            <div className="dish-list" style={{ minHeight: `${maxRows * 150}px` }}>
             {menu.filter((m) => m.category === current).map((m, i) => (
               <div key={m.id} className="dish">
                 <span className="n">{ROMAN[i] ?? i + 1}</span>
+                {m.imageUrl && <img className="dish-photo" src={m.imageUrl} alt={m.name} loading="lazy" />}
                 <div className="text">
                   <span className="eyebrow">{m.category}</span>
                   <span className="name">{m.name}</span>
@@ -66,6 +69,7 @@ export default function GastronomySection({ menu, qty, setQty, extra }) {
                 </div>
               </div>
             ))}
+            </div>
             {extra}
           </div>
 
@@ -73,10 +77,6 @@ export default function GastronomySection({ menu, qty, setQty, extra }) {
             <p className="eyebrow">{t('gastro.preorder')}</p>
             <span className="big">{money(total)}</span>
             <p className="text">{count ? t('gastro.served', { n: count }) : t('gastro.empty')}</p>
-            <a href="#details" className="btn-chamfer silver">
-              {t('gastro.toDetails')}
-              <Arrow width={28} />
-            </a>
           </aside>
         </div>
       </div>

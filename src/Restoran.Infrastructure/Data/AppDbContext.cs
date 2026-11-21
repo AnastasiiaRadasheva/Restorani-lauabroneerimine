@@ -63,6 +63,7 @@ public class AppDbContext : DbContext
             e.Property(x => x.HostName).HasMaxLength(100);
             e.Property(x => x.ServiceLanguage).HasMaxLength(2);
             e.Property(x => x.SeatFee).HasPrecision(10, 2);
+            e.Property(x => x.RefundAmount).HasPrecision(10, 2);
         });
 
         b.Entity<ReservationExtra>(e =>
@@ -114,6 +115,7 @@ public class AppDbContext : DbContext
             e.Property(x => x.Category).HasMaxLength(50);
             e.Property(x => x.Description).HasMaxLength(500);
             e.Property(x => x.Price).HasPrecision(10, 2);
+            e.Property(x => x.ImageUrl).HasMaxLength(300);
         });
 
         b.Entity<PreOrderItem>(e =>

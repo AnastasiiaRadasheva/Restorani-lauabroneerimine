@@ -10,7 +10,8 @@ public record MenuItemDto(
     string Description,
     string Category,
     decimal Price,
-    bool IsAvailable);
+    bool IsAvailable,
+    string? ImageUrl);
 
 /// <summary>Menüüpunkti loomine või muutmine.</summary>
 public class SaveMenuItemDto
@@ -36,6 +37,11 @@ public class SaveMenuItemDto
     public decimal Price { get; set; }
 
     public bool IsAvailable { get; set; } = true;
+
+    /// <summary>Foto aadress (valikuline).</summary>
+    /// <example>/img/menu/austrid.jpg</example>
+    [StringLength(300)]
+    public string? ImageUrl { get; set; }
 }
 
 /// <summary>Menüü otsing, filter, sortimine (name, price, category) ja leheküljed.</summary>

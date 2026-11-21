@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import { useAuth } from '../auth'
@@ -15,7 +15,7 @@ import { money } from '../utils'
 
 const EXTRA_KEY = 'argent-booking-extra'
 
-const emptyEvening = { occasion: 'None', gift: 'Cake', hostType: 'Me', hostName: '', addressForm: 'Name', serviceLanguage: 'et', extras: [] }
+const emptyEvening = { occasion: 'None', gift: 'Cake', hostType: 'Me', hostName: '', addressForm: 'Name', serviceLanguage: 'et', extras: [], cakeNote: '' }
 
 function readExtra() {
   try {
@@ -40,7 +40,16 @@ export default function Booking() {
 
   const [qty, setQty] = useState(saved.qty ?? {})
   const [wish, setWish] = useState(saved.wish ?? '')
-  const [ev, setEv] = useState(saved.ev ?? { ...emptyEvening, serviceLanguage: lang })
+  const [ev, setEvState] = useState(saved.ev ?? { ...emptyEvening, serviceLanguage: lang })
+  // Teeninduse keel järgib saidi keelt, kuni külaline selle ise muudab
+  const langTouched = useRef(false)
+  const setEv = (next) => {
+    if (next.serviceLanguage !== ev.serviceLanguage) langTouched.current = true
+    setEvState(next)
+  }
+  useEffect(() => {
+    if (!langTouched.current) setEvState((e) => ({ ...e, serviceLanguage: lang }))
+  }, [lang])
   const [card, setCard] = useState({ cardNumber: '4242 4242 4242 4242', expiry: '12/28', cvc: '123' })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -57,11 +66,13 @@ export default function Booking() {
   const bx = {
     ...b,
     isPeak,
-    peakNote: <span className="peak-note">{t('fee.peakNote')}</span>,
     manualPrice: isPeak(b.time) ? '+30 €' : '+10 €',
     manualSub: isPeak(b.time) ? t('fee.subPeak') : t('fee.subNormal'),
     seatFeeText: fee ? `+${fee} €` : '',
   }
+
+  const needsCake = ev.extras.includes('bigcake') || (hasOccasion && ev.gift === 'Cake')
+  const cakeText = needsCake && ev.cakeNote?.trim() ? `${t('cake.title')}: ${ev.cakeNote.trim()}` : ''
 
   async function confirm() {
     setError('')
@@ -93,7 +104,7 @@ export default function Booking() {
           guests: b.guests,
           tableId: b.chosenTable.id,
           chosenByGuest: b.mode === 'manual',
-          specialRequest: wish.trim() || null,
+          specialRequest: [wish.trim(), cakeText].filter(Boolean).join('\n') || null,
           items,
           occasion: ev.occasion,
           gift: hasOccasion ? ev.gift : 'None',
@@ -133,7 +144,7 @@ export default function Booking() {
         ]}
       />
       <EveningSection b={bx} />
-      <PlaceSection b={bx} action={{ label: t('booking.continue'), onClick: () => document.getElementById('menu')?.scrollIntoView() }} />
+      <PlaceSection b={bx} />
       <GastronomySection menu={menu} qty={qty} setQty={setQty} />
       <DetailsSection
         user={user}

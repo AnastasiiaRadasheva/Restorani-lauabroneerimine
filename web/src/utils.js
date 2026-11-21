@@ -39,6 +39,14 @@ export function money(v) {
   return `${Number.isInteger(n) ? n : n.toFixed(2).replace('.', ',')} €`
 }
 
+/** Tsoonid plaanil (igal restoranil võivad olla erinevad). */
+export const ZONES = ['Hall', 'Terrace', 'Upstairs']
+export const ZONE_KEY = { Hall: 'booking.hall', Terrace: 'booking.terrace', Upstairs: 'booking.upstairs' }
+export const EDGE_KEY = { Hall: 'booking.edgeHall', Terrace: 'booking.edgeTerrace', Upstairs: 'booking.edgeUpstairs' }
+
+/** Restorani tsoonid laudade järgi. */
+export const zonesOf = (tables) => ZONES.filter((z) => tables.some((tb) => tb.location === z))
+
 /** Broneeringu number tšekil, nt AR-2011-1900-42. */
 export function reservationCode(r) {
   const d = new Date(r.startTime)

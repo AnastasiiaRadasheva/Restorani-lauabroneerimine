@@ -24,6 +24,9 @@
 .plan-table .guest { font-weight: 600; }
 .state-arrived > button { border: 2px solid var(--ox); }
 
+.admin-dish { display: flex; align-items: center; gap: 14px; }
+.admin-dish img { width: 64px; height: 48px; object-fit: cover; flex: none; }
+.block { display: block; }
 .admin-form { display: flex; flex-direction: column; gap: 16px; }
 .admin-form .field-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
@@ -31,7 +34,7 @@
   display: inline-block;
   padding: 3px 10px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   border: 1px solid var(--ink);
@@ -48,7 +51,7 @@
   text-align: left;
   padding: 14px 12px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--muted);
@@ -85,7 +88,7 @@
 /* Statistika */
 .stat-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
 .tile { display: flex; flex-direction: column; gap: 6px; }
-.tile strong { font-weight: 400; font-size: 56px; line-height: 1; }
+.tile strong { font-weight: 500; font-size: 56px; line-height: 1; }
 .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px; }
 .chart { margin: 0; display: flex; flex-direction: column; gap: 16px; }
 .chart figcaption { display: flex; flex-direction: column; gap: 4px; }
@@ -117,7 +120,7 @@
   gap: 8px;
   margin-left: 12px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.26em;
   text-transform: uppercase;
   color: var(--ox);

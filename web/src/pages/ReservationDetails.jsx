@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import { api, qs } from '../api'
+import CancelDialog from '../components/CancelDialog'
 import { useI18n } from '../i18n'
-import { addDays, formatDate, formatTime, reservationCode, toIsoDate } from '../utils'
+import { addDays, formatDate, formatTime, reservationCode, toIsoDate, ZONE_KEY } from '../utils'
 
 /** Ühe broneeringu vaade: andmed, muutmine (rohkem kui 24 h enne) ja tühistamine. */
 export default function ReservationDetails() {
@@ -26,19 +27,12 @@ export default function ReservationDetails() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  async function cancel() {
-    if (!window.confirm(t('details.cancelConfirm'))) return
-    try {
-      updated(await api(`/api/reservations/${id}/cancel`, { method: 'PATCH' }), t('details.cancelled'))
-    } catch (e) {
-      setError(e.message)
-    }
-  }
+  const [cancelOpen, setCancelOpen] = useState(false)
 
   if (!r) return <div className="container loading">{error || t('common.loading')}</div>
 
   const active = r.status === 'Active'
-  const zone = r.tableLocation === 'Hall' ? t('booking.hall') : t('booking.terrace')
+  const zone = t(ZONE_KEY[r.tableLocation])
 
   return (
     <div className="details-page container narrow">
@@ -75,15 +69,31 @@ export default function ReservationDetails() {
 
         {active && !r.canModify && <p className="lock-note">{t('details.locked')}</p>}
 
+        {active && !r.canModify && (
+          <div className="actions">
+            <button className="btn btn-ox-line" onClick={() => setCancelOpen(true)}>{t('details.cancel')}</button>
+          </div>
+        )}
         {active && r.canModify && !editing && (
           <div className="actions">
             <button className="btn btn-dark" onClick={() => setEditing(true)}>{t('details.change')}</button>
-            <button className="btn btn-ox-line" onClick={cancel}>{t('details.cancel')}</button>
+            <button className="btn btn-ox-line" onClick={() => setCancelOpen(true)}>{t('details.cancel')}</button>
           </div>
         )}
       </div>
 
       {editing && <EditReservation r={r} onSaved={(x) => updated(x, t('details.saved'))} onError={setError} onClose={() => setEditing(false)} />}
+
+      {cancelOpen && (
+        <CancelDialog
+          r={r}
+          onClose={() => setCancelOpen(false)}
+          onCancelled={(x) => {
+            setCancelOpen(false)
+            updated(x, x.refundAmount > 0 ? t('cancel.refundNote', { sum: `${x.refundAmount} €` }) : t('details.cancelled'))
+          }}
+        />
+      )}
 
       <p className="back-link"><Link to="/minu">← {t('nav.my')}</Link></p>
     </div>

@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useI18n } from '../i18n'
-import { formatDate, formatTime, money, reservationCode } from '../utils'
+import { formatDate, formatTime, money, reservationCode, ZONE_KEY } from '../utils'
 import { CheckIcon, CloseIcon } from './Icons'
 
 /**
@@ -22,7 +22,7 @@ export default function Receipt({ r, total, onClose, rows = [], children }) {
   }, [onClose])
 
   const code = reservationCode(r)
-  const zone = r.tableLocation === 'Hall' ? t('booking.hall') : t('booking.terrace')
+  const zone = t(ZONE_KEY[r.tableLocation])
 
   return (
     <div className="receipt-overlay" role="dialog" aria-modal="true" aria-label={t('receipt.confirmed')}>

@@ -43,7 +43,7 @@
   gap: 2px;
   padding: 10px 16px 10px 0;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.24em;
   text-transform: uppercase;
 }
@@ -51,7 +51,7 @@
 .event-text { display: flex; flex-direction: column; gap: 8px; flex: 1; }
 .event-text h3 { font-size: 36px; }
 .event-text p { font-size: 17px; line-height: 1.6; color: var(--ink-2); }
-.dress { display: flex; align-items: center; gap: 10px; margin-top: 4px; font-size: 13px; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted); }
+.dress { display: flex; align-items: center; gap: 10px; margin-top: 4px; font-size: 13px; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted); }
 .dress i { width: 8px; height: 8px; transform: rotate(45deg); border: 1px solid currentColor; }
 .dress.strict { color: var(--ox); }
 .dress.strict i { background: var(--ox); }
@@ -122,7 +122,7 @@
   background: transparent;
   font-size: 14px;
 }
-.lang-pick b { font-size: 12px; font-weight: 600; letter-spacing: 0.16em; }
+.lang-pick b { font-size: 12px; font-weight: 700; letter-spacing: 0.16em; }
 .lang-pick .on { background: var(--ink); color: var(--bg); border-color: var(--ink); box-shadow: var(--haze); }
 
 .gifts { display: flex; flex-wrap: wrap; gap: 12px; }
@@ -142,7 +142,7 @@
 .gift .text { display: flex; flex-direction: column; gap: 2px; }
 .gift .name { font-size: 22px; line-height: 1.2; }
 .gift .desc { font-size: 14px; opacity: 0.75; }
-.gift .price { margin-top: 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.26em; }
+.gift .price { margin-top: 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.26em; }
 
 .extras-head { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid var(--ink); font-size: 18px; }
 .extra { display: flex; align-items: center; gap: 24px; padding: 18px 0; border-bottom: 1px solid var(--line-2); }
@@ -171,7 +171,7 @@
   line-height: 1.45;
 }
 .msg.mine { align-self: flex-end; background: var(--ink); color: var(--bg); border-color: var(--ink); }
-.msg .who { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.7; }
+.msg .who { font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.7; }
 .msg-form { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
 .msg-form .field { width: 100%; }
 .new-reply { color: var(--ox); }
@@ -199,6 +199,44 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+/* Keel, tort ja tühistamise aken */
+.lang-current { display: flex; align-items: baseline; gap: 14px; font-size: 20px; }
+.link-under { padding: 0; border: 0; border-bottom: 1px solid currentColor; background: none; font-size: 14px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ox); }
+.cake-card { display: flex; flex-direction: column; gap: 12px; border-color: var(--ox); }
+.refund { color: var(--ink-2); font-style: italic; }
+.refund.no { color: var(--ox); }
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(12, 13, 14, 0.55);
+}
+.dialog {
+  width: min(560px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 36px;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  box-shadow: var(--deep);
+  color: var(--ink);
+}
+.dialog.late { border-top: 6px solid var(--ox); }
+.dialog-title { font-size: 32px; line-height: 1.15; }
+.dialog .warning {
+  padding: 16px 18px;
+  border: 2px solid var(--ox);
+  background: #fbf4f5;
+  color: var(--ox);
+  font-size: 19px;
+  font-weight: 700;
 }
 
 @media (max-width: 1000px) {

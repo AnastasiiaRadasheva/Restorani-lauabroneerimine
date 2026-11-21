@@ -112,7 +112,7 @@ export default function EveningSection({ b }) {
                   <button
                     key={s.time}
                     type="button"
-                    className={`time${s.time === b.time ? ' on' : ''}${b.isPeak?.(s.time) ? ' peak' : ''}`}
+                    className={s.time === b.time ? 'time on' : 'time'}
                     disabled={s.freeTables === 0}
                     onClick={() => b.setTime(s.time)}
                     aria-pressed={s.time === b.time}
@@ -123,7 +123,6 @@ export default function EveningSection({ b }) {
               </div>
               <p className="hint">
                 <span>{t('booking.fullTimes')}</span>
-                {b.peakNote}
               </p>
             </div>
 

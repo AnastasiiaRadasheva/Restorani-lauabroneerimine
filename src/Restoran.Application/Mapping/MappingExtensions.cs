@@ -40,7 +40,7 @@ public static class MappingExtensions
     }
 
     public static MenuItemDto ToDto(this MenuItem m) => new(
-        m.Id, m.RestaurantId, m.Name, m.Description, m.Category, m.Price, m.IsAvailable);
+        m.Id, m.RestaurantId, m.Name, m.Description, m.Category, m.Price, m.IsAvailable, m.ImageUrl);
 
     public static void Apply(this MenuItem m, SaveMenuItemDto d)
     {
@@ -50,5 +50,6 @@ public static class MappingExtensions
         m.Category = d.Category.Trim();
         m.Price = d.Price;
         m.IsAvailable = d.IsAvailable;
+        m.ImageUrl = string.IsNullOrWhiteSpace(d.ImageUrl) ? null : d.ImageUrl.Trim();
     }
 }

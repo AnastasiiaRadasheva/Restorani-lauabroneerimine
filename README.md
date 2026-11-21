@@ -190,3 +190,7 @@ Creating, updating and deleting restaurants, tables and menu items requires the 
 | GET | `/api/auth/me` | Current user |
 
 Errors are returned as `ProblemDetails` (400, 404, 409, 500).
+
+## Photos
+
+Dish photos in `web/public/img/menu` are from [Unsplash](https://unsplash.com/license) (free to use). The list with links is in `web/public/img/menu/CREDITS.md`.

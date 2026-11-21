@@ -128,13 +128,18 @@ public class ReservationsController : ControllerBase
     public async Task<ActionResult<ReservationDto>> Update(int id, UpdateReservationDto dto) =>
         Ok(await _reservations.UpdateAsync(id, dto));
 
-    /// <summary>Tühista broneering (klient kuni 24 h enne algust).</summary>
+    /// <summary>Tühista broneering.</summary>
+    /// <remarks>
+    /// Rohkem kui 24 h enne: makstud summa tagastatakse.
+    /// Vähem kui 24 h enne: raha ei tagastata, klient peab saatma { "acceptNoRefund": true }.
+    /// </remarks>
     [HttpPatch("{id:int}/cancel")]
     [ProducesResponseType(typeof(ReservationDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ReservationDto>> Cancel(int id) => Ok(await _reservations.CancelAsync(id));
+    public async Task<ActionResult<ReservationDto>> Cancel(int id, [FromBody(EmptyBodyBehavior = Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Allow)] CancelReservationDto? dto) =>
+        Ok(await _reservations.CancelAsync(id, dto));
 
     /// <summary>Eeltellimus (asendab varasema eeltellimuse).</summary>
     /// <remarks>

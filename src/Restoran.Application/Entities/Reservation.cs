@@ -35,4 +35,9 @@ public class Reservation
     public decimal SeatFee { get; set; }
     public List<ReservationExtra> Extras { get; set; } = new();
     public List<ReservationMessage> Messages { get; set; } = new();
+
+    // ----- Tühistamine -----
+    public DateTime? CancelledAt { get; set; }
+    /// <summary>Kui palju raha tagastatakse (alla 24 h enne tühistades 0).</summary>
+    public decimal? RefundAmount { get; set; }
 }
