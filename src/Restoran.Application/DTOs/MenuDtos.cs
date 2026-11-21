@@ -11,7 +11,8 @@ public record MenuItemDto(
     string Category,
     decimal Price,
     bool IsAvailable,
-    string? ImageUrl);
+    string? ImageUrl,
+    List<string> Tags);
 
 /// <summary>Menüüpunkti loomine või muutmine.</summary>
 public class SaveMenuItemDto
@@ -42,6 +43,10 @@ public class SaveMenuItemDto
     /// <example>/img/menu/austrid.jpg</example>
     [StringLength(300)]
     public string? ImageUrl { get; set; }
+
+    /// <summary>Allergeenide ja toitumise sildid.</summary>
+    /// <example>["milk", "vegetarian"]</example>
+    public List<string>? Tags { get; set; }
 }
 
 /// <summary>Menüü otsing, filter, sortimine (name, price, category) ja leheküljed.</summary>
@@ -55,4 +60,7 @@ public class MenuQuery : PageQuery
 
     /// <summary>Kas näidata ainult saadaval olevaid.</summary>
     public bool? OnlyAvailable { get; set; }
+
+    /// <summary>true = tekstid andmebaasi kujul (admini muutmisvorm), muidu tõlgitakse saidi keelde.</summary>
+    public bool Raw { get; set; }
 }
