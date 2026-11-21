@@ -45,7 +45,17 @@ public record ReservationDto(
     decimal Total,
     int MessageCount,
     // Kas viimane sõnum on personalilt (kliendile "uus vastus")
-    bool LastMessageFromStaff);
+    bool LastMessageFromStaff,
+    DateTime? CancelledAt,
+    // Tagastatav summa pärast tühistamist (null = pole tühistatud)
+    decimal? RefundAmount);
+
+/// <summary>Tühistamine. Vähem kui 24 h enne peab klient kinnitama, et raha ei tagastata.</summary>
+public class CancelReservationDto
+{
+    /// <summary>Klient on nõus, et makstud summat ei tagastata (vajalik alla 24 h enne).</summary>
+    public bool AcceptNoRefund { get; set; }
+}
 
 /// <summary>Sõnum broneeringu kohta.</summary>
 public record MessageDto(int Id, bool FromStaff, string AuthorName, string Text, DateTime CreatedAt);

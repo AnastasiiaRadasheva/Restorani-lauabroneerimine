@@ -35,7 +35,7 @@ public interface IReservationService
     Task<List<ReservationDto>> GetMyAsync();
     Task<PagedResult<ReservationDto>> GetPagedAsync(ReservationQuery query);
     Task<ReservationDto> UpdateAsync(int id, UpdateReservationDto dto);
-    Task<ReservationDto> CancelAsync(int id);
+    Task<ReservationDto> CancelAsync(int id, CancelReservationDto? dto = null);
     Task<ReservationDto> SetPreOrderAsync(int id, PreOrderDto dto);
     Task<ReservationDto> PayAsync(int id, FakePaymentDto dto);
     Task<ReservationDto> ChangeStatusAsync(int id, ReservationStatus status);

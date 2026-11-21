@@ -158,14 +158,24 @@ public class ReservationService : IReservationService
         return result;
     }
 
-    public async Task<ReservationDto> CancelAsync(int id)
+    /// <summary>
+    /// Tühistamine. Rohkem kui 24 h enne tagastatakse makstud summa.
+    /// Vähem kui 24 h enne võib klient samuti tühistada, kuid raha ei tagastata ja ta peab sellega nõustuma.
+    /// </summary>
+    public async Task<ReservationDto> CancelAsync(int id, CancelReservationDto? dto = null)
     {
         var r = await GetOwned(id);
         if (r.Status != ReservationStatus.Active)
             throw new BusinessRuleException("Tühistada saab ainult aktiivset broneeringut.");
-        EnsureCustomerCanModify(r);
+
+        var paid = r.IsPaid ? TotalOf(r) : 0m;
+        bool inTime = BookingRules.CanCustomerModify(r.StartTime, _clock.Now);
+        if (!inTime && !_current.IsStaff && dto?.AcceptNoRefund != true)
+            throw new BusinessRuleException("Külastuseni on vähem kui 24 tundi: makstud summat ei tagastata. Tühistamiseks kinnitage, et olete sellega nõus.");
 
         r.Status = ReservationStatus.Cancelled;
+        r.CancelledAt = _clock.Now;
+        r.RefundAmount = inTime || _current.IsStaff ? paid : 0m;
         await _reservations.SaveChangesAsync();
         _logger.LogInformation("Broneering {Id} tühistati", r.Id);
         var result = ToDto(r);
@@ -525,6 +535,8 @@ public class ReservationService : IReservationService
             r.Extras.Sum(e => e.Price),
             TotalOf(r),
             r.Messages.Count,
-            r.Messages.OrderBy(m => m.CreatedAt).LastOrDefault()?.FromStaff ?? false);
+            r.Messages.OrderBy(m => m.CreatedAt).LastOrDefault()?.FromStaff ?? false,
+            r.CancelledAt,
+            r.RefundAmount);
     }
 }
