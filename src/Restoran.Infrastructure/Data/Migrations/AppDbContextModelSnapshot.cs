@@ -70,156 +70,246 @@ namespace Restoran.Infrastructure.Data.Migrations
                         new
                         {
                             Id = 1,
-                            Height = 36,
+                            Height = 16,
                             IsActive = true,
-                            IsRound = false,
+                            IsRound = true,
                             Location = "Hall",
                             Number = 1,
                             RestaurantId = 1,
-                            Seats = 6,
+                            Seats = 2,
                             Spot = "akna all",
-                            Width = 22,
-                            X = 5,
-                            Y = 6
+                            Width = 10,
+                            X = 4,
+                            Y = 4
                         },
                         new
                         {
                             Id = 2,
-                            Height = 36,
+                            Height = 16,
                             IsActive = true,
-                            IsRound = false,
+                            IsRound = true,
                             Location = "Hall",
                             Number = 2,
                             RestaurantId = 1,
-                            Seats = 6,
+                            Seats = 2,
                             Spot = "akna all",
-                            Width = 22,
-                            X = 5,
-                            Y = 52
+                            Width = 10,
+                            X = 16,
+                            Y = 4
                         },
                         new
                         {
                             Id = 3,
-                            Height = 21,
+                            Height = 16,
                             IsActive = true,
                             IsRound = false,
                             Location = "Hall",
                             Number = 3,
                             RestaurantId = 1,
-                            Seats = 2,
-                            Spot = "vaikne nurk",
-                            Width = 22,
-                            X = 74,
-                            Y = 3
+                            Seats = 4,
+                            Spot = "akna all",
+                            Width = 14,
+                            X = 28,
+                            Y = 4
                         },
                         new
                         {
                             Id = 4,
-                            Height = 21,
+                            Height = 30,
                             IsActive = true,
                             IsRound = false,
                             Location = "Hall",
                             Number = 4,
                             RestaurantId = 1,
-                            Seats = 2,
-                            Spot = "baari juures",
-                            Width = 22,
-                            X = 74,
-                            Y = 27
+                            Seats = 6,
+                            Spot = "diivan",
+                            Width = 12,
+                            X = 4,
+                            Y = 28
                         },
                         new
                         {
                             Id = 5,
-                            Height = 21,
+                            Height = 16,
                             IsActive = true,
                             IsRound = false,
                             Location = "Hall",
                             Number = 5,
                             RestaurantId = 1,
                             Seats = 4,
-                            Spot = "baari juures",
-                            Width = 22,
-                            X = 74,
-                            Y = 51
+                            Spot = "saali keskel",
+                            Width = 14,
+                            X = 20,
+                            Y = 32
                         },
                         new
                         {
                             Id = 6,
-                            Height = 21,
+                            Height = 16,
                             IsActive = true,
-                            IsRound = false,
+                            IsRound = true,
                             Location = "Hall",
                             Number = 6,
                             RestaurantId = 1,
-                            Seats = 4,
-                            Spot = "sissepääsu juures",
-                            Width = 22,
-                            X = 74,
-                            Y = 75
+                            Seats = 2,
+                            Spot = "saali keskel",
+                            Width = 10,
+                            X = 28,
+                            Y = 52
                         },
                         new
                         {
                             Id = 7,
-                            Height = 30,
+                            Height = 24,
+                            IsActive = true,
+                            IsRound = false,
+                            Location = "Hall",
+                            Number = 7,
+                            RestaurantId = 1,
+                            Seats = 8,
+                            Spot = "pikk laud",
+                            Width = 22,
+                            X = 4,
+                            Y = 68
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Height = 16,
+                            IsActive = true,
+                            IsRound = false,
+                            Location = "Hall",
+                            Number = 8,
+                            RestaurantId = 1,
+                            Seats = 4,
+                            Spot = "vaikne nurk",
+                            Width = 14,
+                            X = 64,
+                            Y = 4
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Height = 16,
+                            IsActive = true,
+                            IsRound = true,
+                            Location = "Hall",
+                            Number = 9,
+                            RestaurantId = 1,
+                            Seats = 2,
+                            Spot = "vaikne nurk",
+                            Width = 12,
+                            X = 84,
+                            Y = 4
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Height = 16,
+                            IsActive = true,
+                            IsRound = false,
+                            Location = "Hall",
+                            Number = 10,
+                            RestaurantId = 1,
+                            Seats = 4,
+                            Spot = "baari juures",
+                            Width = 14,
+                            X = 64,
+                            Y = 28
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Height = 32,
+                            IsActive = true,
+                            IsRound = false,
+                            Location = "Hall",
+                            Number = 11,
+                            RestaurantId = 1,
+                            Seats = 6,
+                            Spot = "diivan",
+                            Width = 12,
+                            X = 84,
+                            Y = 26
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Height = 16,
+                            IsActive = true,
+                            IsRound = false,
+                            Location = "Hall",
+                            Number = 12,
+                            RestaurantId = 1,
+                            Seats = 4,
+                            Spot = "sissepääsu juures",
+                            Width = 14,
+                            X = 64,
+                            Y = 62
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Height = 24,
                             IsActive = true,
                             IsRound = true,
                             Location = "Upstairs",
-                            Number = 7,
+                            Number = 13,
                             RestaurantId = 1,
                             Seats = 2,
                             Spot = "akna all",
-                            Width = 18,
+                            Width = 14,
                             X = 8,
                             Y = 8
                         },
                         new
                         {
-                            Id = 8,
-                            Height = 30,
+                            Id = 14,
+                            Height = 26,
                             IsActive = true,
                             IsRound = false,
                             Location = "Upstairs",
-                            Number = 8,
+                            Number = 14,
                             RestaurantId = 1,
                             Seats = 4,
                             Spot = "kamina juures",
-                            Width = 22,
-                            X = 36,
+                            Width = 18,
+                            X = 30,
                             Y = 8
                         },
                         new
                         {
-                            Id = 9,
-                            Height = 40,
+                            Id = 15,
+                            Height = 36,
                             IsActive = true,
                             IsRound = false,
                             Location = "Upstairs",
-                            Number = 9,
+                            Number = 15,
                             RestaurantId = 1,
                             Seats = 6,
-                            Spot = "privaatne nurk",
-                            Width = 26,
-                            X = 68,
+                            Spot = "privaatne ruum",
+                            Width = 30,
+                            X = 60,
                             Y = 6
                         },
                         new
                         {
-                            Id = 10,
-                            Height = 32,
+                            Id = 16,
+                            Height = 30,
                             IsActive = true,
                             IsRound = false,
                             Location = "Upstairs",
-                            Number = 10,
+                            Number = 16,
                             RestaurantId = 1,
-                            Seats = 8,
-                            Spot = "pikk laud",
-                            Width = 54,
+                            Seats = 10,
+                            Spot = "pidulik laud",
+                            Width = 64,
                             X = 10,
                             Y = 56
                         },
                         new
                         {
-                            Id = 11,
+                            Id = 21,
                             Height = 26,
                             IsActive = true,
                             IsRound = false,
@@ -234,7 +324,7 @@ namespace Restoran.Infrastructure.Data.Migrations
                         },
                         new
                         {
-                            Id = 12,
+                            Id = 22,
                             Height = 26,
                             IsActive = true,
                             IsRound = false,
@@ -245,12 +335,12 @@ namespace Restoran.Infrastructure.Data.Migrations
                             Spot = "akna all",
                             Width = 20,
                             X = 6,
-                            Y = 38
+                            Y = 40
                         },
                         new
                         {
-                            Id = 13,
-                            Height = 22,
+                            Id = 23,
+                            Height = 20,
                             IsActive = true,
                             IsRound = false,
                             Location = "Hall",
@@ -258,13 +348,13 @@ namespace Restoran.Infrastructure.Data.Migrations
                             RestaurantId = 2,
                             Seats = 2,
                             Spot = "sissepääsu juures",
-                            Width = 20,
+                            Width = 18,
                             X = 6,
-                            Y = 72
+                            Y = 74
                         },
                         new
                         {
-                            Id = 14,
+                            Id = 24,
                             Height = 40,
                             IsActive = true,
                             IsRound = false,
@@ -279,7 +369,7 @@ namespace Restoran.Infrastructure.Data.Migrations
                         },
                         new
                         {
-                            Id = 15,
+                            Id = 25,
                             Height = 24,
                             IsActive = true,
                             IsRound = false,
@@ -294,8 +384,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                         },
                         new
                         {
-                            Id = 16,
-                            Height = 30,
+                            Id = 26,
+                            Height = 22,
                             IsActive = true,
                             IsRound = true,
                             Location = "Terrace",
@@ -303,14 +393,14 @@ namespace Restoran.Infrastructure.Data.Migrations
                             RestaurantId = 2,
                             Seats = 2,
                             Spot = "mere ääres",
-                            Width = 16,
-                            X = 6,
-                            Y = 8
+                            Width = 12,
+                            X = 4,
+                            Y = 6
                         },
                         new
                         {
-                            Id = 17,
-                            Height = 30,
+                            Id = 27,
+                            Height = 22,
                             IsActive = true,
                             IsRound = true,
                             Location = "Terrace",
@@ -318,59 +408,104 @@ namespace Restoran.Infrastructure.Data.Migrations
                             RestaurantId = 2,
                             Seats = 2,
                             Spot = "mere ääres",
-                            Width = 16,
-                            X = 28,
-                            Y = 8
+                            Width = 12,
+                            X = 20,
+                            Y = 6
                         },
                         new
                         {
-                            Id = 18,
-                            Height = 32,
+                            Id = 28,
+                            Height = 22,
                             IsActive = true,
                             IsRound = true,
                             Location = "Terrace",
                             Number = 8,
                             RestaurantId = 2,
-                            Seats = 4,
-                            Spot = "päikese käes",
-                            Width = 18,
-                            X = 50,
-                            Y = 8
+                            Seats = 2,
+                            Spot = "mere ääres",
+                            Width = 12,
+                            X = 36,
+                            Y = 6
                         },
                         new
                         {
-                            Id = 19,
+                            Id = 29,
+                            Height = 24,
+                            IsActive = true,
+                            IsRound = true,
+                            Location = "Terrace",
+                            Number = 9,
+                            RestaurantId = 2,
+                            Seats = 4,
+                            Spot = "päikese käes",
+                            Width = 14,
+                            X = 52,
+                            Y = 6
+                        },
+                        new
+                        {
+                            Id = 30,
+                            Height = 24,
+                            IsActive = true,
+                            IsRound = true,
+                            Location = "Terrace",
+                            Number = 10,
+                            RestaurantId = 2,
+                            Seats = 4,
+                            Spot = "päikese käes",
+                            Width = 14,
+                            X = 70,
+                            Y = 6
+                        },
+                        new
+                        {
+                            Id = 31,
                             Height = 32,
                             IsActive = true,
                             IsRound = false,
                             Location = "Terrace",
-                            Number = 9,
+                            Number = 11,
                             RestaurantId = 2,
                             Seats = 6,
                             Spot = "varikatuse all",
-                            Width = 34,
-                            X = 8,
-                            Y = 56
+                            Width = 26,
+                            X = 6,
+                            Y = 50
                         },
                         new
                         {
-                            Id = 20,
-                            Height = 36,
+                            Id = 32,
+                            Height = 32,
                             IsActive = true,
                             IsRound = false,
                             Location = "Terrace",
-                            Number = 10,
+                            Number = 12,
                             RestaurantId = 2,
-                            Seats = 8,
-                            Spot = "pikk laud",
-                            Width = 36,
-                            X = 58,
-                            Y = 52
+                            Seats = 6,
+                            Spot = "kamina juures",
+                            Width = 26,
+                            X = 38,
+                            Y = 50
                         },
                         new
                         {
-                            Id = 21,
-                            Height = 24,
+                            Id = 33,
+                            Height = 48,
+                            IsActive = true,
+                            IsRound = false,
+                            Location = "Terrace",
+                            Number = 13,
+                            RestaurantId = 2,
+                            Seats = 10,
+                            Spot = "pikk laud",
+                            Width = 26,
+                            X = 70,
+                            Y = 42
+                        },
+                        new
+                        {
+                            Id = 41,
+                            Height = 26,
                             IsActive = true,
                             IsRound = false,
                             Location = "Hall",
@@ -379,13 +514,13 @@ namespace Restoran.Infrastructure.Data.Migrations
                             Seats = 2,
                             Spot = "akna all",
                             Width = 20,
-                            X = 6,
-                            Y = 8
+                            X = 8,
+                            Y = 10
                         },
                         new
                         {
-                            Id = 22,
-                            Height = 28,
+                            Id = 42,
+                            Height = 30,
                             IsActive = true,
                             IsRound = false,
                             Location = "Hall",
@@ -394,12 +529,12 @@ namespace Restoran.Infrastructure.Data.Migrations
                             Seats = 4,
                             Spot = "akna all",
                             Width = 22,
-                            X = 6,
-                            Y = 42
+                            X = 8,
+                            Y = 52
                         },
                         new
                         {
-                            Id = 23,
+                            Id = 43,
                             Height = 28,
                             IsActive = true,
                             IsRound = false,
@@ -409,13 +544,13 @@ namespace Restoran.Infrastructure.Data.Migrations
                             Seats = 4,
                             Spot = "vaikne nurk",
                             Width = 22,
-                            X = 72,
-                            Y = 8
+                            X = 70,
+                            Y = 10
                         },
                         new
                         {
-                            Id = 24,
-                            Height = 40,
+                            Id = 44,
+                            Height = 36,
                             IsActive = true,
                             IsRound = false,
                             Location = "Hall",
@@ -423,13 +558,13 @@ namespace Restoran.Infrastructure.Data.Migrations
                             RestaurantId = 3,
                             Seats = 6,
                             Spot = "baari juures",
-                            Width = 24,
-                            X = 70,
-                            Y = 52
+                            Width = 26,
+                            X = 68,
+                            Y = 54
                         },
                         new
                         {
-                            Id = 25,
+                            Id = 45,
                             Height = 34,
                             IsActive = true,
                             IsRound = true,
@@ -440,11 +575,11 @@ namespace Restoran.Infrastructure.Data.Migrations
                             Spot = "vaade pargile",
                             Width = 18,
                             X = 10,
-                            Y = 14
+                            Y = 20
                         },
                         new
                         {
-                            Id = 26,
+                            Id = 46,
                             Height = 34,
                             IsActive = true,
                             IsRound = true,
@@ -455,11 +590,11 @@ namespace Restoran.Infrastructure.Data.Migrations
                             Spot = "vaade pargile",
                             Width = 18,
                             X = 40,
-                            Y = 14
+                            Y = 20
                         },
                         new
                         {
-                            Id = 27,
+                            Id = 47,
                             Height = 34,
                             IsActive = true,
                             IsRound = true,
@@ -470,53 +605,49 @@ namespace Restoran.Infrastructure.Data.Migrations
                             Spot = "purskkaevu juures",
                             Width = 18,
                             X = 70,
-                            Y = 14
-                        },
-                        new
-                        {
-                            Id = 28,
-                            Height = 26,
-                            IsActive = true,
-                            IsRound = false,
-                            Location = "Upstairs",
-                            Number = 8,
-                            RestaurantId = 3,
-                            Seats = 2,
-                            Spot = "akna all",
-                            Width = 20,
-                            X = 10,
-                            Y = 12
-                        },
-                        new
-                        {
-                            Id = 29,
-                            Height = 40,
-                            IsActive = true,
-                            IsRound = false,
-                            Location = "Upstairs",
-                            Number = 9,
-                            RestaurantId = 3,
-                            Seats = 6,
-                            Spot = "kamina juures",
-                            Width = 26,
-                            X = 40,
-                            Y = 12
-                        },
-                        new
-                        {
-                            Id = 30,
-                            Height = 30,
-                            IsActive = true,
-                            IsRound = false,
-                            Location = "Upstairs",
-                            Number = 10,
-                            RestaurantId = 3,
-                            Seats = 8,
-                            Spot = "pidulik laud",
-                            Width = 60,
-                            X = 12,
-                            Y = 60
+                            Y = 20
                         });
+                });
+
+            modelBuilder.Entity("Restoran.Application.Entities.EventMenuItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Code")
+                        .HasMaxLength(30)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("EventId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("MenuItemId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId");
+
+                    b.ToTable("EventMenuItems");
                 });
 
             modelBuilder.Entity("Restoran.Application.Entities.EventRegistration", b =>
@@ -528,19 +659,55 @@ namespace Restoran.Infrastructure.Data.Migrations
                     b.Property<bool>("AcceptedRules")
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Drinks")
+                        .HasMaxLength(300)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("EventId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Extras")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("Guests")
                         .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("PaymentToken")
+                        .HasMaxLength(40)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("RefundAmount")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("TableId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("UserId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("TableId");
 
                     b.HasIndex("UserId");
 
@@ -559,6 +726,11 @@ namespace Restoran.Infrastructure.Data.Migrations
                     b.Property<int>("Capacity")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(1000)
@@ -570,13 +742,15 @@ namespace Restoran.Infrastructure.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ImageUrl")
-                        .HasMaxLength(300)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Kind")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("NoChildren")
+                        .HasColumnType("INTEGER");
 
                     b.Property<decimal>("PricePerGuest")
                         .HasPrecision(10, 2)
@@ -595,6 +769,10 @@ namespace Restoran.Infrastructure.Data.Migrations
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Zone")
+                        .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -639,6 +817,10 @@ namespace Restoran.Infrastructure.Data.Migrations
                     b.Property<int>("RestaurantId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Tags")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.HasIndex("RestaurantId");
@@ -655,7 +837,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Austrid Fine de Claire",
                             Price = 32m,
-                            RestaurantId = 1
+                            RestaurantId = 1,
+                            Tags = "shellfish"
                         },
                         new
                         {
@@ -666,7 +849,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Marmorveise tartar",
                             Price = 28m,
-                            RestaurantId = 1
+                            RestaurantId = 1,
+                            Tags = "egg"
                         },
                         new
                         {
@@ -677,7 +861,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Hiidlest, beurre blanc, kalamari",
                             Price = 46m,
-                            RestaurantId = 1
+                            RestaurantId = 1,
+                            Tags = "fish,milk"
                         },
                         new
                         {
@@ -699,7 +884,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Šokolaad ja meresool",
                             Price = 18m,
-                            RestaurantId = 1
+                            RestaurantId = 1,
+                            Tags = "milk,vegetarian"
                         },
                         new
                         {
@@ -710,7 +896,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Söel küpsetatud carabinero",
                             Price = 38m,
-                            RestaurantId = 1
+                            RestaurantId = 1,
+                            Tags = "shellfish,milk"
                         },
                         new
                         {
@@ -721,7 +908,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Kammkarbid ja lillkapsas",
                             Price = 34m,
-                            RestaurantId = 1
+                            RestaurantId = 1,
+                            Tags = "shellfish,nuts,milk"
                         },
                         new
                         {
@@ -732,7 +920,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Kamtšatka krabi",
                             Price = 36m,
-                            RestaurantId = 1
+                            RestaurantId = 1,
+                            Tags = "shellfish"
                         },
                         new
                         {
@@ -743,7 +932,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Tuurakalamari, 30 g",
                             Price = 85m,
-                            RestaurantId = 1
+                            RestaurantId = 1,
+                            Tags = "fish,gluten,milk"
                         },
                         new
                         {
@@ -754,7 +944,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Set „Argent“ – 7 käiku",
                             Price = 120m,
-                            RestaurantId = 1
+                            RestaurantId = 1,
+                            Tags = "gluten,milk,fish"
                         },
                         new
                         {
@@ -765,7 +956,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Set „Meri“ – 5 käiku",
                             Price = 95m,
-                            RestaurantId = 1
+                            RestaurantId = 1,
+                            Tags = "shellfish,fish,milk"
                         },
                         new
                         {
@@ -776,7 +968,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Set „Teras“ – 6 käiku",
                             Price = 110m,
-                            RestaurantId = 1
+                            RestaurantId = 1,
+                            Tags = "gluten"
                         },
                         new
                         {
@@ -787,7 +980,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Veinisaade",
                             Price = 65m,
-                            RestaurantId = 1
+                            RestaurantId = 1,
+                            Tags = "vegan"
                         },
                         new
                         {
@@ -798,7 +992,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Veise sisefilee ja mürklid",
                             Price = 52m,
-                            RestaurantId = 1
+                            RestaurantId = 1,
+                            Tags = "milk"
                         },
                         new
                         {
@@ -809,7 +1004,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Pirnisuflee",
                             Price = 16m,
-                            RestaurantId = 1
+                            RestaurantId = 1,
+                            Tags = "gluten,milk,egg,vegetarian"
                         },
                         new
                         {
@@ -820,7 +1016,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Šampanja, klaas",
                             Price = 18m,
-                            RestaurantId = 1
+                            RestaurantId = 1,
+                            Tags = "vegan"
                         },
                         new
                         {
@@ -831,7 +1028,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Austrid Fine de Claire",
                             Price = 32m,
-                            RestaurantId = 2
+                            RestaurantId = 2,
+                            Tags = "shellfish"
                         },
                         new
                         {
@@ -842,7 +1040,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Marmorveise tartar",
                             Price = 28m,
-                            RestaurantId = 2
+                            RestaurantId = 2,
+                            Tags = "egg"
                         },
                         new
                         {
@@ -853,7 +1052,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Hiidlest, beurre blanc, kalamari",
                             Price = 46m,
-                            RestaurantId = 2
+                            RestaurantId = 2,
+                            Tags = "fish,milk"
                         },
                         new
                         {
@@ -875,7 +1075,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Šokolaad ja meresool",
                             Price = 18m,
-                            RestaurantId = 2
+                            RestaurantId = 2,
+                            Tags = "milk,vegetarian"
                         },
                         new
                         {
@@ -886,7 +1087,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Söel küpsetatud carabinero",
                             Price = 38m,
-                            RestaurantId = 2
+                            RestaurantId = 2,
+                            Tags = "shellfish,milk"
                         },
                         new
                         {
@@ -897,7 +1099,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Kammkarbid ja lillkapsas",
                             Price = 34m,
-                            RestaurantId = 2
+                            RestaurantId = 2,
+                            Tags = "shellfish,nuts,milk"
                         },
                         new
                         {
@@ -908,7 +1111,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Kamtšatka krabi",
                             Price = 36m,
-                            RestaurantId = 2
+                            RestaurantId = 2,
+                            Tags = "shellfish"
                         },
                         new
                         {
@@ -919,7 +1123,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Tuurakalamari, 30 g",
                             Price = 85m,
-                            RestaurantId = 2
+                            RestaurantId = 2,
+                            Tags = "fish,gluten,milk"
                         },
                         new
                         {
@@ -930,7 +1135,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Set „Argent“ – 7 käiku",
                             Price = 120m,
-                            RestaurantId = 2
+                            RestaurantId = 2,
+                            Tags = "gluten,milk,fish"
                         },
                         new
                         {
@@ -941,7 +1147,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Set „Meri“ – 5 käiku",
                             Price = 95m,
-                            RestaurantId = 2
+                            RestaurantId = 2,
+                            Tags = "shellfish,fish,milk"
                         },
                         new
                         {
@@ -952,7 +1159,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Set „Teras“ – 6 käiku",
                             Price = 110m,
-                            RestaurantId = 2
+                            RestaurantId = 2,
+                            Tags = "gluten"
                         },
                         new
                         {
@@ -963,7 +1171,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Veinisaade",
                             Price = 65m,
-                            RestaurantId = 2
+                            RestaurantId = 2,
+                            Tags = "vegan"
                         },
                         new
                         {
@@ -974,7 +1183,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Veise sisefilee ja mürklid",
                             Price = 52m,
-                            RestaurantId = 2
+                            RestaurantId = 2,
+                            Tags = "milk"
                         },
                         new
                         {
@@ -985,7 +1195,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Pirnisuflee",
                             Price = 16m,
-                            RestaurantId = 2
+                            RestaurantId = 2,
+                            Tags = "gluten,milk,egg,vegetarian"
                         },
                         new
                         {
@@ -996,7 +1207,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Šampanja, klaas",
                             Price = 18m,
-                            RestaurantId = 2
+                            RestaurantId = 2,
+                            Tags = "vegan"
                         },
                         new
                         {
@@ -1007,7 +1219,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Austrid Fine de Claire",
                             Price = 32m,
-                            RestaurantId = 3
+                            RestaurantId = 3,
+                            Tags = "shellfish"
                         },
                         new
                         {
@@ -1018,7 +1231,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Marmorveise tartar",
                             Price = 28m,
-                            RestaurantId = 3
+                            RestaurantId = 3,
+                            Tags = "egg"
                         },
                         new
                         {
@@ -1029,7 +1243,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Hiidlest, beurre blanc, kalamari",
                             Price = 46m,
-                            RestaurantId = 3
+                            RestaurantId = 3,
+                            Tags = "fish,milk"
                         },
                         new
                         {
@@ -1051,7 +1266,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Šokolaad ja meresool",
                             Price = 18m,
-                            RestaurantId = 3
+                            RestaurantId = 3,
+                            Tags = "milk,vegetarian"
                         },
                         new
                         {
@@ -1062,7 +1278,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Söel küpsetatud carabinero",
                             Price = 38m,
-                            RestaurantId = 3
+                            RestaurantId = 3,
+                            Tags = "shellfish,milk"
                         },
                         new
                         {
@@ -1073,7 +1290,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Kammkarbid ja lillkapsas",
                             Price = 34m,
-                            RestaurantId = 3
+                            RestaurantId = 3,
+                            Tags = "shellfish,nuts,milk"
                         },
                         new
                         {
@@ -1084,7 +1302,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Kamtšatka krabi",
                             Price = 36m,
-                            RestaurantId = 3
+                            RestaurantId = 3,
+                            Tags = "shellfish"
                         },
                         new
                         {
@@ -1095,7 +1314,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Tuurakalamari, 30 g",
                             Price = 85m,
-                            RestaurantId = 3
+                            RestaurantId = 3,
+                            Tags = "fish,gluten,milk"
                         },
                         new
                         {
@@ -1106,7 +1326,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Set „Argent“ – 7 käiku",
                             Price = 120m,
-                            RestaurantId = 3
+                            RestaurantId = 3,
+                            Tags = "gluten,milk,fish"
                         },
                         new
                         {
@@ -1117,7 +1338,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Set „Meri“ – 5 käiku",
                             Price = 95m,
-                            RestaurantId = 3
+                            RestaurantId = 3,
+                            Tags = "shellfish,fish,milk"
                         },
                         new
                         {
@@ -1128,7 +1350,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Set „Teras“ – 6 käiku",
                             Price = 110m,
-                            RestaurantId = 3
+                            RestaurantId = 3,
+                            Tags = "gluten"
                         },
                         new
                         {
@@ -1139,7 +1362,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Veinisaade",
                             Price = 65m,
-                            RestaurantId = 3
+                            RestaurantId = 3,
+                            Tags = "vegan"
                         },
                         new
                         {
@@ -1150,7 +1374,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Veise sisefilee ja mürklid",
                             Price = 52m,
-                            RestaurantId = 3
+                            RestaurantId = 3,
+                            Tags = "milk"
                         },
                         new
                         {
@@ -1161,7 +1386,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Pirnisuflee",
                             Price = 16m,
-                            RestaurantId = 3
+                            RestaurantId = 3,
+                            Tags = "gluten,milk,egg,vegetarian"
                         },
                         new
                         {
@@ -1172,7 +1398,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                             IsAvailable = true,
                             Name = "Šampanja, klaas",
                             Price = 18m,
-                            RestaurantId = 3
+                            RestaurantId = 3,
+                            Tags = "vegan"
                         });
                 });
 
@@ -1187,6 +1414,10 @@ namespace Restoran.Infrastructure.Data.Migrations
 
                     b.Property<bool>("IsRead")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Link")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Message")
                         .IsRequired()
@@ -1245,6 +1476,14 @@ namespace Restoran.Infrastructure.Data.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Allergies")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AllergyNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime?>("CancelledAt")
                         .HasColumnType("TEXT");
 
@@ -1277,6 +1516,10 @@ namespace Restoran.Infrastructure.Data.Migrations
                     b.Property<string>("Occasion")
                         .IsRequired()
                         .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PaymentToken")
+                        .HasMaxLength(40)
                         .HasColumnType("TEXT");
 
                     b.Property<decimal?>("RefundAmount")
@@ -1315,6 +1558,8 @@ namespace Restoran.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("PaymentToken");
+
                     b.HasIndex("UserId");
 
                     b.HasIndex("TableId", "StartTime");
@@ -1332,6 +1577,9 @@ namespace Restoran.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("Locked")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1429,6 +1677,23 @@ namespace Restoran.Infrastructure.Data.Migrations
                     b.Property<TimeOnly>("OpensAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("StageHeight")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("StageWidth")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("StageX")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("StageY")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("StageZone")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.ToTable("Restaurants");
@@ -1438,16 +1703,21 @@ namespace Restoran.Infrastructure.Data.Migrations
                         {
                             Id = 1,
                             Address = "Rataskaevu 8, Tallinn",
-                            BarHeight = 54,
-                            BarWidth = 26,
-                            BarX = 38,
-                            BarY = 46,
+                            BarHeight = 34,
+                            BarWidth = 20,
+                            BarX = 40,
+                            BarY = 40,
                             ClosesAt = new TimeOnly(23, 30, 0),
                             Description = "Kõrgköögi restoran vanalinna südames. Degustatsioonimenüü ja lahtine tuli.",
                             Latitude = 59.436999999999998,
                             Longitude = 24.742799999999999,
                             Name = "Argent · Vanalinn",
-                            OpensAt = new TimeOnly(17, 0, 0)
+                            OpensAt = new TimeOnly(17, 0, 0),
+                            StageHeight = 38,
+                            StageWidth = 18,
+                            StageX = 78,
+                            StageY = 50,
+                            StageZone = "Upstairs"
                         },
                         new
                         {
@@ -1457,27 +1727,37 @@ namespace Restoran.Infrastructure.Data.Migrations
                             BarWidth = 30,
                             BarX = 34,
                             BarY = 58,
-                            ClosesAt = new TimeOnly(23, 30, 0),
+                            ClosesAt = new TimeOnly(3, 0, 0),
                             Description = "Mereäärne saal ja suur terrass. Mereannid ja šampanja.",
                             Latitude = 59.446599999999997,
                             Longitude = 24.7395,
                             Name = "Argent · Kalamaja",
-                            OpensAt = new TimeOnly(17, 0, 0)
+                            OpensAt = new TimeOnly(17, 0, 0),
+                            StageHeight = 12,
+                            StageWidth = 46,
+                            StageX = 14,
+                            StageY = 34,
+                            StageZone = "Terrace"
                         },
                         new
                         {
                             Id = 3,
                             Address = "Weizenbergi 18, Tallinn",
-                            BarHeight = 40,
-                            BarWidth = 26,
-                            BarX = 36,
-                            BarY = 56,
+                            BarHeight = 36,
+                            BarWidth = 22,
+                            BarX = 38,
+                            BarY = 60,
                             ClosesAt = new TimeOnly(23, 30, 0),
                             Description = "Vaikne saal Kadrioru pargi kõrval. Hooajalised setid ja veinid.",
                             Latitude = 59.438499999999998,
                             Longitude = 24.792000000000002,
                             Name = "Argent · Kadriorg",
-                            OpensAt = new TimeOnly(17, 0, 0)
+                            OpensAt = new TimeOnly(17, 0, 0),
+                            StageHeight = 20,
+                            StageWidth = 26,
+                            StageX = 36,
+                            StageY = 12,
+                            StageZone = "Hall"
                         });
                 });
 
@@ -1487,12 +1767,20 @@ namespace Restoran.Infrastructure.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("AvatarUrl")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasMaxLength(5)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -1504,6 +1792,15 @@ namespace Restoran.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("PasswordSet")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("PasswordToken")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("PasswordTokenExpires")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Phone")
                         .HasMaxLength(30)
                         .HasColumnType("TEXT");
@@ -1513,12 +1810,52 @@ namespace Restoran.Infrastructure.Data.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("SmsOptIn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true);
+
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
                         .IsUnique();
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Restoran.Application.Services.SupportMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("AuthorName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("FromStaff")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("ReadByStaff")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("SupportMessages", (string)null);
                 });
 
             modelBuilder.Entity("Restoran.Application.Entities.DiningTable", b =>
@@ -1532,6 +1869,17 @@ namespace Restoran.Infrastructure.Data.Migrations
                     b.Navigation("Restaurant");
                 });
 
+            modelBuilder.Entity("Restoran.Application.Entities.EventMenuItem", b =>
+                {
+                    b.HasOne("Restoran.Application.Entities.GastroEvent", "Event")
+                        .WithMany("Items")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Event");
+                });
+
             modelBuilder.Entity("Restoran.Application.Entities.EventRegistration", b =>
                 {
                     b.HasOne("Restoran.Application.Entities.GastroEvent", "Event")
@@ -1540,6 +1888,11 @@ namespace Restoran.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Restoran.Application.Entities.DiningTable", "Table")
+                        .WithMany()
+                        .HasForeignKey("TableId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Restoran.Application.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -1547,6 +1900,8 @@ namespace Restoran.Infrastructure.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Event");
+
+                    b.Navigation("Table");
 
                     b.Navigation("User");
                 });
@@ -1644,6 +1999,17 @@ namespace Restoran.Infrastructure.Data.Migrations
                     b.Navigation("Reservation");
                 });
 
+            modelBuilder.Entity("Restoran.Application.Services.SupportMessage", b =>
+                {
+                    b.HasOne("Restoran.Application.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Restoran.Application.Entities.DiningTable", b =>
                 {
                     b.Navigation("Reservations");
@@ -1651,6 +2017,8 @@ namespace Restoran.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Restoran.Application.Entities.GastroEvent", b =>
                 {
+                    b.Navigation("Items");
+
                     b.Navigation("Registrations");
                 });
 

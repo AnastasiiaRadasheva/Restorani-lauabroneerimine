@@ -36,6 +36,10 @@ public class GlobalExceptionHandler : IExceptionHandler
         else
             _logger.LogWarning("{Title} ({Status}): {Message}", title, status, exception.Message);
 
+        // Teade saidi keeles (Accept-Language: et/ru/en)
+        var lang = ErrorTranslator.LanguageOf(context);
+        var detail = status == 500 ? "Midagi läks valesti. Proovi hiljem uuesti." : exception.Message;
+
         context.Response.StatusCode = status;
         return await _problemDetails.TryWriteAsync(new ProblemDetailsContext
         {
@@ -44,8 +48,8 @@ public class GlobalExceptionHandler : IExceptionHandler
             ProblemDetails = new ProblemDetails
             {
                 Status = status,
-                Title = title,
-                Detail = status == 500 ? "Midagi läks valesti. Proovi hiljem uuesti." : exception.Message,
+                Title = ErrorTranslator.TranslateTitle(title, lang),
+                Detail = ErrorTranslator.Translate(detail, lang),
                 Instance = context.Request.Path
             }
         });

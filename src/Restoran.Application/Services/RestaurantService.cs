@@ -8,10 +8,12 @@ namespace Restoran.Application.Services;
 
 public class RestaurantService : IRestaurantService
 {
+    private readonly ICurrentUser _current;
     private readonly IRestaurantRepository _restaurants;
 
-    public RestaurantService(IRestaurantRepository restaurants)
+    public RestaurantService(IRestaurantRepository restaurants, ICurrentUser current)
     {
+        _current = current;
         _restaurants = restaurants;
     }
 
@@ -24,7 +26,7 @@ public class RestaurantService : IRestaurantService
             double? distance = lat.HasValue && lng.HasValue
                 ? Geo.DistanceMeters(lat.Value, lng.Value, r.Latitude, r.Longitude)
                 : null;
-            result.Add(r.ToDto(r.Tables.Count(t => t.IsActive), distance));
+            result.Add(Localize(r.ToDto(r.Tables.Count(t => t.IsActive), distance)));
         }
 
         return lat.HasValue && lng.HasValue
@@ -35,7 +37,7 @@ public class RestaurantService : IRestaurantService
     public async Task<RestaurantDto> GetByIdAsync(int id)
     {
         var r = await Find(id);
-        return r.ToDto(await _restaurants.CountTablesAsync(id));
+        return Localize(r.ToDto(await _restaurants.CountTablesAsync(id)));
     }
 
     public async Task<RestaurantDto> CreateAsync(SaveRestaurantDto dto)
@@ -74,4 +76,7 @@ public class RestaurantService : IRestaurantService
         if (closes <= opens)
             throw new BusinessRuleException("Sulgemisaeg peab olema hilisem kui avamisaeg.");
     }
+
+    /// <summary>Restorani kirjeldus saidi keeles.</summary>
+    private RestaurantDto Localize(RestaurantDto d) => d with { Description = L.Word(d.Description, _current.Language) };
 }

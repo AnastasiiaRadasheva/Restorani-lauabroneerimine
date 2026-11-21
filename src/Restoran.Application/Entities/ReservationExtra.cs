@@ -12,4 +12,8 @@ public class ReservationExtra
     public string Name { get; set; } = "";
     /// <summary>Hind tellimise hetkel.</summary>
     public decimal Price { get; set; }
+
+    /// <summary>Lisatud broneerimisel ja makstud koos broneeringuga – klient ei saa seda eemaldada.
+    /// Hiljem ("Minu broneeringutes") lisatud teenuse saab klient ise eemaldada.</summary>
+    public bool Locked { get; set; }
 }

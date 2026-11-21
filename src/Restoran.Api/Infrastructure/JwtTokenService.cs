@@ -64,4 +64,13 @@ public class HttpCurrentUser : ICurrentUser
         Enum.TryParse<UserRole>(_http.HttpContext?.User.FindFirstValue(ClaimTypes.Role), out var r) ? r : null;
 
     public bool IsStaff => Role is UserRole.Admin or UserRole.Waiter;
+
+    public string Language
+    {
+        get
+        {
+            var h = _http.HttpContext?.Request.Headers.AcceptLanguage.ToString().ToLowerInvariant() ?? "";
+            return h.StartsWith("ru") ? "ru" : h.StartsWith("en") ? "en" : "et";
+        }
+    }
 }

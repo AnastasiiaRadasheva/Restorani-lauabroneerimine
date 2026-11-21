@@ -7,7 +7,7 @@ namespace Restoran.Application.DTOs;
 public record PreOrderItemDto(int MenuItemId, string Name, int Quantity, decimal UnitPrice, decimal Total);
 
 /// <summary>Lisateenus broneeringus.</summary>
-public record ExtraDto(string Code, string Name, decimal Price);
+public record ExtraDto(string Code, string Name, decimal Price, bool Locked = false);
 
 public record ReservationDto(
     int Id,
@@ -48,7 +48,17 @@ public record ReservationDto(
     bool LastMessageFromStaff,
     DateTime? CancelledAt,
     // Tagastatav summa pärast tühistamist (null = pole tühistatud)
-    decimal? RefundAmount);
+    decimal? RefundAmount,
+    List<string> Allergies,
+    string? AllergyNote,
+    string? CustomerEmail,
+    // Makselingi kood (ainult "ootab makset" broneeringutel)
+    string? PaymentToken,
+    // Kaardiga makstud osa ja kohapeal makstav osa (hiljem lisatud lisateenused)
+    decimal PaidAmount = 0,
+    decimal OnSiteAmount = 0,
+    // Kliendi keel (meeldetuletused jm sõnumid tema keeles)
+    string CustomerLanguage = "et");
 
 /// <summary>Tühistamine. Vähem kui 24 h enne peab klient kinnitama, et raha ei tagastata.</summary>
 public class CancelReservationDto
@@ -61,6 +71,22 @@ public class CancelReservationDto
 public record MessageDto(int Id, bool FromStaff, string AuthorName, string Text, DateTime CreatedAt);
 
 /// <summary>Uus sõnum.</summary>
+/// <summary>Personal kirjutab korraga kõigile päeva külalistele (nt "restoran on suletud").</summary>
+public class BroadcastDto
+{
+    /// <example>2026-11-20</example>
+    public DateOnly Date { get; set; }
+    /// <summary>Tühi = kõik restoranid.</summary>
+    public int? RestaurantId { get; set; }
+    /// <example>Vabandame, restoran on sel päeval suletud.</example>
+    [Required, StringLength(1000, MinimumLength = 2)]
+    public string Text { get; set; } = "";
+    /// <summary>Lisaks teatele saadetakse SMS ja e-kiri (oluliste teadete jaoks).</summary>
+    public bool AlsoSmsEmail { get; set; }
+    /// <summary>Tühista need broneeringud (nt restoran suletud) – makstud summa tagastatakse täies ulatuses.</summary>
+    public bool CancelAll { get; set; }
+}
+
 public class NewMessageDto
 {
     /// <example>Kas tordi saaks serveerida magustoiduga?</example>
@@ -135,9 +161,20 @@ public class CreateReservationDto
     [RegularExpression("^(et|ru|en)$", ErrorMessage = "Keel peab olema et, ru või en.")]
     public string ServiceLanguage { get; set; } = "et";
 
+    /// <summary>Allergeenid ja toitumine (glutenfree, lactosefree, nutfree, vegan, vegetarian, noseafood).</summary>
+    public List<string>? Allergies { get; set; }
+
+    /// <summary>Kommentaar köögile allergiate kohta.</summary>
+    [StringLength(500)]
+    public string? AllergyNote { get; set; }
+
     /// <summary>Lisateenuste koodid (vt GET /api/reservations/extras).</summary>
     /// <example>["flowers"]</example>
     public List<string>? Extras { get; set; }
+
+    /// <summary>Kaart: klient maksab broneerides kohe (laua valik, eeltellimus, lisateenused).
+    /// Broneering ja makse on üks samm – maksmata broneeringut ei teki.</summary>
+    public FakePaymentDto? Card { get; set; }
 }
 
 /// <summary>Broneeringu muutmine (lubatud rohkem kui 24 h enne algust).</summary>
@@ -170,6 +207,9 @@ public class PreOrderDto
     /// <summary>Soovid köögile.</summary>
     [StringLength(500)]
     public string? SpecialRequest { get; set; }
+
+    /// <summary>Kui makstud eeltellimus muutub kallimaks, makstakse vahe selle kaardiga.</summary>
+    public FakePaymentDto? Card { get; set; }
 }
 
 /// <summary>Võltsmakse (päris raha ei liigu, kaardiandmeid ei salvestata).</summary>
@@ -208,8 +248,17 @@ public class ReservationQuery : PageQuery
     /// <summary>Päev kujul yyyy-MM-dd.</summary>
     public DateOnly? Date { get; set; }
 
+    /// <summary>Alates (kaasa arvatud), nt lähimad broneeringud.</summary>
+    public DateOnly? From { get; set; }
+
+    /// <summary>Kuni (kaasa arvatud).</summary>
+    public DateOnly? To { get; set; }
+
     public ReservationStatus? Status { get; set; }
 }
+
+/// <summary>Kalendri päev personalile: mitu broneeringut ja mitu neist on olulised (tähtpäev).</summary>
+public record CalendarDayDto(DateOnly Date, int Reservations, int Guests, int Important);
 
 /// <summary>Laud koos infoga, kas see on valitud ajal vaba.</summary>
 public record TableAvailabilityDto(
@@ -236,7 +285,10 @@ public record AvailabilityDto(
 public record SlotDto(string Time, int FreeTables);
 
 /// <summary>Ühe päeva kellaajad broneerimise kalendri jaoks.</summary>
-public record DaySlotsDto(DateOnly Date, List<SlotDto> Slots);
+public record DaySlotsDto(DateOnly Date, List<SlotDto> Slots, DayEventDto? Event = null);
+
+/// <summary>Sel päeval toimub gastronoomiline õhtu: Zone == null tähendab kogu restorani.</summary>
+public record DayEventDto(int Id, string Code, string Title, string? Zone);
 
 /// <summary>Päeva plaani üks broneering.</summary>
 public record PlanReservationDto(

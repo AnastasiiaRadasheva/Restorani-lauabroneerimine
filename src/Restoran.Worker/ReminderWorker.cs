@@ -59,8 +59,13 @@ public class ReminderWorker : BackgroundService
         var due = await _api.GetRemindDueAsync(ct);
         foreach (var r in due)
         {
-            var message = $"Meeldetuletus: homme kell {r.StartTime:HH:mm} ootab sind {r.RestaurantName}, " +
-                          $"laud {r.TableNumber} ({r.Guests} inimest). Muuta enam ei saa – küsimuste korral helista restorani.";
+            // Meeldetuletus kliendi keeles
+            var message = r.CustomerLanguage switch
+            {
+                "ru" => $"Напоминание: завтра в {r.StartTime:HH:mm} Вас ждёт {r.RestaurantName}, стол {r.TableNumber} (гостей: {r.Guests}). Изменить бронь уже нельзя — если есть вопросы, позвоните в ресторан.",
+                "en" => $"Reminder: tomorrow at {r.StartTime:HH:mm} {r.RestaurantName} is expecting you, table {r.TableNumber} ({r.Guests} guests). It can no longer be changed – call the restaurant with any questions.",
+                _ => $"Meeldetuletus: homme kell {r.StartTime:HH:mm} ootab Teid {r.RestaurantName}, laud {r.TableNumber} ({r.Guests} in.). Muuta enam ei saa – küsimuste korral helistage restorani."
+            };
             await _api.SendNotificationAsync(r.UserId, r.Id, message, ct);
             await _api.MarkRemindedAsync(r.Id, ct);
         }

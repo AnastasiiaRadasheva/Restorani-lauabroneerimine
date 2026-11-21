@@ -74,39 +74,92 @@ public class ReservationService : IReservationService
             .Where(t => t.Seats >= guests).ToList();
         var rangeStart = from.ToDateTime(TimeOnly.MinValue);
         var occupying = (await _reservations.GetOccupyingAsync(
-                tables.Select(t => t.Id), rangeStart, rangeStart.AddDays(days), null))
+                tables.Select(t => t.Id), rangeStart, rangeStart.AddDays(days + 1), null))
             .Where(r => BookingRules.Occupies(r.Status))
             .ToList();
+
+        // Gastronoomilise õhtu päeval on tavaline broneerimine õhtu saalis (või kogu restoranis) suletud
+        var rangeDayStart = BookingRules.DayStart(from.ToDateTime(new TimeOnly(12, 0)));
+        var events = await _reservations.GetEventsAsync(restaurantId, rangeDayStart, rangeDayStart.AddDays(days)) ?? new List<GastroEvent>();
 
         var result = new List<DaySlotsDto>();
         for (int d = 0; d < days; d++)
         {
             var date = from.AddDays(d);
             var slots = new List<SlotDto>();
-            // Kellaajad 30-minutilise sammuga avamisest kuni 2 h enne sulgemist
+            var dayEvents = events.Where(e => DateOnly.FromDateTime(BookingRules.DayStart(e.StartTime)) == date).ToList();
+            // Saabumise ajad 30-minutilise sammuga avamisest kuni viimase saabumiseni
             var open = (int)restaurant.OpensAt.ToTimeSpan().TotalMinutes;
-            var lastStart = (int)restaurant.ClosesAt.ToTimeSpan().TotalMinutes - (int)BookingRules.Duration.TotalMinutes;
+            var lastStart = (int)BookingRules.LastArrival(restaurant.OpensAt, restaurant.ClosesAt).ToTimeSpan().TotalMinutes;
+            // Laud on hõivatud kogu õhtu
+            var eveningEnd = BookingRules.EveningEnd(date, restaurant.OpensAt, restaurant.ClosesAt);
             for (int minutes = open; minutes <= lastStart; minutes += 30)
             {
                 var time = TimeOnly.FromTimeSpan(TimeSpan.FromMinutes(minutes));
                 var start = date.ToDateTime(time);
-                var end = start + BookingRules.Duration;
-                int free = start <= _clock.Now ? 0 : tables.Count(t => !occupying.Any(r =>
-                    r.TableId == t.Id && BookingRules.Overlaps(start, end, r.StartTime, r.EndTime)));
+                var end = eveningEnd;
+                // Broneeritud laud on suletud kogu päevaks (ka enne broneeringu kellaaega)
+                var dayStart = BookingRules.DayStart(start);
+                int free = start <= _clock.Now ? 0 : tables.Count(t => !ClosedByEvent(dayEvents, t) && !occupying.Any(r =>
+                    r.TableId == t.Id && BookingRules.Overlaps(dayStart, end, r.StartTime, r.EndTime)));
                 slots.Add(new SlotDto(time.ToString("HH:mm"), free));
             }
-            result.Add(new DaySlotsDto(date, slots));
+            var ev = dayEvents.FirstOrDefault();
+            result.Add(new DaySlotsDto(date, slots, ev is null ? null : new DayEventDto(ev.Id, ev.Code, ev.Title, ev.Zone?.ToString())));
         }
         return result;
     }
 
     // ---------- Broneerimine ----------
 
-    public async Task<ReservationDto> CreateAsync(CreateReservationDto dto)
+    public Task<ReservationDto> CreateAsync(CreateReservationDto dto)
     {
-        var userId = RequireUser();
+        // Personal ei broneeri enda nimele – ainult kliendi nimel (telefonibroneering)
+        if (_current.IsStaff)
+            throw new ForbiddenException("Personal saab broneerida ainult kliendi nimel (Uus broneering).");
+        if (_current.Role == UserRole.Service)
+            throw new ForbiddenException("Teenusekonto ei saa broneerida.");
+        return CreateCoreAsync(RequireUser(), dto, ReservationStatus.Active);
+    }
+
+    /// <summary>Personal broneerib kliendi nimel. Personal ise ei maksa: klient saab makselingi.</summary>
+    public Task<ReservationDto> CreatePendingForUserAsync(int userId, CreateReservationDto dto)
+    {
+        if (!_current.IsStaff) throw new ForbiddenException("Kliendi nimel saab broneerida ainult personal.");
+        return CreateCoreAsync(userId, dto, ReservationStatus.PendingPayment);
+    }
+
+    public async Task<ReservationDto> GetByPaymentTokenAsync(string token) =>
+        ToDto(await _reservations.GetByPaymentTokenAsync(token) ?? throw new NotFoundException("Makselinki ei leitud või see on aegunud."));
+
+    /// <summary>Makse lingi kaudu: broneering kinnitatakse (olek Active).</summary>
+    public async Task<ReservationDto> PayByTokenAsync(string token, FakePaymentDto dto)
+    {
+        var r = await _reservations.GetByPaymentTokenAsync(token) ?? throw new NotFoundException("Makselinki ei leitud või see on aegunud.");
+        if (r.Status != ReservationStatus.PendingPayment)
+            throw new BusinessRuleException("See broneering on juba kinnitatud või tühistatud.");
+        if (r.StartTime <= _clock.Now)
+            throw new BusinessRuleException("Külastuse aeg on möödas – makselink ei kehti enam.");
+        if (TotalOf(r) > 0 && new string(dto.CardNumber.Where(char.IsDigit).ToArray()).Length < 12)
+            throw new BusinessRuleException("Kaardi number on vigane.");
+        r.IsPaid = TotalOf(r) > 0;
+        r.Status = ReservationStatus.Active;
+        await _reservations.SaveChangesAsync();
+        _logger.LogInformation("Broneering {Id} kinnitati makselingi kaudu", r.Id);
+        var result = ToDto(r);
+        await _realtime.TableStatusChangedAsync(result);
+        return result;
+    }
+
+    private async Task<ReservationDto> CreateCoreAsync(int userId, CreateReservationDto dto, ReservationStatus status)
+    {
         var restaurant = await GetRestaurant(dto.RestaurantId);
         var (start, end) = ValidateTime(restaurant, dto.Date, dto.Time, dto.Guests);
+
+        // Üks külaline võib ühel õhtul broneerida kuni 3 lauda
+        var mine = await _reservations.GetByUserAsync(userId) ?? new List<Reservation>();
+        if (mine.Count(r => BookingRules.Occupies(r.Status) && DateOnly.FromDateTime(r.StartTime) == dto.Date) >= BookingRules.MaxTablesPerEvening)
+            throw new BusinessRuleException($"Ühel õhtul saab broneerida kuni {BookingRules.MaxTablesPerEvening} lauda.");
         var table = await ChooseTable(dto.RestaurantId, dto.TableId, dto.Guests, start, end, null);
 
         var reservation = new Reservation
@@ -117,13 +170,28 @@ public class ReservationService : IReservationService
             EndTime = end,
             Guests = dto.Guests,
             SpecialRequest = Clean(dto.SpecialRequest),
-            Status = ReservationStatus.Active,
+            Status = status,
+            PaymentToken = status == ReservationStatus.PendingPayment ? Guid.NewGuid().ToString("N") : null,
             CreatedAt = _clock.Now
         };
         // Eeltellimus võib tulla kohe broneeringuga koos (veebis III samm "Gastronoomia")
         if (dto.Items is { Count: > 0 })
             await ApplyPreOrderAsync(reservation, dto.RestaurantId, dto.Items);
         ApplyEvening(reservation, dto);
+        // Personali broneering, kus pole midagi maksta (metrdotel valib laua), kinnitub kohe
+        // Klient broneerib ise: makse samas sammus (maksmata broneeringut ei jää laua kinni hoidma)
+        if (reservation.Status == ReservationStatus.Active && TotalOf(reservation) > 0)
+        {
+            var digits = new string((dto.Card?.CardNumber ?? "").Where(char.IsDigit).ToArray());
+            if (digits.Length < 12)
+                throw new BusinessRuleException("Kaardi number on vigane.");
+            reservation.IsPaid = true;
+        }
+        if (reservation.Status == ReservationStatus.PendingPayment && TotalOf(reservation) <= 0)
+        {
+            reservation.Status = ReservationStatus.Active;
+            reservation.PaymentToken = null;
+        }
         await _reservations.AddAsync(reservation);
         await _reservations.SaveChangesAsync();
         _logger.LogInformation("Uus broneering {Id}: restoran {Restaurant}, laud {Table}, {Start}, {Guests} inimest",
@@ -139,6 +207,8 @@ public class ReservationService : IReservationService
     public async Task<ReservationDto> UpdateAsync(int id, UpdateReservationDto dto)
     {
         var r = await GetOwned(id);
+        if (r.Status is not (ReservationStatus.Active or ReservationStatus.PendingPayment))
+            throw new BusinessRuleException("Muuta saab ainult aktiivset broneeringut.");
         EnsureCustomerCanModify(r);
 
         var restaurantId = r.Table!.RestaurantId;
@@ -165,17 +235,17 @@ public class ReservationService : IReservationService
     public async Task<ReservationDto> CancelAsync(int id, CancelReservationDto? dto = null)
     {
         var r = await GetOwned(id);
-        if (r.Status != ReservationStatus.Active)
+        if (r.Status is not (ReservationStatus.Active or ReservationStatus.PendingPayment))
             throw new BusinessRuleException("Tühistada saab ainult aktiivset broneeringut.");
 
-        var paid = r.IsPaid ? TotalOf(r) : 0m;
+        var paid = PaidOf(r); // kohapeal makstavat osa ei tagastata – seda pole makstud
         bool inTime = BookingRules.CanCustomerModify(r.StartTime, _clock.Now);
-        if (!inTime && !_current.IsStaff && dto?.AcceptNoRefund != true)
+        if (!inTime && !_current.IsStaff && paid > 0 && dto?.AcceptNoRefund != true)
             throw new BusinessRuleException("Külastuseni on vähem kui 24 tundi: makstud summat ei tagastata. Tühistamiseks kinnitage, et olete sellega nõus.");
 
         r.Status = ReservationStatus.Cancelled;
         r.CancelledAt = _clock.Now;
-        r.RefundAmount = inTime || _current.IsStaff ? paid : 0m;
+        r.RefundAmount = (r.RefundAmount ?? 0m) + (inTime || _current.IsStaff ? paid : 0m);
         await _reservations.SaveChangesAsync();
         _logger.LogInformation("Broneering {Id} tühistati", r.Id);
         var result = ToDto(r);
@@ -191,10 +261,26 @@ public class ReservationService : IReservationService
         if (r.Status != ReservationStatus.Active)
             throw new BusinessRuleException("Eeltellimust saab lisada ainult aktiivsele broneeringule.");
         EnsureCustomerCanModify(r);
-        if (r.IsPaid)
-            throw new BusinessRuleException("Makstud eeltellimust ei saa muuta.");
 
+        // Eeltellimust võib muuta ka pärast makset: kallim tellimus -> makstakse vahe, odavam -> vahe tagastatakse
+        var before = TotalOf(r);
         await ApplyPreOrderAsync(r, r.Table!.RestaurantId, dto.Items);
+        var diff = TotalOf(r) - before;
+        var due = r.IsPaid ? diff : TotalOf(r) - r.Extras.Where(e => !e.Locked).Sum(e => e.Price);
+        if (due > 0)
+        {
+            var digits = new string((dto.Card?.CardNumber ?? "").Where(char.IsDigit).ToArray());
+            if (digits.Length < 12)
+                throw new BusinessRuleException($"Tasuda tuleb {due:0.##} € – sisestage kaardi andmed.");
+            r.IsPaid = true;
+            _logger.LogInformation("Broneering {Id}: eeltellimuse eest makstud {Due} € (võltsmakse)", r.Id, due);
+        }
+        else if (r.IsPaid && diff < 0)
+        {
+            r.RefundAmount = (r.RefundAmount ?? 0) - diff;
+            _logger.LogInformation("Broneering {Id}: eeltellimuse vahe {Diff} € tagastatakse", r.Id, -diff);
+        }
+        if (TotalOf(r) <= 0) r.IsPaid = false;
         if (dto.SpecialRequest is not null)
             r.SpecialRequest = Clean(dto.SpecialRequest);
 
@@ -218,6 +304,8 @@ public class ReservationService : IReservationService
             throw new BusinessRuleException("Kaardi number on vigane.");
 
         r.IsPaid = true;
+        // Kõik selle makse sees olevad lisateenused on nüüd makstud ja lukus
+        foreach (var x in r.Extras) x.Locked = true;
         await _reservations.SaveChangesAsync();
         _logger.LogInformation("Broneering {Id} makstud (võltsmakse), summa {Total}", r.Id, TotalOf(r));
         return ToDto(r);
@@ -251,6 +339,14 @@ public class ReservationService : IReservationService
     public async Task<ReservationDto> ChangeStatusAsync(int id, ReservationStatus status)
     {
         var r = await _reservations.GetWithDetailsAsync(id) ?? throw NotFound(id);
+        // "Saabus" / "Ei tulnud" saab vahetada (eksimuse parandamiseks), kuid mitte tühistatud ega makset ootaval broneeringul
+        if (status is ReservationStatus.Arrived or ReservationStatus.NoShow)
+        {
+            if (r.Status is not (ReservationStatus.Active or ReservationStatus.Arrived or ReservationStatus.NoShow))
+                throw new BusinessRuleException("Saabumist saab märkida ainult aktiivsel broneeringul.");
+            if (DateOnly.FromDateTime(BookingRules.DayStart(r.StartTime)) > DateOnly.FromDateTime(BookingRules.DayStart(_clock.Now)))
+                throw new BusinessRuleException("Saabumist saab märkida alles külastuse päeval.");
+        }
         r.Status = status;
         await _reservations.SaveChangesAsync();
         _logger.LogInformation("Broneeringu {Id} uus olek: {Status}", r.Id, status);
@@ -275,6 +371,20 @@ public class ReservationService : IReservationService
                 .ToList())).ToList();
 
         return new TablePlanDto(restaurant.ToDto(tables.Count), date, planTables);
+    }
+
+    /// <summary>Kalender personalile: broneeringute arv päevade kaupa.</summary>
+    public async Task<List<CalendarDayDto>> GetCalendarAsync(int? restaurantId, DateOnly from, int days)
+    {
+        if (days < 1 || days > 62) throw new BusinessRuleException("Päevade arv peab olema 1 kuni 62.");
+        var list = (await _reservations.GetForStatsAsync(restaurantId, from, from.AddDays(days - 1)))
+            .Where(r => BookingRules.Occupies(r.Status)).ToList();
+        return Enumerable.Range(0, days).Select(i =>
+        {
+            var d = from.AddDays(i);
+            var day = list.Where(r => DateOnly.FromDateTime(r.StartTime) == d).ToList();
+            return new CalendarDayDto(d, day.Count, day.Sum(r => r.Guests), day.Count(r => r.Occasion != Occasion.None));
+        }).ToList();
     }
 
     // ---------- Sõnumid ja lisateenused ----------
@@ -314,8 +424,11 @@ public class ReservationService : IReservationService
             throw new BusinessRuleException("Lisateenuseid saab muuta ainult aktiivsel broneeringul.");
 
         var wanted = dto.Extras.Distinct().ToList();
+        // Broneerimisel lisatud (makstud) teenust klient eemaldada ei saa; hiljem lisatut saab. Personal saab alati.
+        if (!_current.IsStaff && r.Extras.Any(x => x.Locked && !wanted.Contains(x.Code)))
+            throw new BusinessRuleException("Broneerimisel makstud teenust ei saa eemaldada. Kirjutage vajadusel restoranile broneeringu sõnumites.");
         r.Extras.RemoveAll(x => !wanted.Contains(x.Code));
-        AddExtras(r, wanted);
+        AddExtras(r, wanted, locked: false);
         await _reservations.SaveChangesAsync();
         return ToDto(r);
     }
@@ -332,7 +445,7 @@ public class ReservationService : IReservationService
         var list = await _reservations.GetRemindDueAsync(tomorrow, tomorrow.AddDays(1));
         return list.Select(r => new RemindDueDto(
             r.Id, r.UserId, r.User?.Name ?? "", r.Table?.Restaurant?.Name ?? "",
-            r.Table?.Number ?? 0, r.Guests, r.StartTime)).ToList();
+            r.Table?.Number ?? 0, r.Guests, r.StartTime, r.User?.Language ?? "et")).ToList();
     }
 
     public async Task MarkRemindedAsync(int id)
@@ -348,6 +461,16 @@ public class ReservationService : IReservationService
         var cutoff = _clock.Now - BookingRules.NoShowAfter;
         var list = await _reservations.GetNoShowCandidatesAsync(cutoff);
         foreach (var r in list) r.Status = ReservationStatus.NoShow;
+
+        // Personali broneering, mida klient 24 tunni jooksul ei maksnud, tühistatakse ja laud vabaneb
+        var unpaid = new List<UnpaidCancelledDto>();
+        foreach (var r in await _reservations.GetExpiredPendingAsync(_clock.Now.AddHours(-24), _clock.Now) ?? new List<Reservation>())
+        {
+            r.Status = ReservationStatus.Cancelled;
+            r.CancelledAt = _clock.Now;
+            list.Add(r);
+            unpaid.Add(new UnpaidCancelledDto(r.UserId, r.Id, $"{r.Table?.Restaurant?.Name} {r.StartTime:dd.MM HH:mm}"));
+        }
         await _reservations.SaveChangesAsync();
 
         foreach (var r in list)
@@ -355,7 +478,7 @@ public class ReservationService : IReservationService
             _logger.LogInformation("Broneering {Id} märgiti NoShow, laud {Table} vabanes", r.Id, r.Table?.Number);
             await _realtime.TableStatusChangedAsync(ToDto(r));
         }
-        return new NoShowResultDto(list.Count, list.Select(r => r.Id).ToList());
+        return new NoShowResultDto(list.Count, list.Select(r => r.Id).ToList(), unpaid);
     }
 
     // ---------- Abimeetodid ----------
@@ -370,20 +493,31 @@ public class ReservationService : IReservationService
         r.HostName = dto.HostType == HostType.Other ? Clean(dto.HostName) : null;
         r.AddressForm = dto.AddressForm;
         r.ServiceLanguage = dto.ServiceLanguage is "et" or "ru" or "en" ? dto.ServiceLanguage : "et";
+        r.Allergies = dto.Allergies is { Count: > 0 } ? string.Join(',', dto.Allergies.Distinct()) : null;
+        r.AllergyNote = Clean(dto.AllergyNote);
         r.SeatFee = BookingRules.SeatFee(dto.TableId is not null && dto.ChosenByGuest, TimeOnly.FromDateTime(r.StartTime));
-        AddExtras(r, dto.Extras);
+        AddExtras(r, dto.Extras, locked: true);
     }
 
     /// <summary>Lisab lisateenused kataloogist (hind tellimise hetkel).</summary>
-    private static void AddExtras(Reservation r, IEnumerable<string>? codes)
+    private static void AddExtras(Reservation r, IEnumerable<string>? codes, bool locked)
     {
         foreach (var code in (codes ?? Enumerable.Empty<string>()).Distinct())
         {
             if (r.Extras.Any(x => x.Code == code)) continue;
             var info = ExtrasCatalog.Find(code) ?? throw new BusinessRuleException($"Tundmatu lisateenus \"{code}\".");
-            r.Extras.Add(new ReservationExtra { Code = info.Code, Name = info.Name, Price = info.Price });
+            r.Extras.Add(new ReservationExtra { Code = info.Code, Name = info.Name, Price = info.Price, Locked = locked });
         }
     }
+
+    /// <summary>Kaardiga makstud summa: kõik peale pärast makset lisatud lisateenuste (need makstakse kohapeal).</summary>
+    private static decimal PaidOf(Reservation r) =>
+        r.IsPaid ? TotalOf(r) - r.Extras.Where(e => !e.Locked).Sum(e => e.Price) : 0m;
+
+    /// <summary>Kohapeal makstav osa: pärast broneerimist lisatud lisateenused.
+    /// Makset ootava (makselingiga) broneeringu summa makstakse lingi kaudu, mitte kohapeal.</summary>
+    private static decimal OnSiteOf(Reservation r) =>
+        r.Status == ReservationStatus.PendingPayment ? 0m : r.Extras.Where(e => !e.Locked).Sum(e => e.Price);
 
     private static decimal TotalOf(Reservation r) =>
         r.PreOrderItems.Sum(p => p.UnitPrice * p.Quantity) + r.Extras.Sum(e => e.Price) + r.SeatFee;
@@ -427,15 +561,17 @@ public class ReservationService : IReservationService
             throw new BusinessRuleException("Inimeste arv peab olema 1 kuni 20.");
 
         var start = date.ToDateTime(time);
-        var end = start + BookingRules.Duration;
+        // Laud jääb külalisele kogu õhtuks (kuni sulgemiseni), isegi kui ta on seal 2 tundi
+        var end = BookingRules.EveningEnd(date, restaurant.OpensAt, restaurant.ClosesAt);
+        var last = BookingRules.LastArrival(restaurant.OpensAt, restaurant.ClosesAt);
 
         if (start <= _clock.Now)
             throw new BusinessRuleException("Broneeringu aeg ei saa olla minevikus.");
         if (date > DateOnly.FromDateTime(_clock.Now).AddDays(90))
             throw new BusinessRuleException("Broneerida saab kuni 90 päeva ette.");
-        if (time < restaurant.OpensAt || TimeOnly.FromDateTime(end) > restaurant.ClosesAt || end.Date != start.Date)
+        if (time < restaurant.OpensAt || time > last)
             throw new BusinessRuleException(
-                $"Restoran on avatud {restaurant.OpensAt:HH\\:mm}-{restaurant.ClosesAt:HH\\:mm}. Broneering kestab 2 tundi.");
+                $"Saabuda saab {restaurant.OpensAt:HH\\:mm} kuni {last:HH\\:mm}. Restoran on avatud {restaurant.OpensAt:HH\\:mm}-{restaurant.ClosesAt:HH\\:mm}.");
 
         return (start, end);
     }
@@ -465,12 +601,25 @@ public class ReservationService : IReservationService
 
     private async Task<HashSet<int>> GetBusyTableIds(List<DiningTable> tables, DateTime start, DateTime end, int? excludeId)
     {
+        // Laud on hõivatud kogu päeva: kontrollime päeva algusest õhtu lõpuni
+        start = BookingRules.DayStart(start);
         var occupying = await _reservations.GetOccupyingAsync(tables.Select(t => t.Id), start, end, excludeId);
-        return occupying
+        var busy = occupying
             .Where(r => BookingRules.Occupies(r.Status) && BookingRules.Overlaps(start, end, r.StartTime, r.EndTime))
             .Select(r => r.TableId)
             .ToHashSet();
+        // Gastronoomilise õhtu päeval on õhtu saal (või kogu restoran) tavaliseks broneerimiseks suletud
+        if (tables.Count > 0)
+        {
+            var events = await _reservations.GetEventsAsync(tables[0].RestaurantId, start, start.AddDays(1)) ?? new List<GastroEvent>();
+            busy.UnionWith(tables.Where(t => ClosedByEvent(events, t)).Select(t => t.Id));
+        }
+        return busy;
     }
+
+    /// <summary>Kas laud on õhtu tõttu suletud (õhtu kogu restoranis või selle laua saalis).</summary>
+    private static bool ClosedByEvent(IEnumerable<GastroEvent> events, DiningTable t) =>
+        events.Any(e => e.Zone is null || e.Zone == t.Location);
 
     /// <summary>Broneering, mida praegune kasutaja tohib vaadata (oma või personal).</summary>
     private async Task<Reservation> GetOwned(int id)
@@ -501,7 +650,7 @@ public class ReservationService : IReservationService
     private ReservationDto ToDto(Reservation r)
     {
         var items = r.PreOrderItems.Select(p => new PreOrderItemDto(
-            p.MenuItemId, p.MenuItem?.Name ?? "", p.Quantity, p.UnitPrice, p.UnitPrice * p.Quantity)).ToList();
+            p.MenuItemId, L.Word(p.MenuItem?.Name ?? "", _current.Language), p.Quantity, p.UnitPrice, p.UnitPrice * p.Quantity)).ToList();
 
         return new ReservationDto(
             r.Id,
@@ -531,12 +680,19 @@ public class ReservationService : IReservationService
             r.AddressForm,
             r.ServiceLanguage,
             r.SeatFee,
-            r.Extras.Select(e => new ExtraDto(e.Code, e.Name, e.Price)).ToList(),
+            r.Extras.Select(e => new ExtraDto(e.Code, e.Name, e.Price, e.Locked)).ToList(),
             r.Extras.Sum(e => e.Price),
             TotalOf(r),
             r.Messages.Count,
             r.Messages.OrderBy(m => m.CreatedAt).LastOrDefault()?.FromStaff ?? false,
             r.CancelledAt,
-            r.RefundAmount);
+            r.RefundAmount,
+            (r.Allergies ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries).ToList(),
+            r.AllergyNote,
+            r.User?.Email,
+            r.PaymentToken,
+            PaidOf(r),
+            OnSiteOf(r),
+            r.User?.Language ?? "et");
     }
 }

@@ -1,8 +1,10 @@
+using Restoran.Application.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Restoran.Application.Common;
 using Restoran.Application.DTOs;
 using Restoran.Application.Interfaces;
+using Restoran.Application.Services;
 
 namespace Restoran.Api.Controllers;
 
@@ -14,11 +16,30 @@ namespace Restoran.Api.Controllers;
 public class ReservationsController : ControllerBase
 {
     private readonly IReservationService _reservations;
+    private readonly IBookingMessenger _messenger;
+    private readonly INotificationService _notifications;
+    private readonly IUserRepository _users;
+    private readonly ICurrentUser _current;
+    private readonly IEventService _events;
 
-    public ReservationsController(IReservationService reservations)
+    public ReservationsController(IReservationService reservations, IBookingMessenger messenger,
+        INotificationService notifications, IUserRepository users, ICurrentUser current, IEventService events)
     {
+        _events = events;
         _reservations = reservations;
+        _messenger = messenger;
+        _notifications = notifications;
+        _users = users;
+        _current = current;
     }
+
+    /// <summary>Kalender personalile: broneeringute arv päevade kaupa.</summary>
+    /// <remarks>Näide: GET /api/reservations/calendar?restaurantId=1&amp;from=2026-11-01&amp;days=42</remarks>
+    [Authorize(Roles = "Admin,Waiter")]
+    [HttpGet("calendar")]
+    [ProducesResponseType(typeof(List<CalendarDayDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<CalendarDayDto>>> Calendar([FromQuery] int? restaurantId, [FromQuery] DateOnly from, [FromQuery] int days = 42) =>
+        Ok(await _reservations.GetCalendarAsync(restaurantId, from, days));
 
     /// <summary>Broneeringu sõnumid (klient ja personal).</summary>
     [HttpGet("{id:int}/messages")]
@@ -36,7 +57,52 @@ public class ReservationsController : ControllerBase
     [ProducesResponseType(typeof(MessageDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<MessageDto>> AddMessage(int id, NewMessageDto dto) => Ok(await _reservations.AddMessageAsync(id, dto));
+    public async Task<ActionResult<MessageDto>> AddMessage(int id, NewMessageDto dto)
+    {
+        var message = await _reservations.AddMessageAsync(id, dto);
+        var r = await _reservations.GetByIdAsync(id);
+        var text = message.Text.Length > 80 ? message.Text[..80] + "…" : message.Text;
+        // Personal kirjutas -> teade kliendile; klient kirjutas -> teade kogu personalile
+        var receivers = message.FromStaff ? new List<int> { r.UserId } : (await _users.GetStaffAsync()).Select(u => u.Id).ToList();
+        foreach (var userId in receivers.Where(u => u != _current.UserId))
+        {
+            // Saaja keeles
+            var lang = (await _users.GetByIdAsync(userId))?.Language;
+            await _notifications.CreateAsync(new CreateNotificationDto
+            {
+                UserId = userId,
+                ReservationId = id,
+                Message = message.FromStaff ? L.T(lang, "msg.toGuest", text) : L.T(lang, "msg.toStaff", r.CustomerName, r.StartTime.ToString("dd.MM HH:mm"), text)
+            });
+        }
+        return Ok(message);
+    }
+
+    /// <summary>Kirjuta korraga kõigile päeva külalistele (sõnum läheb iga broneeringu vestlusesse + teade; soovi korral SMS ja e-kiri).</summary>
+    /// <remarks>
+    ///     POST /api/reservations/broadcast
+    ///     { "date": "2026-11-20", "restaurantId": 1, "text": "Vabandame, restoran on suletud.", "alsoSmsEmail": true }
+    /// </remarks>
+    [Authorize(Roles = "Admin,Waiter")]
+    [HttpPost("broadcast")]
+    public async Task<ActionResult<int>> Broadcast(BroadcastDto dto)
+    {
+        var page = await _reservations.GetPagedAsync(new ReservationQuery { Date = dto.Date, RestaurantId = dto.RestaurantId, Page = 1, PageSize = 100 });
+        var guests = page.Items.Where(r => r.Status is ReservationStatus.Active or ReservationStatus.PendingPayment or ReservationStatus.Arrived).ToList();
+        var text = dto.Text.Trim();
+        foreach (var r in guests)
+        {
+            await _reservations.AddMessageAsync(r.Id, new NewMessageDto { Text = text });
+            var lang = (await _users.GetByIdAsync(r.UserId))?.Language;
+            var shortText = text.Length > 80 ? text[..80] + "…" : text;
+            await _notifications.CreateAsync(new CreateNotificationDto { UserId = r.UserId, ReservationId = r.Id, Message = L.T(lang, "msg.toGuest", shortText) });
+            if (dto.AlsoSmsEmail) await _messenger.SendStaffMessageAsync(r.UserId, r.RestaurantName, r.StartTime, text);
+            // Personal tühistab: makstud summa tagastatakse alati täies ulatuses
+            if (dto.CancelAll && r.Status is ReservationStatus.Active or ReservationStatus.PendingPayment)
+                await _reservations.CancelAsync(r.Id, null);
+        }
+        return Ok(guests.Count);
+    }
 
     /// <summary>Muuda broneeringu lisateenuseid (lubatud ka vähem kui 24 h enne).</summary>
     /// <remarks>
@@ -84,7 +150,19 @@ public class ReservationsController : ControllerBase
     [Authorize(Roles = "Service,Admin")]
     [HttpPost("mark-no-show")]
     [ProducesResponseType(typeof(NoShowResultDto), StatusCodes.Status200OK)]
-    public async Task<ActionResult<NoShowResultDto>> MarkNoShow() => Ok(await _reservations.MarkNoShowsAsync());
+    public async Task<ActionResult<NoShowResultDto>> MarkNoShow()
+    {
+        // Samal ajal: gastronoomiliste õhtute maksmata registreerimised tühistatakse 24 h enne õhtut
+        var unpaid = await _events.CancelUnpaidAsync();
+        var result = await _reservations.MarkNoShowsAsync();
+        // Kliendile teade tema keeles: maksmata broneering / registreerimine tühistati
+        foreach (var u in unpaid.Concat(result.UnpaidCancelled ?? new()))
+        {
+            var lang = (await _users.GetByIdAsync(u.UserId))?.Language;
+            await _notifications.CreateAsync(new CreateNotificationDto { UserId = u.UserId, ReservationId = u.ReservationId, Link = "/minu", Message = L.T(lang, "booking.unpaidCancelled", u.What) });
+        }
+        return Ok(result);
+    }
 
     /// <summary>Minu broneeringud.</summary>
     [HttpGet("my")]
@@ -115,6 +193,8 @@ public class ReservationsController : ControllerBase
     public async Task<ActionResult<ReservationDto>> Create(CreateReservationDto dto)
     {
         var created = await _reservations.CreateAsync(dto);
+        // Kinnitus: teade saidil, SMS (kui klient lubas) ja e-kiri tšekiga
+        await _messenger.SendConfirmationAsync(created);
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 

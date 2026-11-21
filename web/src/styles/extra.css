@@ -1,0 +1,126 @@
+/* ==========================================================
+   Lisad: laiem leht, paksem kiri, allergeenid, õhtu aken, tugi, profiil, kalender
+   ========================================================== */
+
+:root { --gutter: clamp(20px, 3vw, 64px); --muted: #34383c; --muted-2: #5a5f63; }
+body { font-weight: 560; }
+.container, .header-inner, .footer-inner { max-width: 1960px; }
+.small, .muted, .desc, .field, .hint, .sub { font-weight: 600; }
+.eyebrow { font-weight: 800; color: var(--ink-2); }
+h1, h2, h3, .card-title, .big, .name { font-weight: 600; }
+
+/* Nupud: tekst ei lähe enam üle ääre */
+.btn { height: auto; min-height: 52px; padding: 12px 24px; white-space: normal; text-align: center; line-height: 1.25; }
+.btn-big { min-height: 60px; letter-spacing: 0.16em; }
+.btn-small { min-height: 42px; padding: 8px 16px; }
+
+/* Märkused (erisoovid jt) alati kogu laiuses */
+.details4-main .block { display: flex; flex-direction: column; gap: 12px; }
+.details4-main textarea.box { width: 100%; }
+
+/* Allergeenid */
+.allergy-card { display: flex; flex-direction: column; gap: 16px; }
+.allergy-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; }
+.allergy { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border: 1px solid var(--line-3); cursor: pointer; font-size: 17px; }
+.allergy input { accent-color: var(--ox); width: 18px; height: 18px; }
+.allergy.on { border-color: var(--ox); background: #fbf4f5; color: var(--ox); }
+.allergy-info { padding: 14px 16px; background: #f4f5f6; border-left: 3px solid var(--ox); font-size: 16px; font-style: italic; }
+
+/* Roa märgid (must-valged) */
+.dish-tags { display: inline-flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.dtag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  background: #fff;
+}
+.dtag-vegan, .dtag-vegetarian { background: var(--ink); color: #fff; }
+.tag-legend { display: flex; flex-wrap: wrap; gap: 10px 24px; font-size: 15px; font-weight: 600; }
+.tag-legend > span { display: inline-flex; align-items: center; gap: 8px; }
+
+/* Menüü: klassikaline nimekiri väikese fotoga */
+.menu-cols { columns: 2 520px; column-gap: 80px; }
+.menu-cat { break-inside: avoid; margin-bottom: 52px; }
+.menu-row { align-items: center; gap: 16px; padding: 14px 0; }
+.menu-thumb { flex: none; width: 168px; height: 126px; object-fit: cover; box-shadow: 0 10px 20px -12px rgba(12, 13, 14, 0.5); }
+.menu-text { display: flex; flex-direction: column; min-width: 0; }
+
+/* Õhtule registreerimise aken */
+.dialog.wide { width: min(1240px, 100%); max-height: calc(100vh - 40px); overflow-y: auto; }
+.ej-grid { display: flex; flex-wrap: wrap; gap: 32px; }
+.ej-plan { flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.ej-side { flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+.ej-plan .plan-room { height: 400px; }
+.warning-text { color: var(--ox); font-weight: 700; }
+
+/* Tugi */
+.support { padding-top: 72px; padding-bottom: 96px; display: flex; flex-direction: column; gap: 32px; }
+.support-grid { display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start; }
+.support-grid > .messages { flex: 999 1 560px; display: flex; flex-direction: column; gap: 14px; }
+.msg-list.tall { max-height: 520px; min-height: 260px; }
+.hotline { flex: 1 1 320px; }
+.hotline .mail { color: var(--bg); }
+.thread-list { flex: 1 1 320px; display: flex; flex-direction: column; gap: 8px; }
+.thread { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border: 1px solid var(--line-2); background: var(--paper); text-align: left; }
+.thread.on { border-color: var(--ink); box-shadow: var(--haze); }
+
+/* Profiil */
+.avatar-pick { position: relative; width: 120px; height: 120px; border-radius: 50%; overflow: hidden; border: 2px solid var(--ink); display: flex; align-items: center; justify-content: center; cursor: pointer; background: var(--bg); }
+.avatar-pick img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-pick svg { width: 54px; height: 54px; }
+.avatar-pick input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.avatar-link { display: inline-flex; width: 40px; height: 40px; border-radius: 50%; overflow: hidden; border: 1px solid var(--ink); align-items: center; justify-content: center; padding: 0 !important; }
+.avatar-link img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Teated: tekst murdub, rida on klõpsatav */
+.bell-item { display: flex; flex-direction: column; gap: 4px; width: 100%; padding: 12px 0; border: 0; border-top: 1px solid var(--line-soft); background: none; text-align: left; white-space: normal; text-transform: none; letter-spacing: normal; font-size: 15px; font-weight: 600; }
+.bell-item .text { overflow-wrap: anywhere; }
+.bell-item:hover { background: #fff; }
+.bell-menu { overflow-x: hidden; width: 380px; }
+
+/* Olulised külastused mustad, tavalised heledad */
+.visit.important:not(.open) { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.visit.important:not(.open) .eyebrow { color: var(--line-3); }
+.visit:not(.important):not(.open) { background: linear-gradient(135deg, #fbfcfc 0%, #e6e9eb 45%, #f6f7f8 60%, #d8dcdf 100%); }
+
+/* Personali kalender */
+.cal-wrap { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+.cal-wrap > .paper { flex: 1 1 560px; display: flex; flex-direction: column; gap: 16px; }
+.staff-cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.staff-cal .wd { text-align: center; font-size: 13px; font-weight: 800; color: var(--muted); }
+.sc-day { min-height: 84px; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 8px; border: 1px solid var(--line-2); background: var(--paper); text-align: left; }
+.sc-day .n { font-size: 20px; }
+.sc-day .c { font-size: 12px; color: var(--muted); }
+.sc-day .i { font-size: 12px; color: var(--ox); font-weight: 800; }
+.sc-day.other { opacity: 0.45; }
+.sc-day.important { border-color: var(--ox); }
+.sc-day.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.sc-day.on .c, .sc-day.on .i { color: var(--line-2); }
+.day-list { flex: 1 1 420px; display: flex; flex-direction: column; gap: 10px; }
+.person { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; background: var(--paper); border: 1px solid var(--line-2); }
+.person.important { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.person.important .muted, .person.important .ox { color: var(--line-2); }
+.person.important .btn { color: var(--bg); border-color: var(--bg); }
+
+.seat-note b { font-weight: 800; }
+
+/* KKK (akordion) */
+.faq { margin: 30px 0; display: grid; gap: 0; }
+.faq h2 { font-size: 34px; margin-bottom: 12px; }
+.faq details { border-bottom: 1px solid var(--line); background: #fff; }
+.faq summary { list-style: none; cursor: pointer; padding: 18px 20px; font-size: 19px; font-weight: 600; display: flex; justify-content: space-between; gap: 16px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: '+'; font-size: 24px; line-height: 1; color: var(--ox); transition: transform 0.2s; }
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq details p { padding: 0 20px 18px; margin: 0; color: var(--muted); font-size: 17px; line-height: 1.6; }
+.faq-cta { margin: 34px 0 14px; display: grid; gap: 4px; }
+.faq-cta h2 { font-size: 30px; }

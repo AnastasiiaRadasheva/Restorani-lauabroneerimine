@@ -8,6 +8,8 @@ public class Notification
     public int? ReservationId { get; set; }
 
     public string Message { get; set; } = "";
+    /// <summary>Saidi aadress, kuhu teate klõps viib (nt /tugi, /minu).</summary>
+    public string? Link { get; set; }
     public bool IsRead { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 }

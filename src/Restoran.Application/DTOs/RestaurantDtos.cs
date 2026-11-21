@@ -13,6 +13,7 @@ public record RestaurantDto(
     string OpensAt,
     string ClosesAt,
     int BarX, int BarY, int BarWidth, int BarHeight,
+    string StageZone, int StageX, int StageY, int StageWidth, int StageHeight,
     int TableCount,
     double? DistanceMeters);
 

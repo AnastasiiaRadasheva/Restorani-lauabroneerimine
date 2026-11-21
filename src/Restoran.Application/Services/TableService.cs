@@ -60,9 +60,23 @@ public class TableService : ITableService
 
     private async Task ValidateAsync(SaveTableDto dto, int? id)
     {
-        _ = await _restaurants.GetByIdAsync(dto.RestaurantId)
+        var restaurant = await _restaurants.GetByIdAsync(dto.RestaurantId)
             ?? throw new NotFoundException($"Restorani {dto.RestaurantId} ei leitud.");
         if (await _tables.NumberExistsAsync(dto.RestaurantId, dto.Number, id))
             throw new ConflictException($"Laud numbriga {dto.Number} on selles restoranis juba olemas.");
+
+        // Laud peab jääma plaani sisse ega tohi kattuda teise lauaga samas saalis
+        if (dto.X + dto.Width > 100 || dto.Y + dto.Height > 100)
+            throw new BusinessRuleException("Laud ei mahu plaanile – lohistage see saali sisse.");
+        var others = (await _tables.GetByRestaurantAsync(dto.RestaurantId, onlyActive: false) ?? new List<DiningTable>())
+            .Where(t => t.Id != id && t.Location == dto.Location);
+        var hit = others.FirstOrDefault(t => dto.X < t.X + t.Width && dto.X + dto.Width > t.X && dto.Y < t.Y + t.Height && dto.Y + dto.Height > t.Y);
+        if (hit is not null)
+            throw new ConflictException($"Laud kattub lauaga {hit.Number}. Valige teine koht.");
+        bool Covers(int x, int y, int w, int h) => w > 0 && dto.X < x + w && dto.X + dto.Width > x && dto.Y < y + h && dto.Y + dto.Height > y;
+        if (dto.Location == TableLocation.Hall && Covers(restaurant.BarX, restaurant.BarY, restaurant.BarWidth, restaurant.BarHeight))
+            throw new ConflictException("Laud ei saa olla baari peal. Valige teine koht.");
+        if (dto.Location == restaurant.StageZone && Covers(restaurant.StageX, restaurant.StageY, restaurant.StageWidth, restaurant.StageHeight))
+            throw new ConflictException("Laud ei saa olla laval. Valige teine koht.");
     }
 }

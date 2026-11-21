@@ -36,7 +36,37 @@ public class LoginDto
 }
 
 /// <summary>Kasutaja andmed ilma paroolita.</summary>
-public record UserDto(int Id, string Name, string Email, string? Phone, UserRole Role);
+public record UserDto(int Id, string Name, string Email, string? Phone, UserRole Role, string? AvatarUrl, bool SmsOptIn, bool PasswordSet = true);
+
+/// <summary>Parooli loomise lingi info (kellele link kuulub).</summary>
+public record PasswordLinkDto(string Name, string Email);
+
+/// <summary>Parooli loomine lingi kaudu (personali loodud klient).</summary>
+public class SetPasswordDto
+{
+    [Required] public string Token { get; set; } = "";
+    /// <example>Parool123!</example>
+    [Required, StringLength(100, MinimumLength = 6)]
+    public string Password { get; set; } = "";
+}
+
+/// <summary>Profiili muutmine.</summary>
+public class UpdateProfileDto
+{
+    /// <example>Kati Klient</example>
+    [Required, StringLength(100, MinimumLength = 2)]
+    public string Name { get; set; } = "";
+
+    /// <example>+372 5895 1836</example>
+    [RegularExpression(@"^[+\d\s-]{5,30}$", ErrorMessage = "Telefoninumber on vigane.")]
+    public string? Phone { get; set; }
+
+    /// <summary>Kas saata broneeringu kinnitus SMS-iga.</summary>
+    public bool SmsOptIn { get; set; } = true;
+
+    /// <summary>Profiilipilt data-URL kujul (kuni ~300 KB). Tühi = jätta muutmata, "-" = eemaldada.</summary>
+    public string? AvatarUrl { get; set; }
+}
 
 /// <summary>Sisselogimise vastus: JWT token ja kasutaja.</summary>
 public record AuthResponseDto(string Token, DateTime ExpiresAt, UserDto User);

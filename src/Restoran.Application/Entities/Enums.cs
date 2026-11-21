@@ -23,5 +23,7 @@ public enum ReservationStatus
     Active,
     Arrived,
     Cancelled,
-    NoShow
+    NoShow,
+    /// <summary>Personali tehtud broneering, mis ootab kliendi makset (makselink saadeti).</summary>
+    PendingPayment
 }

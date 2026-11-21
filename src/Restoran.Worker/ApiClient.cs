@@ -16,7 +16,7 @@ public class ApiOptions
 // Workeri enda DTO-d. Worker EI viita API, Application ega Infrastructure projektile
 // ega DbContextile – ta räägib API-ga ainult HTTP kaudu.
 public record LoginResponse(string Token, DateTime ExpiresAt);
-public record RemindDue(int Id, int UserId, string CustomerName, string RestaurantName, int TableNumber, int Guests, DateTime StartTime);
+public record RemindDue(int Id, int UserId, string CustomerName, string RestaurantName, int TableNumber, int Guests, DateTime StartTime, string? CustomerLanguage);
 public record NoShowResult(int Count, List<int> ReservationIds);
 
 /// <summary>HttpClient, mis logib sisse Service rolliga kontoga ja lisab JWT tokeni igale päringule.</summary>

@@ -27,10 +27,26 @@ public class ReservationRepository : Repository<Reservation>, IReservationReposi
         return Db.Reservations
             .Where(r => ids.Contains(r.TableId)
                         && r.Id != excludeId
-                        && (r.Status == ReservationStatus.Active || r.Status == ReservationStatus.Arrived)
+                        && (r.Status == ReservationStatus.Active || r.Status == ReservationStatus.Arrived || r.Status == ReservationStatus.PendingPayment)
                         && r.StartTime < end && r.EndTime > start) // ajavahemikud kattuvad
             .ToListAsync();
     }
+
+    public Task<List<Reservation>> GetActiveWithMenuItemAsync(int menuItemId, DateTime from) =>
+        WithDetails()
+            .Where(r => r.Status == ReservationStatus.Active && r.StartTime >= from && r.PreOrderItems.Any(p => p.MenuItemId == menuItemId))
+            .ToListAsync();
+
+    public Task<Reservation?> GetByPaymentTokenAsync(string token) =>
+        WithDetails().FirstOrDefaultAsync(r => r.PaymentToken == token);
+
+    public Task<List<GastroEvent>> GetEventsAsync(int restaurantId, DateTime from, DateTime to) =>
+        Db.Events.AsNoTracking()
+            .Where(e => e.RestaurantId == restaurantId && e.StartTime >= from && e.StartTime < to)
+            .ToListAsync();
+
+    public Task<List<Reservation>> GetExpiredPendingAsync(DateTime createdBefore, DateTime now) =>
+        WithDetails().Where(r => r.Status == ReservationStatus.PendingPayment && (r.CreatedAt < createdBefore || r.StartTime <= now)).ToListAsync();
 
     public Task<List<Reservation>> GetByUserAsync(int userId) =>
         WithDetails().Where(r => r.UserId == userId)
@@ -48,6 +64,16 @@ public class ReservationRepository : Repository<Reservation>, IReservationReposi
             var from = query.Date.Value.ToDateTime(TimeOnly.MinValue);
             var to = from.AddDays(1);
             q = q.Where(r => r.StartTime >= from && r.StartTime < to);
+        }
+        if (query.From.HasValue)
+        {
+            var from = query.From.Value.ToDateTime(TimeOnly.MinValue);
+            q = q.Where(r => r.StartTime >= from);
+        }
+        if (query.To.HasValue)
+        {
+            var to = query.To.Value.AddDays(1).ToDateTime(TimeOnly.MinValue);
+            q = q.Where(r => r.StartTime < to);
         }
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
