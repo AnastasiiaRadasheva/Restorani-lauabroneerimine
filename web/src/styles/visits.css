@@ -12,6 +12,7 @@
 .cat-tabs { display: flex; flex-wrap: wrap; gap: 8px; padding-bottom: 20px; border-bottom: 1px solid var(--ink); }
 .dish { display: flex; align-items: center; gap: 28px; padding: 24px 0; border-bottom: 1px solid var(--line); }
 .dish .n { width: 28px; flex: none; font-style: italic; font-size: 23px; color: var(--muted); }
+.dish-photo { flex: none; width: 150px; height: 110px; object-fit: cover; box-shadow: 0 14px 28px -16px rgba(12, 13, 14, 0.5); }
 .dish .text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .dish .name { font-size: 34px; line-height: 1.15; }
 .dish .desc { font-size: 17px; color: var(--muted); }
@@ -136,7 +137,7 @@
 .visit-head .big { font-size: 38px; line-height: 1.1; }
 .visit-head .where { flex: 1 1 260px; display: flex; flex-direction: column; font-size: 19px; }
 .visit-head .sub { font-size: 16px; opacity: 0.75; }
-.visit-head .toggle { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 600; letter-spacing: 0.26em; text-transform: uppercase; }
+.visit-head .toggle { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 700; letter-spacing: 0.26em; text-transform: uppercase; }
 .visit.open .toggle svg { transform: rotate(180deg); }
 .visit-body { display: flex; flex-wrap: wrap; gap: 40px; padding: 36px; }
 .visit-info { flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
@@ -146,13 +147,20 @@
 .past { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 20px 0; border-bottom: 1px solid var(--line); }
 .past > div { display: flex; flex-direction: column; }
 .past .when { font-size: 26px; }
-.link-caps { font-size: 13px; font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase; }
+.link-caps { font-size: 13px; font-weight: 700; letter-spacing: 0.3em; text-transform: uppercase; }
 
 /* ---------- Menüü leht ---------- */
 
 .menu-page .container { display: flex; flex-direction: column; gap: 40px; }
-.menu-cols { columns: 2 420px; column-gap: 72px; }
-.menu-cat { break-inside: avoid; margin-bottom: 48px; }
+.menu-cols { display: block; }
+.menu-cat { margin-bottom: 64px; }
+.menu-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 28px; }
+.menu-card { display: flex; flex-direction: column; background: var(--paper); border: 1px solid var(--line-2); box-shadow: 0 24px 48px -32px rgba(12, 13, 14, 0.4); }
+.menu-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
+.menu-card .body { display: flex; flex-direction: column; gap: 6px; padding: 20px 22px 24px; }
+.menu-card .name { font-size: 24px; line-height: 1.2; }
+.menu-card .desc { font-size: 16px; color: var(--muted); flex: 1; }
+.menu-card .price { margin-top: 8px; font-size: 24px; color: var(--ox); }
 .menu-cat h2 { font-style: italic; font-size: 36px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--ink); }
 .menu-row { display: flex; align-items: baseline; gap: 12px; padding: 12px 0; }
 .menu-row > div { display: flex; flex-direction: column; }
@@ -166,6 +174,7 @@
   .dish { gap: 14px; flex-wrap: wrap; }
   .dish .name { font-size: 24px; }
   .dish .price { font-size: 22px; }
+  .dish-photo { width: 100%; height: 180px; order: -1; }
   .sticky-card { position: static; }
   .receipt-head h2 { font-size: 38px; }
   .receipt-body { padding: 28px 22px 20px; }

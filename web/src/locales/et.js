@@ -81,7 +81,7 @@ export default {
   'booking.geoDenied': 'Asukohta ei saanud. Lubage asukoht brauseris.',
 
   // Broneerimine: II. Teie koht
-  'booking.placeTitle': 'Teie koht',
+  'booking.placeTitle': 'Istumine',
   'booking.how1': 'Valige istumise viis',
   'booking.how2': 'Valige tsoon: saal või terrass',
   'booking.how3': 'Märkige vaba laud; märgid laua ümber on istekohad',
@@ -188,7 +188,7 @@ export default {
   'visits.yours': 'Teie broneering',
   'visits.onName': 'Nimele',
   'visits.paid': 'makstud',
-  'visits.locked': 'Külastuseni on vähem kui 24 tundi: kuupäeva, kellaaega ja lauda ei saa enam muuta.',
+  'visits.locked': 'Külastuseni on vähem kui 24 tundi: kuupäeva, kellaaega ja lauda ei saa enam muuta. Tühistada saab, kuid raha ei tagastata.',
   'visits.repeat': 'Korda',
 
   // Menüü leht
@@ -291,4 +291,32 @@ export default {
   'notFound.title': 'Lehte ei leitud',
   'notFound.text': 'Seda lehte pole (veel) olemas.',
   'notFound.back': 'Avalehele',
+
+  // Parandused: istumine, tort, tühistamine, korrused
+  'seat.note': 'Pakume Teile sobivat lauda (märgitud punasega). Soovi korral klõpsake plaanil muul vabal laual.',
+  'seat.fee': 'Laua ise valimine +10 €.',
+  'seat.feePeak': 'Kell 18:00–20:00 on kõige hõivatum aeg: laua ise valimine +30 €.',
+  'seat.backToSuggestion': 'Tagasi metrdoteli soovituse juurde',
+  'booking.upstairs': 'Teine korrus',
+  'booking.edgeUpstairs': 'trepp · aknad',
+  'booking.stairs': 'Trepp',
+  'evening.change': 'muuda',
+  'cake.title': 'Tordi soovid',
+  'cake.note': 'Kirjutage, milline tort olla võiks: kiri, maitse, kellele ja millal serveerida.',
+  'cake.placeholder': 'Näiteks: šokolaaditort, kiri „Palju õnne, Anna“, tuua magustoidu ajal küünaldega',
+  'cancel.title': 'Broneeringu tühistamine',
+  'cancel.sure': 'Kas soovite broneeringu tühistada?',
+  'cancel.refund': 'Makstud summa {sum} tagastatakse Teie kaardile lähimate tööpäevade jooksul (tavaliselt 3–5 tööpäeva).',
+  'cancel.nothingPaid': 'Teilt ei ole raha võetud, seega pole midagi tagastada.',
+  'cancel.yes': 'Jah, tühista',
+  'cancel.keep': 'Ei, jätan broneeringu alles',
+  'cancel.lateTitle': 'Külastuseni on vähem kui 24 tundi',
+  'cancel.noRefund': 'Raha EI TAGASTATA: {sum} jääb restoranile.',
+  'cancel.noRefundGeneric': 'Nii hilja tühistades raha EI TAGASTATA.',
+  'cancel.agree': 'Saan aru, et raha ei tagastata, ja soovin siiski tühistada.',
+  'cancel.continue': 'Jätka',
+  'cancel.again': 'Kas olete täiesti kindel? Seda ei saa tagasi võtta.',
+  'cancel.yesFinal': 'Jah, tühista ilma tagastuseta',
+  'cancel.refundNote': 'Tagastus {sum} – lähimate tööpäevade jooksul',
+  'cancel.noRefundNote': 'Tühistatud alla 24 h enne – raha ei tagastatud',
 }

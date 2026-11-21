@@ -2,7 +2,7 @@
    Broneerimise leht: sammud, kuupäev, kaart, saali plaan
    ========================================================== */
 
-.steps-bar { border-bottom: 1px solid var(--line); background: var(--bg-alt); position: sticky; top: 87px; z-index: 40; }
+.steps-bar { border-bottom: 1px solid var(--line); background: var(--bg-alt); position: sticky; top: var(--header-h, 88px); z-index: 40; }
 .steps-bar .container {
   padding-top: 18px;
   padding-bottom: 18px;
@@ -10,7 +10,7 @@
   flex-wrap: wrap;
   gap: 12px 40px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.3em;
   text-transform: uppercase;
 }
@@ -19,7 +19,7 @@
 .steps-bar .diamond { width: 8px; height: 8px; }
 
 .section.first { border-top: 0; padding-top: 88px; }
-section[id] { scroll-margin-top: 150px; }
+section[id] { scroll-margin-top: calc(var(--header-h, 88px) + 70px); }
 
 /* ---------- I. Teie õhtu ---------- */
 
@@ -64,7 +64,7 @@ section[id] { scroll-margin-top: 150px; }
 .month-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
 .month-head .big { font-size: 28px; line-height: 1; text-transform: capitalize; }
 .month-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; text-align: center; }
-.month-grid .wd { font-size: 12px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+.month-grid .wd { font-size: 12px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
 .cal { height: 52px; border: 1px solid var(--line); background: transparent; font-size: 19px; }
 .cal.on { background: var(--ink); color: var(--bg); border-color: var(--ink); box-shadow: var(--haze); }
 .cal:disabled { color: #9aa0a4; border-color: transparent; text-decoration: line-through; }
@@ -92,7 +92,7 @@ section[id] { scroll-margin-top: 150px; }
 .map-pin { position: absolute; display: flex; align-items: center; gap: 8px; transform: translate(-7px, -50%); white-space: nowrap; font-family: var(--font); }
 .map-pin i { width: 14px; height: 14px; transform: rotate(45deg); background: var(--paper); border: 1px solid var(--ink); flex: none; }
 .map-pin.on i { background: var(--ink); }
-.map-pin b { font-weight: 400; font-size: 15px; background: rgba(247, 248, 249, 0.92); padding: 0 6px; }
+.map-pin b { font-weight: 500; font-size: 15px; background: rgba(247, 248, 249, 0.92); padding: 0 6px; }
 .map-pin em { font-size: 18px; background: rgba(247, 248, 249, 0.92); padding: 0 6px; }
 .map-me { position: absolute; transform: translate(-50%, -50%); }
 .map-me i { display: block; width: 10px; height: 10px; background: var(--ox); transform: rotate(45deg); box-shadow: 0 0 0 10px rgba(90, 15, 28, 0.12); }
@@ -160,6 +160,9 @@ section[id] { scroll-margin-top: 150px; }
 .mode .big { font-size: 28px; line-height: 1.2; }
 .mode .sub { font-size: 16px; opacity: 0.7; }
 
+.seat-note { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border: 1px solid var(--line-2); background: var(--bg); font-size: 18px; }
+.seat-note b { color: var(--ox); font-weight: 600; }
+.link-light { align-self: flex-start; margin-top: 4px; padding: 0; border: 0; border-bottom: 1px solid currentColor; background: none; color: var(--bg); font-size: 15px; }
 .plan-wrap { display: flex; flex-wrap: wrap; gap: 40px; }
 .plan-col { flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
 .plan-side { flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 28px; }
@@ -174,7 +177,7 @@ section[id] { scroll-margin-top: 150px; }
   background: transparent;
   color: var(--muted);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.32em;
   text-transform: uppercase;
 }
@@ -194,7 +197,7 @@ section[id] { scroll-margin-top: 150px; }
   transform: rotate(-90deg);
   white-space: nowrap;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.4em;
   text-transform: uppercase;
   background: var(--paper);
@@ -222,7 +225,7 @@ section[id] { scroll-margin-top: 150px; }
   border: 1px solid var(--ink);
   border-bottom: 0;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.3em;
   text-transform: uppercase;
 }
@@ -246,7 +249,7 @@ section[id] { scroll-margin-top: 150px; }
 .plan-table.round > button { border-radius: 50%; }
 .plan-table > button:not(:disabled) { cursor: pointer; }
 .plan-table > button:not(:disabled):hover { box-shadow: 0 0 0 4px rgba(12, 13, 14, 0.08); }
-.plan-table strong { font-weight: 400; font-size: 18px; line-height: 1.1; }
+.plan-table strong { font-weight: 500; font-size: 18px; line-height: 1.1; }
 .plan-table small { font-size: 11px; line-height: 1.2; letter-spacing: 0.12em; text-transform: uppercase; }
 .plan-table em { font-size: 12px; line-height: 1.2; opacity: 0.8; text-align: center; }
 .plan-table .chair { position: absolute; background: var(--line-3); }
@@ -285,7 +288,7 @@ section[id] { scroll-margin-top: 150px; }
 .details-head .diamond { width: 14px; height: 14px; margin-bottom: 8px; }
 .details-card { display: flex; flex-direction: column; gap: 22px; }
 .receipt-dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 12px 20px; font-size: 17px; }
-.receipt-dl dt { font-size: 11px; font-weight: 600; letter-spacing: 0.26em; text-transform: uppercase; color: var(--muted); padding-top: 5px; }
+.receipt-dl dt { font-size: 11px; font-weight: 700; letter-spacing: 0.26em; text-transform: uppercase; color: var(--muted); padding-top: 5px; }
 .receipt-dl dd { margin: 0; text-align: right; }
 .lock-note { padding: 14px 16px; border: 1px dashed var(--line-3); font-size: 15px; font-style: italic; color: var(--muted); }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -296,7 +299,6 @@ section[id] { scroll-margin-top: 150px; }
 .back-link { text-align: center; font-size: 16px; }
 
 @media (max-width: 1000px) {
-  .steps-bar { top: 79px; }
   .steps-bar .container { gap: 10px 22px; font-size: 11px; letter-spacing: 0.2em; }
   .day-strip { grid-template-columns: repeat(9, minmax(44px, 1fr)); overflow-x: auto; }
   .day { height: 80px; }
