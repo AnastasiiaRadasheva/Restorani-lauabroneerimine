@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { api, qs } from '../api'
 import Pager from '../components/Pager'
 import { fmtDate, fmtTime, STATUS_TEXT, useTr } from '../staff'
@@ -11,8 +11,13 @@ const endOfToday = () => { const d = new Date(); d.setHours(23, 59, 59, 999); re
 
 export default function StaffReservations({ renderRowExtra }) {
   const tr = useTr()
+  const [params] = useSearchParams()
   const [restaurants, setRestaurants] = useState([])
-  const [f, setF] = useState({ restaurantId: '', date: '', status: '', search: '', sort: 'date', desc: true, page: 1, pageSize: 10 })
+  // ?date=… tuleb kalendrist ("Päeva broneeringud nimekirjas")
+  const [f, setF] = useState(() => {
+    const date = params.get('date') ?? ''
+    return { restaurantId: '', date, status: '', search: '', sort: 'date', desc: !date, page: 1, pageSize: 10 }
+  })
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
 
@@ -70,6 +75,9 @@ export default function StaffReservations({ renderRowExtra }) {
           </button>
         ))}
         <button type="button" className="chip caps" onClick={() => setF({ ...f, from: '', to: '', desc: true, page: 1 })}>{tr('Kõik', 'Все', 'All')}</button>
+        <Link className="chip caps chip-link chip-right" to={'/personal/kalender' + (f.date ? `?date=${f.date}` : '')}>
+          {tr('Vaata kalendris', 'Открыть в календаре', 'Open in calendar')} →
+        </Link>
       </div>
 
       <div className="filters">
@@ -122,6 +130,7 @@ export default function StaffReservations({ renderRowExtra }) {
                       {r.status !== 'NoShow' && <button className="btn btn-small" onClick={() => setStatus(r.id, 'NoShow')}>{tr('Ei tulnud', 'Не пришли', 'No-show')}</button>}
                     </>
                   )}
+                  <Link className="btn btn-small" to={`/broneering/${r.id}`}>{tr('Ava', 'Открыть', 'Open')}</Link>
                   {renderRowExtra && renderRowExtra(r)}
                   </div>
                 </td>

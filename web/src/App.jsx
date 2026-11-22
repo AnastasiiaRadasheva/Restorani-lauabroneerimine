@@ -31,7 +31,11 @@ export function RequireAuth({ roles, children }) {
   const { user } = useAuth()
   const location = useLocation()
   if (!user) return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />
-  if (roles && !roles.includes(user.role)) return <Navigate to="/" replace />
+  // Lubamata leht: personal suunatakse oma avalehele (admin töölauale, teenindaja plaanile)
+  if (roles && !roles.includes(user.role)) {
+    const home = user.role === 'Admin' ? '/admin' : user.role === 'Waiter' ? '/personal/plaan' : '/'
+    return <Navigate to={home} replace />
+  }
   return children
 }
 
@@ -71,7 +75,7 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/broneeri" element={<GuestOnly><Booking /></GuestOnly>} />
           <Route path="/broneering/:id" element={<RequireAuth><ReservationDetails /></RequireAuth>} />
-          <Route path="/minu" element={<RequireAuth><MyReservations renderExtra={(r, reload) => <VisitExtras r={r} onChanged={reload} />} /></RequireAuth>} />
+          <Route path="/minu" element={<RequireAuth roles={['Customer']}><MyReservations renderExtra={(r, reload) => <VisitExtras r={r} onChanged={reload} />} /></RequireAuth>} />
           <Route path="/menuu" element={<Menu />} />
           <Route path="/personal/plaan" element={<RequireAuth roles={['Admin', 'Waiter']}><StaffPlan /></RequireAuth>} />
           <Route path="/personal/broneeringud" element={<RequireAuth roles={['Admin', 'Waiter']}><StaffReservations renderRowExtra={(r) => <StaffMessages r={r} />} /></RequireAuth>} />
