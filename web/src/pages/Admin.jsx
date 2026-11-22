@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import AdminEvents from './AdminEvents'
 import { api, qs } from '../api'
+import { useAuth } from '../auth'
 import FloorPlan, { spotText } from '../components/FloorPlan'
 import Pager from '../components/Pager'
 import StaffMessages from '../components/StaffMessages'
@@ -14,9 +15,19 @@ const TABS = [
   ['events', 'Gastronoomilised õhtud', 'Гастрономические вечера', 'Gastronomic evenings'],
 ]
 
-/** Admini töölaud: mis vajab tähelepanu + otsing + laudade ja menüü haldus. */
+/** Kiirlingid töölaualt personali põhilehtedele. */
+const LINKS = [
+  ['/personal/kalender', 'Kalender', 'Календарь', 'Calendar'],
+  ['/personal/broneeringud', 'Broneeringud', 'Брони', 'Bookings'],
+  ['/personal/uus', '+ Uus broneering', '+ Новая бронь', '+ New booking'],
+  ['/personal/tugi', 'Vasta küsimustele', 'Ответить на вопросы', 'Answer questions'],
+]
+
+/** Admini töölaud: tervitus, kiirlingid, haldus + mis vajab tähelepanu ja otsing. */
 export default function Admin() {
   const tr = useTr()
+  const { user } = useAuth()
+  const greetName = !user?.name || user.name === 'Admin' ? tr('Admin', 'Админ', 'Admin') : user.name.split(' ')[0]
   const [params] = useSearchParams()
   const [tab, setTab] = useState(params.get('tab') ?? '')
   const [restaurants, setRestaurants] = useState([])
@@ -39,8 +50,19 @@ export default function Admin() {
           {restaurants.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
         </select>
       </div>
+      <div className="dash-hello">
+        <p className="dash-hello-title">{tr('Tere', 'Привет', 'Hello')}, {greetName}!</p>
+        <p className="italic muted">{tr('Mida täna teeme?', 'Что сегодня делаем?', 'What shall we do today?')}</p>
+      </div>
+      <div className="dash-actions">
+        {LINKS.map(([to, et, ru, en]) => (
+          <Link key={to} to={to} className="chip caps">{tr(et, ru, en)}</Link>
+        ))}
+      </div>
       <Attention restaurantId={restaurantId} />
+      <p className="eyebrow">{tr('Lisafunktsioonid', 'Доп. функции', 'More tools')}</p>
       <div className="chips admin-tabs">
+        <Link to="/personal/plaan" className="chip caps chip-link">{tr('Laudade plaan', 'План столов', 'Table plan')}</Link>
         {TABS.map(([key, et, ru, en]) => (
           <button key={key} className={tab === key ? 'chip caps on' : 'chip caps'} onClick={() => setTab(tab === key ? '' : key)}>
             {tr('Halda', 'Управлять', 'Manage')}: {tr(et, ru, en)}

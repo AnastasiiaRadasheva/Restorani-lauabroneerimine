@@ -20,6 +20,7 @@ public class AppDbContext : DbContext
     public DbSet<EventRegistration> EventRegistrations => Set<EventRegistration>();
     public DbSet<EventMenuItem> EventMenuItems => Set<EventMenuItem>();
     public DbSet<Restoran.Application.Services.SupportMessage> SupportMessages => Set<Restoran.Application.Services.SupportMessage>();
+    public DbSet<Restoran.Application.Services.DayNote> DayNotes => Set<Restoran.Application.Services.DayNote>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -135,6 +136,17 @@ public class AppDbContext : DbContext
             e.Property(x => x.Drinks).HasMaxLength(300);
             e.Property(x => x.Extras).HasMaxLength(100);
             e.Property(x => x.Total).HasPrecision(10, 2);
+        });
+
+        b.Entity<Restoran.Application.Services.DayNote>(e =>
+        {
+            e.ToTable("DayNotes");
+            e.HasOne(x => x.Restaurant).WithMany()
+                .HasForeignKey(x => x.RestaurantId).OnDelete(DeleteBehavior.Cascade);
+            e.Property(x => x.Text).HasMaxLength(80).IsRequired();
+            e.Property(x => x.Color).HasMaxLength(10).IsRequired();
+            e.Property(x => x.AuthorName).HasMaxLength(100);
+            e.HasIndex(x => x.Date);
         });
 
         b.Entity<Restoran.Application.Services.SupportMessage>(e =>

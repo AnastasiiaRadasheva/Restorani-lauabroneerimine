@@ -61,11 +61,13 @@ export default function Header() {
       {!isStaff && <NavLink to="/menuu">{t('nav.menu')}</NavLink>}
       {!isStaff && <NavLink to="/tugi">{t('nav.support')}</NavLink>}
       {isAdmin && <NavLink to="/admin">{tr('Töölaud', 'Рабочий стол', 'Dashboard')}</NavLink>}
-      {isStaff && <NavLink to="/personal/plaan">{tr('Plaan', 'План', 'Plan')}</NavLink>}
+      {isStaff && !isAdmin && <NavLink to="/personal/plaan">{tr('Plaan', 'План', 'Plan')}</NavLink>}
       {isStaff && <NavLink to="/personal/kalender">{tr('Kalender', 'Календарь', 'Calendar')}</NavLink>}
       {isStaff && <NavLink to="/personal/broneeringud">{tr('Broneeringud', 'Брони', 'Bookings')}</NavLink>}
       {isStaff && <NavLink to="/personal/uus">+ {tr('Uus broneering', 'Новая бронь', 'New booking')}</NavLink>}
-      {isStaff && <NavLink to="/personal/tugi">{tr('Küsimused', 'Вопросы', 'Questions')}</NavLink>}
+      {/* Admin vastab küsimustele töölaualt; plaan on talle lisafunktsioon */}
+      {isStaff && !isAdmin && <NavLink to="/personal/tugi">{tr('Küsimused', 'Вопросы', 'Questions')}</NavLink>}
+      {isAdmin && <NavLink to="/personal/plaan" className="nav-extra">{tr('Plaan', 'План', 'Plan')}</NavLink>}
     </>
   )
 

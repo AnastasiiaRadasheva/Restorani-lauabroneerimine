@@ -220,6 +220,48 @@ public class ReservationServiceTests
         await Assert.ThrowsAsync<BusinessRuleException>(() => CreateService().SetPreOrderAsync(5, dto));
     }
 
+    /// <summary>Makstud broneering (1 × 20 €), personal lisab külalise palvel veel ühe roa.</summary>
+    private Reservation PaidReservationWithStaff()
+    {
+        _current.Setup(c => c.UserId).Returns(1);
+        _current.Setup(c => c.IsStaff).Returns(true);
+        var reservation = new Reservation
+        {
+            Id = 5, UserId = 10, TableId = 1, Table = _tableList[0], Status = ReservationStatus.Active, IsPaid = true,
+            StartTime = Now.AddDays(3), EndTime = Now.AddDays(3).AddHours(2),
+            PreOrderItems = { new PreOrderItem { MenuItemId = 3, Quantity = 1, UnitPrice = 20 } }
+        };
+        _reservations.Setup(r => r.GetWithDetailsAsync(5)).ReturnsAsync(reservation);
+        _menu.Setup(m => m.GetByIdsAsync(It.IsAny<IEnumerable<int>>()))
+            .ReturnsAsync(new List<MenuItem> { new() { Id = 3, RestaurantId = 1, Name = "Steik", IsAvailable = true, Price = 20 } });
+        return reservation;
+    }
+
+    [Fact]
+    public async Task PreOrder_StaffAddsDish_ToPaidBooking_IsPaidOnSite_WithoutCard()
+    {
+        PaidReservationWithStaff();
+        var dto = new PreOrderDto { Items = { new PreOrderLineDto { MenuItemId = 3, Quantity = 2 } } };
+
+        var result = await CreateService().SetPreOrderAsync(5, dto);
+
+        Assert.Equal(20m, result.PaidAmount);   // kaardiga makstud jääb samaks
+        Assert.Equal(20m, result.OnSiteAmount); // lisatud roog makstakse kohapeal
+        Assert.Equal(40m, result.Total);
+    }
+
+    [Fact]
+    public async Task Cancel_AfterStaffAddedDish_RefundsOnlyWhatWasPaid()
+    {
+        PaidReservationWithStaff();
+        var service = CreateService();
+        await service.SetPreOrderAsync(5, new PreOrderDto { Items = { new PreOrderLineDto { MenuItemId = 3, Quantity = 2 } } });
+
+        var result = await service.CancelAsync(5);
+
+        Assert.Equal(20m, result.RefundAmount); // kohapeal makstavat 20 € ei tagastata
+    }
+
     [Fact]
     public async Task Slots_TableIsBusyTheWholeEvening()
     {

@@ -198,6 +198,15 @@ public class PreOrderLineDto
     public int Quantity { get; set; }
 }
 
+/// <summary>Personal muudab külalise soove: allergiad, märkus köögile, soovid ja tähtpäev.</summary>
+public class StaffDetailsDto
+{
+    public List<string> Allergies { get; set; } = new();
+    [StringLength(300)] public string? AllergyNote { get; set; }
+    [StringLength(500)] public string? SpecialRequest { get; set; }
+    public Occasion Occasion { get; set; }
+}
+
 /// <summary>Eeltellimus: asendab broneeringu senise eeltellimuse.</summary>
 public class PreOrderDto
 {

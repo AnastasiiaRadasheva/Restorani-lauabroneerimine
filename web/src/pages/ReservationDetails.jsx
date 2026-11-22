@@ -5,8 +5,10 @@ import CancelDialog from '../components/CancelDialog'
 import { useI18n } from '../i18n'
 import { useAuth } from '../auth'
 import StaffMessages from '../components/StaffMessages'
+import StaffEditBooking from '../components/StaffEditBooking'
 import Messages from '../components/Messages'
-import { addDays, formatDate, formatTime, reservationCode, toIsoDate, ZONE_KEY } from '../utils'
+import { useTr } from '../staff'
+import { addDays, formatDate, formatTime, money, reservationCode, toIsoDate, ZONE_KEY } from '../utils'
 
 /** Ühe broneeringu vaade: andmed, muutmine (rohkem kui 24 h enne) ja tühistamine. */
 export default function ReservationDetails() {
@@ -14,11 +16,12 @@ export default function ReservationDetails() {
   const location = useLocation()
   const { t, locale } = useI18n()
   const { isStaff } = useAuth()
+  const tr = useTr()
   const [r, setR] = useState(null)
   const [error, setError] = useState('')
   const [message, setMessage] = useState(location.state?.justCreated ? t('details.created') : '')
-  // "Muuda kuupäeva ja lauda" (Minu broneeringud) avab kohe muutmise vormi
-  const [editing, setEditing] = useState(() => new URLSearchParams(location.search).has('muuda'))
+  // "Muuda kuupäeva ja lauda" (Minu broneeringud) avab kohe muutmise vormi; personal näeb ainult vaadet
+  const [editing, setEditing] = useState(() => !isStaff && new URLSearchParams(location.search).has('muuda'))
   useEffect(() => {
     if (editing && r) document.querySelector('.edit-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }, [editing, r])
@@ -36,12 +39,13 @@ export default function ReservationDetails() {
   }
 
   const [cancelOpen, setCancelOpen] = useState(false)
+  const [staffEdit, setStaffEdit] = useState(false)
 
   if (!r) return <div className="container loading">{error || t('common.loading')}</div>
 
-  const active = r.status === 'Active' || r.status === 'PendingPayment'
-  // Personal võib kliendi palvel muuta iga broneeringut ka vähem kui 24 h enne
-  const canModify = r.canModify || (isStaff && active)
+  // Personal näeb broneeringut ainult lugemiseks (muudab ja tühistab klient ise või personal oma vaadetes)
+  const active = !isStaff && (r.status === 'Active' || r.status === 'PendingPayment')
+  const canModify = r.canModify
   const zone = t(ZONE_KEY[r.tableLocation])
 
   return (
@@ -104,6 +108,10 @@ export default function ReservationDetails() {
         )}
       </div>
 
+      {isStaff && <GuestWishes r={r} onEdit={['Active', 'PendingPayment', 'Arrived'].includes(r.status) && !staffEdit ? () => setStaffEdit(true) : null} />}
+      {isStaff && staffEdit && (
+        <StaffEditBooking r={r} onSaved={(x, text) => updated(x, text)} onClose={() => setStaffEdit(false)} />
+      )}
       {isStaff && <div className="actions"><StaffMessages r={r} /></div>}
       {!isStaff && <div className="paper white details-card"><Messages reservationId={r.id} /></div>}
       {editing && <EditReservation r={r} onSaved={(x) => updated(x, t('details.saved'))} onError={setError} onClose={() => setEditing(false)} />}
@@ -119,7 +127,74 @@ export default function ReservationDetails() {
         />
       )}
 
-      <p className="back-link"><Link to="/minu">← {t('nav.my')}</Link></p>
+      <p className="back-link">
+        {isStaff
+          ? <Link to="/personal/broneeringud">← {tr('Broneeringud', 'Брони', 'Bookings')}</Link>
+          : <Link to="/minu">← {t('nav.my')}</Link>}
+      </p>
+    </div>
+  )
+}
+
+/** Personalile: kõik, mida külaline broneerides soovis (ainult lugemiseks). */
+function GuestWishes({ r, onEdit }) {
+  const { t } = useI18n()
+  const tr = useTr()
+  const none = <span className="muted">—</span>
+  const host = r.hostType === 'Other' ? r.hostName : t(`host.${r.hostType}`)
+  return (
+    <div className="paper white details-card wishes">
+      <div className="row-between">
+        <p className="eyebrow">{tr('Mida külaline soovis', 'Что хотел гость', 'What the guest asked for')}</p>
+        {onEdit && <button type="button" className="btn btn-dark btn-small" onClick={onEdit}>{tr('Muuda / lisa', 'Изменить / добавить', 'Change / add')}</button>}
+      </div>
+      <dl className="receipt-dl">
+        <dt>{tr('Eeltellimus', 'Предзаказ', 'Pre-order')}</dt>
+        <dd>
+          {r.preOrder.length === 0 ? none : (
+            <ul className="wish-list">
+              {r.preOrder.map((p) => <li key={p.menuItemId}><span>{p.quantity} × {p.name}</span><span>{money(p.total)}</span></li>)}
+            </ul>
+          )}
+        </dd>
+        <dt>{tr('Lisateenused', 'Доп. услуги', 'Extras')}</dt>
+        <dd>
+          {r.extras.length === 0 ? none : (
+            <ul className="wish-list">
+              {r.extras.map((x) => (
+                <li key={x.code}>
+                  <span>{t(`extra.${x.code}`, {}, x.name)} <small className="muted">{x.locked ? tr('(broneerimisel, makstud)', '(при брони, оплачено)', '(at booking, paid)') : tr('(lisatud hiljem, kohapeal)', '(добавлено позже, на месте)', '(added later, on site)')}</small></span>
+                  <span>{x.price ? money(x.price) : tr('tasuta', 'бесплатно', 'free')}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </dd>
+        <dt>{tr('Tähtpäev', 'Повод', 'Occasion')}</dt>
+        <dd>{r.occasion === 'None' ? none : <span className="ox">◆ {t(`occasion.${r.occasion}`)}</span>}</dd>
+        {r.gift !== 'None' && (<><dt>{tr('Peakoka kingitus', 'Подарок от шефа', "Chef's gift")}</dt><dd>{t(`gift.${r.gift}`)}</dd></>)}
+        <dt>{tr('Kes kutsub', 'Кто приглашает', 'Host')}</dt>
+        <dd>{host || none}</dd>
+        <dt>{tr('Pöördumine', 'Обращение', 'Address as')}</dt>
+        <dd>{t(`address.${r.addressForm}`)}</dd>
+        <dt>{tr('Teeninduse keel', 'Язык обслуживания', 'Service language')}</dt>
+        <dd>{(r.serviceLanguage ?? 'et').toUpperCase()}</dd>
+        <dt>{tr('Allergiad', 'Аллергии', 'Allergies')}</dt>
+        <dd>
+          {r.allergies.length === 0 && !r.allergyNote ? none : (
+            <span className="ox">{r.allergies.map((a) => t(`allergy.${a}`)).join(', ')}{r.allergyNote ? <><br /><span className="italic">{r.allergyNote}</span></> : null}</span>
+          )}
+        </dd>
+        <dt>{tr('Soovid', 'Пожелания', 'Requests')}</dt>
+        <dd className="italic">{r.specialRequest || none}</dd>
+        <dt>{tr('Kokku', 'Итого', 'Total')}</dt>
+        <dd>
+          <strong>{money(r.total)}</strong>
+          {r.seatFee > 0 && <span className="small muted d-block">{tr('laua valimine', 'выбор стола', 'table choice')} {money(r.seatFee)}</span>}
+          {r.paidAmount > 0 && <span className="small d-block">{tr('makstud kaardiga', 'оплачено картой', 'paid by card')} {money(r.paidAmount)}</span>}
+          {r.onSiteAmount > 0 && <span className="small d-block ox">{tr('kohapeal maksta', 'оплатить на месте', 'to pay on site')} {money(r.onSiteAmount)}</span>}
+        </dd>
+      </dl>
     </div>
   )
 }

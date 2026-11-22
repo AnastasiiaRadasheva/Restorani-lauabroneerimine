@@ -2,19 +2,22 @@ import { useEffect, useState } from 'react'
 import { api, qs } from '../../api'
 import { useI18n } from '../../i18n'
 import { money } from '../../utils'
+import DishLink from '../DishInfo'
 import DishTags from '../DishTags'
 
 const ROMAN = ['i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii']
 
 /** Laeb restorani menüü (ainult saadaval olevad toidud). */
 export function useMenu(restaurantId) {
+  const { lang } = useI18n()
   const [menu, setMenu] = useState([])
+  // Keele vahetamisel laetakse menüü uuesti (server tõlgib nimed ja kirjeldused)
   useEffect(() => {
     if (!restaurantId) return
     api('/api/menu' + qs({ restaurantId, onlyAvailable: true, pageSize: 100 }))
       .then((p) => setMenu(p.items))
       .catch(() => setMenu([]))
-  }, [restaurantId])
+  }, [restaurantId, lang])
   return menu
 }
 
@@ -56,10 +59,10 @@ export default function GastronomySection({ menu, qty, setQty, extra }) {
             {menu.filter((m) => m.category === current).map((m, i) => (
               <div key={m.id} className="dish">
                 <span className="n">{ROMAN[i] ?? i + 1}</span>
-                {m.imageUrl && <img className="dish-photo" src={m.imageUrl} alt={m.name} loading="lazy" />}
+                {m.imageUrl && <DishLink item={m} className="dish-pic"><img className="dish-photo" src={m.imageUrl} alt={m.name} loading="lazy" /></DishLink>}
                 <div className="text">
                   <span className="eyebrow">{m.category}</span>
-                  <span className="name">{m.name}</span>
+                  <DishLink item={m} className="dish-name"><span className="name">{m.name}</span></DishLink>
                   <span className="desc">{m.description}</span>
                   <DishTags tags={m.tags} />
                 </div>

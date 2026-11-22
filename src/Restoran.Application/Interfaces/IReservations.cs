@@ -57,6 +57,7 @@ public interface IReservationService
     Task<List<MessageDto>> GetMessagesAsync(int id);
     Task<MessageDto> AddMessageAsync(int id, NewMessageDto dto);
     Task<ReservationDto> SetExtrasAsync(int id, SetExtrasDto dto);
+    Task<ReservationDto> SetStaffDetailsAsync(int id, StaffDetailsDto dto);
     Task<TablePlanDto> GetPlanAsync(int restaurantId, DateOnly date);
     Task<List<CalendarDayDto>> GetCalendarAsync(int? restaurantId, DateOnly from, int days);
 

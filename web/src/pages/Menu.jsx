@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api'
 import { useMenu } from '../components/booking/GastronomySection'
+import DishLink from '../components/DishInfo'
 import DishTags, { TagLegend } from '../components/DishTags'
 import { Arrow } from '../components/Icons'
 import { useI18n } from '../i18n'
@@ -38,9 +39,9 @@ export default function Menu() {
                 <h2>{c}</h2>
                 {menu.filter((m) => m.category === c).map((m) => (
                   <div key={m.id} className="menu-row">
-                    {m.imageUrl && <img className="menu-thumb" src={m.imageUrl} alt="" loading="lazy" />}
+                    {m.imageUrl && <DishLink item={m} className="dish-pic"><img className="menu-thumb" src={m.imageUrl} alt="" loading="lazy" /></DishLink>}
                     <div className="menu-text">
-                      <span className="name">{m.name}</span>
+                      <DishLink item={m} className="dish-name"><span className="name">{m.name}</span></DishLink>
                       <span className="desc">{m.description}</span>
                       <DishTags tags={m.tags} />
                     </div>

@@ -1,0 +1,83 @@
+@startuml
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "Restoran.Api" {
+  class ReservationsController {
+    +Create(dto)
+    +Update(id, dto)
+    +Cancel(id)
+    +ChangeStatus(id, dto)
+  }
+  class TableSocketHub {
+    +ReservationCreatedAsync(r)
+    +TableStatusChangedAsync(r)
+  }
+}
+
+package "Restoran.Application" {
+  interface IReservationService {
+    +CreateAsync(dto)
+    +CancelAsync(id)
+    +ChangeStatusAsync(id, status)
+  }
+  class ReservationService
+  class BookingRules <<static>> {
+    +Overlaps(aStart, aEnd, bStart, bEnd) : bool
+    +PickBestTable(tables, busy, guests) : DiningTable
+    +SeatFee(chosenByGuest, time) : decimal
+  }
+  interface IReservationRepository {
+    +GetOccupyingAsync(tableIds, start, end)
+    +AddAsync(reservation)
+  }
+  interface ITableRepository {
+    +GetByRestaurantAsync(restaurantId)
+  }
+  interface IRealtimeNotifier
+
+  class Reservation {
+    +Id : int
+    +StartTime : DateTime
+    +Guests : int
+    +Status : ReservationStatus
+    +IsPaid : bool
+  }
+  class DiningTable {
+    +Id : int
+    +Number : int
+    +Seats : int
+  }
+  class User {
+    +Id : int
+    +Name : string
+    +Role : UserRole
+  }
+  class Restaurant {
+    +Id : int
+    +Name : string
+  }
+}
+
+package "Restoran.Infrastructure" {
+  class ReservationRepository
+  class TableRepository
+  class AppDbContext
+}
+
+ReservationsController ..> IReservationService
+ReservationService ..|> IReservationService
+ReservationService ..> BookingRules
+ReservationService --> IReservationRepository
+ReservationService --> ITableRepository
+ReservationService --> IRealtimeNotifier
+TableSocketHub ..|> IRealtimeNotifier
+ReservationRepository ..|> IReservationRepository
+TableRepository ..|> ITableRepository
+ReservationRepository --> AppDbContext
+TableRepository --> AppDbContext
+
+Reservation "*" --> "1" DiningTable
+Reservation "*" --> "1" User
+DiningTable "*" --> "1" Restaurant
+@enduml

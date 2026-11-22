@@ -6,6 +6,8 @@ import { money, toIsoDate, ZONE_KEY } from '../utils'
 import { useMenu } from '../components/booking/GastronomySection'
 import { useExtrasCatalog } from '../components/booking/EveningDetails'
 import { StaffSignup } from './AdminEvents'
+import DishLink from '../components/DishInfo'
+import DishTags from '../components/DishTags'
 
 /**
  * Personal: broneering telefoni või vestluse põhjal.
@@ -211,8 +213,8 @@ export default function PhoneBooking() {
         <div className="phone-menu">
           {menu.map((m) => (
             <div key={m.id} className={qty[m.id] ? 'pm-item on' : 'pm-item'}>
-              {m.imageUrl && <img src={m.imageUrl} alt="" />}
-              <span className="name">{m.name}<span className="small muted d-block">{money(m.price)}</span></span>
+              {m.imageUrl && <DishLink item={m} className="dish-pic"><img src={m.imageUrl} alt="" /></DishLink>}
+              <span className="name"><DishLink item={m} className="dish-name">{m.name}</DishLink><span className="small muted d-block">{money(m.price)}</span><DishTags tags={m.tags} /></span>
               <div className="stepper round">
                 <button type="button" onClick={() => setQty({ ...qty, [m.id]: Math.max(0, (qty[m.id] ?? 0) - 1) })}>−</button>
                 <span className="value">{qty[m.id] ?? 0}</span>

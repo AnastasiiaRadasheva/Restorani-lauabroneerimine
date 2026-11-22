@@ -1,0 +1,26 @@
+@startuml
+start
+:Vali restoran, kuupäev, kellaaeg ja külaliste arv;
+repeat
+  :Vali laud plaanilt või võta pakutud laud;
+repeat while (Laud on vaba?) is (ei) not (jah)
+:Lisa eeltellimus, lisateenused ja detailid;
+if (Sisse logitud?) then (ei)
+  :Logi sisse või registreeru;
+else (jah)
+endif
+if (Tasu > 0?) then (jah)
+  :Sisesta kaardi andmed;
+  if (Makse õnnestus?) then (ei)
+    :Näita veateadet;
+    stop
+  else (jah)
+  endif
+else (ei)
+endif
+:Salvesta broneering andmebaasi;
+:Saada teade personalile (WebSocket);
+:Saada kinnitus kliendile (teade, SMS, e-kiri);
+:Näita kviitungit;
+stop
+@enduml

@@ -27,7 +27,11 @@
 
 * { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; zoom: var(--zoom); }
+/* Arvutis on sait veidi väiksem (nagu brauseri suum 85% / 75%); telefonis ja kitsas aknas 100% */
+:root { --zoom: 1; }
+@media (min-width: 1001px) { :root { --zoom: 0.85; } }
+@media (min-width: 1440px) { :root { --zoom: 0.75; } }
 
 body {
   margin: 0;
@@ -51,7 +55,7 @@ img { max-width: 100%; }
 h1, h2, h3, h4 { font-weight: 500; margin: 0; line-height: 1.1; }
 p { margin: 0; }
 
-.app { min-height: 100vh; display: flex; flex-direction: column; }
+.app { min-height: calc(100vh / var(--zoom)); display: flex; flex-direction: column; }
 .main { flex: 1; }
 
 .container {

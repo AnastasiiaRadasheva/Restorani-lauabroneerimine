@@ -1,0 +1,19 @@
+@startuml
+node "Brauser" {
+  [Reacti veebileht] as Web
+}
+node "Server" {
+  [Restoran.Api] as Api
+  [Restoran.Application] as App
+  [Restoran.Infrastructure] as Infra
+  database "SQLite restoran.db" as Db
+  [Restoran.Worker] as Worker
+}
+Web --> Api : HTTP / JSON
+Web <--> Api : WebSocket /ws/tables
+Api --> App
+Infra ..|> App : liideste teostus
+Api --> Infra : DI registreerimine
+Infra --> Db : EF Core
+Worker --> Api : HTTP (Service roll)
+@enduml

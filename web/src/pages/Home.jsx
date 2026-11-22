@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import EventsSection from '../components/EventsSection'
 import NearestRestaurant from '../components/NearestRestaurant'
+import OurRestaurants from '../components/OurRestaurants'
+import SignatureDishes from '../components/SignatureDishes'
 import { Arrow } from '../components/Icons'
 import { useI18n } from '../i18n'
 
@@ -10,7 +12,7 @@ export default function Home() {
   return (
     <>
       {/* ===== Suur avaplokk ===== */}
-      <section className="hero">
+      <section className="hero hero-fit">
         <div className="container">
           <div className="hero-frame">
             <div className="hero-inner">
@@ -30,7 +32,7 @@ export default function Home() {
               </div>
 
               <figure className="hero-figure">
-                <div className="crest">
+                <div className="crest crest-anim">
                   <div>
                     <div>
                       <img src="/img/helmet.jpg" alt={t('home.crestAlt')} />
@@ -58,8 +60,14 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ===== Firmaroad + jooksev riba ===== */}
+      <SignatureDishes />
+
       {/* ===== Gastronoomilised õhtud ===== */}
       <EventsSection />
+
+      {/* ===== Meie restoranid kaardil ===== */}
+      <OurRestaurants />
 
       {/* ===== Tsitaat ===== */}
       <section className="quote">

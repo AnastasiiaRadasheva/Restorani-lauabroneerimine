@@ -35,6 +35,8 @@ public class Reservation
     public string ServiceLanguage { get; set; } = "et";
     /// <summary>Tasu laua ise valimise eest (tipptundidel kallim).</summary>
     public decimal SeatFee { get; set; }
+    /// <summary>Eeltellimus, mille personal lisas külalise palvel pärast makset – makstakse kohapeal.</summary>
+    public decimal OnSitePreOrder { get; set; }
     public List<ReservationExtra> Extras { get; set; } = new();
     public List<ReservationMessage> Messages { get; set; } = new();
 

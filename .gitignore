@@ -492,3 +492,25 @@ dist/
 
 # Demo SMS-id ja e-kirjad
 outbox/
+
+# Salajased seaded: e-posti ja SMS-i paroolid, võtmed (ei tohi GitHubi minna)
+.env
+.env.*
+secrets.json
+*.secrets.json
+appsettings.Local.json
+appsettings.*.Local.json
+appsettings.Production.json
+# Näidised (tühjad väljad) lähevad GitHubi
+!appsettings.Local.example.json
+
+# Varukoopiad ja ajutised failid
+*.bak
+*.backup
+~$*.docx
+
+# Arendustööriistade kaustad
+.claude/
+.vs/
+*.pfx
+*.key
