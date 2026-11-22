@@ -9,9 +9,19 @@ const DRAFT_KEY = 'argent-booking-draft'
 
 function readDraft() {
   try {
-    return JSON.parse(sessionStorage.getItem(DRAFT_KEY)) ?? {}
+    const d = JSON.parse(sessionStorage.getItem(DRAFT_KEY)) ?? {}
+    // Möödunud kuupäevaga mustand ei kehti
+    return d.date && d.date < toIsoDate(new Date()) ? {} : d
   } catch {
     return {}
+  }
+}
+
+function writeDraft(value) {
+  try {
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(value))
+  } catch {
+    /* privaatne aken – mustandit ei salvestata */
   }
 }
 
@@ -39,7 +49,12 @@ export function useBooking() {
   const [zone, setZone] = useState(draft.zone ?? 'Hall')
   const [tableId, setTableId] = useState(draft.tableId ?? null)
   const [error, setError] = useState('')
-  const [othersSelecting, setOthersSelecting] = useState({}) // tableId -> aeg
+  const [, setOthersSelecting] = useState({}) // tableId -> aeg (ainult personali jaoks; siin ei näidata)
+
+  // Kõik valikud salvestuvad jooksvalt: sisselogimine/registreerimine keset broneerimist ei kaota neid
+  useEffect(() => {
+    writeDraft({ restaurantId, date, time, guests, zone, tableId })
+  }, [restaurantId, date, time, guests, zone, tableId])
 
   const restaurant = restaurants.find((r) => r.id === restaurantId)
 
@@ -134,7 +149,8 @@ export function useBooking() {
 
   const tables = (availability?.tables ?? []).map((tb) => ({
     ...tb,
-    state: !tb.isFree ? 'busy' : !tb.fitsGuests ? 'small' : othersSelecting[tb.id] ? 'hold' : 'free',
+    // Külalisele näitame ainult vaba/broneeritud. "Keegi valib praegu" on näha personali plaanil.
+    state: !tb.isFree ? 'busy' : !tb.fitsGuests ? 'small' : 'free',
     clickable: tb.isFree && tb.fitsGuests, // viirutatud lauda saab ka valida, aga teine võib ette jõuda
   }))
   useEffect(() => {
@@ -196,12 +212,18 @@ export function useBooking() {
     reload: loadAvailability,
     legend: [
       ['free', t('booking.legendFree')],
-      ['hold', t('booking.legendHold')],
       ['busy', t('booking.legendBusy')],
       ['selected', t('booking.legendMine')],
       ['chair', t('booking.legendSeat')],
     ],
-    saveDraft: () => sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ restaurantId, date, time, guests, zone, tableId })),
-    clearDraft: () => sessionStorage.removeItem(DRAFT_KEY),
+    repeatFrom: (r) => {
+      setRestaurantIdState(r.restaurantId)
+      setGuestsState(r.guests)
+      setTime(new Date(r.startTime).toTimeString().slice(0, 5))
+      setTableId(r.tableId)
+      setZone(r.tableLocation)
+    },
+    saveDraft: () => writeDraft({ restaurantId, date, time, guests, zone, tableId }),
+    clearDraft: () => { try { sessionStorage.removeItem(DRAFT_KEY) } catch { /* ignoreerime */ } },
   }
 }

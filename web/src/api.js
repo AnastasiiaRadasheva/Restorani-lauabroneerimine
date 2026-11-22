@@ -28,7 +28,10 @@ export class ApiError extends Error {
 
 /** Teeb päringu API-le. Lisab JWT tokeni ja muudab ProblemDetails vea loetavaks teateks. */
 export async function api(path, { method = 'GET', body } = {}) {
-  const headers = { Accept: 'application/json' }
+  // Saidi keel -> server tõlgib veateated (et/ru/en)
+  let lang = 'et'
+  try { lang = localStorage.getItem('argent-lang') || 'et' } catch { /* privaatne aken */ }
+  const headers = { Accept: 'application/json', 'Accept-Language': lang }
   const auth = getSavedAuth()
   if (auth?.token) headers.Authorization = `Bearer ${auth.token}`
   if (body !== undefined) headers['Content-Type'] = 'application/json'
@@ -41,7 +44,7 @@ export async function api(path, { method = 'GET', body } = {}) {
       body: body !== undefined ? JSON.stringify(body) : undefined,
     })
   } catch {
-    throw new ApiError('Serveriga ei saa ühendust. Kas API töötab?', 0)
+    throw new ApiError(msg(lang, 'Serveriga ei saa ühendust. Kas API töötab?', 'Нет связи с сервером. Работает ли API?', 'Cannot reach the server. Is the API running?'), 0)
   }
 
   if (response.status === 204) return null
@@ -53,20 +56,22 @@ export async function api(path, { method = 'GET', body } = {}) {
       saveAuth(null)
       window.dispatchEvent(new Event('auth-expired'))
     }
-    throw new ApiError(problemMessage(data, response.status), response.status, data?.errors)
+    throw new ApiError(problemMessage(data, response.status, lang), response.status, data?.errors)
   }
   return data
 }
 
-function problemMessage(data, status) {
+const msg = (lang, et, ru, en) => (lang === 'ru' ? ru : lang === 'en' ? en : et)
+
+function problemMessage(data, status, lang) {
   if (data?.errors) {
     return Object.values(data.errors).flat().join(' ')
   }
   if (data?.detail) return data.detail
-  if (status === 401) return 'Palun logi sisse.'
-  if (status === 403) return 'Sul pole selleks õigust.'
-  if (status === 404) return 'Ei leitud.'
-  return data?.title ?? 'Midagi läks valesti.'
+  if (status === 401) return msg(lang, 'Palun logi sisse.', 'Пожалуйста, войдите.', 'Please sign in.')
+  if (status === 403) return msg(lang, 'Sul pole selleks õigust.', 'У Вас нет на это прав.', 'You do not have permission.')
+  if (status === 404) return msg(lang, 'Ei leitud.', 'Не найдено.', 'Not found.')
+  return data?.title ?? msg(lang, 'Midagi läks valesti.', 'Что-то пошло не так.', 'Something went wrong.')
 }
 
 /** Abifunktsioon päringuparameetrite jaoks: tühjad väärtused jäetakse välja. */

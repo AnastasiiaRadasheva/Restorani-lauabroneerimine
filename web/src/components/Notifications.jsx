@@ -1,19 +1,30 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import { useI18n } from '../i18n'
+import { useAuth } from '../auth'
+import { useTableSocket } from '../realtime'
 
-/** Kellukese ikoon teadetega (meeldetuletused saadab taustateenus). */
+/** Kellukese ikoon teadetega. Uus teade tuleb kohe (WebSocket), klõps avab broneeringu. */
 export default function Notifications() {
+  const { isStaff } = useAuth()
   const { t, locale } = useI18n()
+  const navigate = useNavigate()
   const [items, setItems] = useState([])
   const [open, setOpen] = useState(false)
 
+  const load = () => api('/api/notifications/my').then(setItems).catch(() => {})
+
   useEffect(() => {
-    const load = () => api('/api/notifications/my').then(setItems).catch(() => {})
     load()
-    const timer = setInterval(load, 60000) // kord minutis
+    const timer = setInterval(load, 60000) // varuvariant, kui ühendus katkeb
     return () => clearInterval(timer)
   }, [])
+
+  // Reaalajas: server teatab, et kasutajale tuli uus teade
+  useTableSocket((msg) => {
+    if (msg.type === 'Notification') load()
+  })
 
   const unread = items.filter((n) => !n.isRead).length
 
@@ -23,6 +34,14 @@ export default function Notifications() {
       await Promise.all(items.filter((n) => !n.isRead).map((n) => api(`/api/notifications/${n.id}/read`, { method: 'PATCH' })))
       setTimeout(() => setItems((list) => list.map((n) => ({ ...n, isRead: true }))), 3000)
     }
+  }
+
+  function openItem(n) {
+    setOpen(false)
+    // Teatel on link; vanadel teadetel tuntakse vastus küsimusele ära teksti järgi (kõigis keeltes)
+    if (n.link) navigate(n.link)
+    else if (n.reservationId) navigate(`/broneering/${n.reservationId}`)
+    else if (/^Argent (vastas|ответил|answered)/.test(n.message)) navigate(isStaff ? '/personal/tugi' : '/tugi')
   }
 
   return (
@@ -39,10 +58,10 @@ export default function Notifications() {
           <p className="eyebrow">{t('bell.title')}</p>
           {items.length === 0 && <p className="italic muted small">{t('bell.empty')}</p>}
           {items.map((n) => (
-            <div key={n.id} className={n.isRead ? 'bell-item' : 'bell-item unread'}>
-              <div>{n.message}</div>
+            <button key={n.id} type="button" className={n.isRead ? 'bell-item' : 'bell-item unread'} onClick={() => openItem(n)}>
+              <span className="text">{n.message}</span>
               <small className="muted">{new Date(n.createdAt).toLocaleString(locale)}</small>
-            </div>
+            </button>
           ))}
         </div>
       )}

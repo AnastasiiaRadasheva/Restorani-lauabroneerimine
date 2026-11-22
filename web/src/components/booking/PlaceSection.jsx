@@ -1,17 +1,19 @@
 import { useI18n } from '../../i18n'
-import { EDGE_KEY, formatDate, parseIsoDate, ZONE_KEY, zonesOf } from '../../utils'
-import FloorPlan, { FloorLegend } from '../FloorPlan'
+import { EDGE_KEY, formatDate, parseIsoDate, pickZone, ZONE_KEY, zonesOf, stageOf } from '../../utils'
+import FloorPlan, { FloorLegend, spotText } from '../FloorPlan'
 
 /**
  * II. Teie koht: kas metrdotel valib laua või klient valib ise plaanilt.
  * Saal ja terrass on eraldi vahelehtedel.
  */
 export default function PlaceSection({ b }) {
-  const { t, locale } = useI18n()
+  const { t, locale, lang } = useI18n()
   const restaurant = b.restaurant
   const chosen = b.chosenTable
   const zoneName = (z) => t(ZONE_KEY[z]).toLowerCase()
   const zones = zonesOf(b.availability?.tables ?? [])
+  // Kui valitud saali selles restoranis pole, näidatakse kohe esimest olemasolevat (plaan ei ole tühi)
+  const shownZone = pickZone(b.availability?.tables ?? [], b.zone)
   const seatsLabel = (n) => t('booking.seats', { n })
 
   const planTables = (b.availability?.tables ?? []).map((tb) => ({
@@ -37,7 +39,7 @@ export default function PlaceSection({ b }) {
         <p className="seat-note">
           <span className="diamond ox" aria-hidden="true" />
           <span>
-            {t('seat.note')} <b>{b.isPeak?.(b.time) ? t('seat.feePeak') : t('seat.fee')}</b>
+            <b>{t('seat.guarantee')}</b> {t('seat.note')} <b className="ox">{b.isPeak?.(b.time) ? t('seat.feePeak') : t('seat.fee')}</b>
           </span>
         </p>
 
@@ -47,7 +49,7 @@ export default function PlaceSection({ b }) {
           <div className="plan-col">
             <div className="zone-tabs" role="tablist">
               {zones.map((z) => (
-                <button key={z} type="button" role="tab" aria-selected={b.zone === z} className={b.zone === z ? 'on' : ''} onClick={() => b.setZone(z)}>
+                <button key={z} type="button" role="tab" aria-selected={shownZone === z} className={shownZone === z ? 'on' : ''} onClick={() => b.setZone(z)}>
                   {t(ZONE_KEY[z])}
                 </button>
               ))}
@@ -55,10 +57,12 @@ export default function PlaceSection({ b }) {
             {restaurant && b.availability ? (
               <FloorPlan
                 tables={planTables}
-                zone={b.zone}
+                zone={shownZone}
                 bar={{ x: restaurant.barX, y: restaurant.barY, width: restaurant.barWidth, height: restaurant.barHeight }}
-                edgeLabel={t(EDGE_KEY[b.zone])}
-                entranceLabel={b.zone === 'Upstairs' ? t('booking.stairs') : t('booking.entrance')}
+                stage={stageOf(restaurant)}
+                stageLabel={t('plan.stage')}
+                edgeLabel={t(EDGE_KEY[shownZone])}
+                entranceLabel={shownZone === 'Upstairs' ? t('booking.stairs') : t('booking.entrance')}
                 barLabel={t('booking.bar')}
                 seatsLabel={seatsLabel}
                 onSelect={(tb) => b.setTableId(tb.id)}
@@ -80,7 +84,7 @@ export default function PlaceSection({ b }) {
               <p className="text">
                 {chosen
                   ? [
-                      [chosen.spot, seatsLabel(chosen.seats), b.seatFeeText].filter(Boolean).join(' · '),
+                      [spotText(chosen.spot, lang), seatsLabel(chosen.seats), b.seatFeeText].filter(Boolean).join(' · '),
                       `${formatDate(parseIsoDate(b.date), locale)}, ${b.time}`,
                       `${t('booking.guestsN', { n: b.guests })} · ${t('booking.holdNote')}`,
                     ].join('\n')

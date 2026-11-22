@@ -1,18 +1,32 @@
-// Personali lehtede abifunktsioonid. Personali vaade on alati eesti keeles.
+// Personali lehtede abifunktsioonid. Tekstid järgivad saidi keelt (ET/RU/EN).
+import { useI18n } from './i18n'
+
+/** tr('eesti', 'русский', 'english') – lühike tõlge personali lehtedel; tr.t = tavaline t(). */
+export function useTr() {
+  const { t, lang } = useI18n()
+  const tr = (et, ru, en) => (lang === 'ru' ? ru : lang === 'en' ? en : et)
+  tr.t = t
+  tr.lang = lang
+  tr.status = (s) => t(`status.${s}`)
+  tr.zone = (z) => t({ Hall: 'booking.hall', Terrace: 'booking.terrace', Upstairs: 'booking.upstairs' }[z])
+  tr.edge = (z) => tr(EDGE_TEXT[z], { Hall: 'улица · окна', Terrace: 'улица · навес', Upstairs: 'лестница · окна' }[z], { Hall: 'street · windows', Terrace: 'street · canopy', Upstairs: 'stairs · windows' }[z])
+  return tr
+}
 
 export const STATUS_TEXT = {
   Active: 'Aktiivne',
   Arrived: 'Saabunud',
   Cancelled: 'Tühistatud',
   NoShow: 'Ei tulnud',
+  PendingPayment: 'Ootab makset',
 }
 
 export const LOCATION_TEXT = { Hall: 'Saal', Terrace: 'Terrass', Upstairs: 'Teine korrus' }
 export const EDGE_TEXT = { Hall: 'tänav · aknad', Terrace: 'tänav · varikatus', Upstairs: 'trepp · aknad' }
 export const ZONE_LIST = ['Hall', 'Terrace', 'Upstairs']
 
-export const fmtDate = (v) => new Date(v).toLocaleDateString('et-EE', { weekday: 'short', day: 'numeric', month: 'short' })
-export const fmtTime = (v) => new Date(v).toLocaleTimeString('et-EE', { hour: '2-digit', minute: '2-digit' })
+export const fmtDate = (v) => new Date(v).toLocaleDateString(document.documentElement.lang || 'et', { weekday: 'short', day: 'numeric', month: 'short' })
+export const fmtTime = (v) => new Date(v).toLocaleTimeString(document.documentElement.lang || 'et', { hour: '2-digit', minute: '2-digit' })
 
 /** Kellaajad 30-minutilise sammuga. */
 export function timeSlots(from = '17:00', to = '23:30') {

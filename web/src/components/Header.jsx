@@ -4,6 +4,7 @@ import { useAuth } from '../auth'
 import { useI18n } from '../i18n'
 import { CloseIcon, MenuIcon, UserIcon } from './Icons'
 import Notifications from './Notifications'
+import { useTr } from '../staff'
 
 /** Keelevalik ET / RU / EN. */
 export function LangSwitch() {
@@ -21,6 +22,10 @@ export function LangSwitch() {
 
 export default function Header() {
   const { user, isStaff, isAdmin, logout } = useAuth()
+  const tr = useTr()
+  const here = useLocation()
+  // Pärast sisselogimist tagasi samale lehele (nt pooleli broneering)
+  const backHere = ['/login', '/register'].includes(here.pathname) ? here.state : { from: here.pathname + here.search }
   const { t } = useI18n()
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
@@ -51,12 +56,16 @@ export default function Header() {
 
   const links = (
     <>
-      <NavLink to="/" end>{t('nav.home')}</NavLink>
-      <NavLink to="/broneeri">{t('nav.booking')}</NavLink>
-      <NavLink to="/menuu">{t('nav.menu')}</NavLink>
-      {isStaff && <NavLink to="/personal/plaan">Plaan</NavLink>}
-      {isStaff && <NavLink to="/personal/broneeringud">Broneeringud</NavLink>}
-      {isAdmin && <NavLink to="/admin">Admin</NavLink>}
+      {!isStaff && <NavLink to="/" end>{t('nav.home')}</NavLink>}
+      {!isStaff && <NavLink to="/broneeri">{t('nav.booking')}</NavLink>}
+      {!isStaff && <NavLink to="/menuu">{t('nav.menu')}</NavLink>}
+      {!isStaff && <NavLink to="/tugi">{t('nav.support')}</NavLink>}
+      {isAdmin && <NavLink to="/admin">{tr('Töölaud', 'Рабочий стол', 'Dashboard')}</NavLink>}
+      {isStaff && <NavLink to="/personal/plaan">{tr('Plaan', 'План', 'Plan')}</NavLink>}
+      {isStaff && <NavLink to="/personal/kalender">{tr('Kalender', 'Календарь', 'Calendar')}</NavLink>}
+      {isStaff && <NavLink to="/personal/broneeringud">{tr('Broneeringud', 'Брони', 'Bookings')}</NavLink>}
+      {isStaff && <NavLink to="/personal/uus">+ {tr('Uus broneering', 'Новая бронь', 'New booking')}</NavLink>}
+      {isStaff && <NavLink to="/personal/tugi">{tr('Küsimused', 'Вопросы', 'Questions')}</NavLink>}
     </>
   )
 
@@ -69,7 +78,7 @@ export default function Header() {
 
         <nav className="nav" aria-label={t('nav.menu')}>{links}</nav>
 
-        <Link to="/" className="logo">ARGENT</Link>
+        <Link to={isAdmin ? '/admin' : isStaff ? '/personal/plaan' : '/'} className="logo">ARGENT</Link>
 
         <div className="nav-right">
           <LangSwitch />
@@ -77,15 +86,20 @@ export default function Header() {
             <>
               {!isStaff && <NavLink to="/minu">{t('nav.my')}</NavLink>}
               <Notifications />
+              {!isStaff && (
+                <Link to="/profiil" className="avatar-link" title={user.name} aria-label={t('profile.title')}>
+                  {user.avatarUrl ? <img src={user.avatarUrl} alt="" /> : <UserIcon />}
+                </Link>
+              )}
               <button className="link underline" onClick={onLogout} title={user.name}>{t('nav.logout')}</button>
             </>
           ) : (
-            <NavLink to="/login" className="link underline">{t('nav.login')}</NavLink>
+            <NavLink to="/login" state={backHere} className="link underline">{t('nav.login')}</NavLink>
           )}
         </div>
 
         {/* Telefonis: kasutaja ikoon paremal */}
-        <Link to={user ? (isStaff ? '/personal/plaan' : '/minu') : '/login'} className="user-icon" aria-label={user ? t('nav.my') : t('nav.login')}>
+        <Link to={!user ? '/login' : isStaff ? '/personal/plaan' : '/profiil'} state={!user ? backHere : undefined} className="user-icon" aria-label={user ? t('nav.my') : t('nav.login')}>
           <UserIcon />
         </Link>
       </div>
@@ -99,7 +113,7 @@ export default function Header() {
             {user ? (
               <button type="button" onClick={onLogout}>{t('nav.logout')}</button>
             ) : (
-              <NavLink to="/login">{t('nav.login')}</NavLink>
+              <NavLink to="/login" state={backHere}>{t('nav.login')}</NavLink>
             )}
           </nav>
           {user && <p className="eyebrow">{user.name}</p>}

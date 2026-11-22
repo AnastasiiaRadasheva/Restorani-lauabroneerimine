@@ -4,7 +4,7 @@ import { useAuth } from '../auth'
 import { useI18n } from '../i18n'
 
 export default function Login() {
-  const { login } = useAuth()
+  const { login, logout } = useAuth()
   const { t } = useI18n()
   const navigate = useNavigate()
   const location = useLocation()
@@ -23,9 +23,15 @@ export default function Login() {
     setBusy(true)
     try {
       const user = await login(email, password)
+      // Teenusekonto (Worker) on ainult taustateenuse jaoks – saidile sellega ei logita
+      if (user.role === 'Service') {
+        logout()
+        return setError(t('auth.serviceAccount'))
+      }
       const from = location.state?.from
       if (from) navigate(from)
-      else if (user.role === 'Admin' || user.role === 'Waiter') navigate('/personal/plaan')
+      else if (user.role === 'Admin') navigate('/admin')
+      else if (user.role === 'Waiter') navigate('/personal/plaan')
       else navigate('/')
     } catch (err) {
       setError(err.message)
@@ -58,7 +64,6 @@ export default function Login() {
           <p className="foot">
             {t('auth.noAccount')} <Link to="/register" state={location.state}>{t('auth.register')}</Link>
           </p>
-          <p className="demo">{t('auth.demo')}</p>
         </form>
       </div>
     </div>

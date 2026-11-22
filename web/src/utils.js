@@ -46,6 +46,11 @@ export const EDGE_KEY = { Hall: 'booking.edgeHall', Terrace: 'booking.edgeTerrac
 
 /** Restorani tsoonid laudade järgi. */
 export const zonesOf = (tables) => ZONES.filter((z) => tables.some((tb) => tb.location === z))
+/** Valitud saal, kui see restoranis olemas; muidu esimene olemasolev (plaan ei jää kunagi tühjaks). */
+export const pickZone = (tables, zone) => {
+  const zones = zonesOf(tables)
+  return zones.includes(zone) ? zone : zones[0] ?? zone
+}
 
 /** Broneeringu number tšekil, nt AR-2011-1900-42. */
 export function reservationCode(r) {
@@ -55,3 +60,7 @@ export function reservationCode(r) {
   const hhmm = `${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}`
   return `AR-${dd}${mm}-${hhmm}-${r.id}`
 }
+
+/** Restorani lava plaanil (püsiv osa, nagu baar). */
+export const stageOf = (r) =>
+  r && r.stageWidth > 0 ? { zone: r.stageZone, x: r.stageX, y: r.stageY, width: r.stageWidth, height: r.stageHeight } : null

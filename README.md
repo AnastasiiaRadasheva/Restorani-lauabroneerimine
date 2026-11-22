@@ -194,3 +194,11 @@ Errors are returned as `ProblemDetails` (400, 404, 409, 500).
 ## Photos
 
 Dish photos in `web/public/img/menu` are from [Unsplash](https://unsplash.com/license) (free to use). The list with links is in `web/public/img/menu/CREDITS.md`.
+
+## SMS and e-mail confirmations
+
+After a booking the customer gets a notification on the website, an SMS (if they have a phone number and "receive SMS" is on in the profile) and an e-mail with the receipt.
+
+- **Demo mode (default):** nothing is sent. The SMS text and the e-mail (HTML receipt) are saved to `src/Restoran.Api/outbox` – open the `.html` file in a browser.
+- **Real SMS:** create a Twilio account (free trial), verify your phone number, then fill `Sms:AccountSid`, `Sms:AuthToken` and `Sms:From` in `appsettings.json`. Estonian numbers without a country code (e.g. `58951836`) get `+372`.
+- **Real e-mail:** fill `Email:Host`, `Port`, `User`, `Password`, `From` (for Gmail: `smtp.gmail.com`, port 587 and an app password).
