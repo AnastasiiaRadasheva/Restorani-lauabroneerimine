@@ -3,6 +3,7 @@ import { api } from '../api'
 import { useI18n } from '../i18n'
 import { money } from '../utils'
 import { useMenu } from './booking/GastronomySection'
+import DishLink from './DishInfo'
 import DishTags from './DishTags'
 import { CloseIcon } from './Icons'
 
@@ -72,8 +73,8 @@ function Dialog({ r, onClose, onSaved }) {
             <div className="po-list">
               {chosen.map(({ id, q, m }) => (
                 <div key={id} className="po-row">
-                  {m?.imageUrl && <img src={m.imageUrl} alt="" />}
-                  <span className="name">{m?.name ?? r.preOrder.find((p) => p.menuItemId === id)?.name}<span className="muted small d-block">{money(price(id))}</span></span>
+                  {m?.imageUrl && <DishLink item={m} className="dish-pic"><img src={m.imageUrl} alt="" /></DishLink>}
+                  <span className="name">{m ? <DishLink item={m} className="dish-name">{m.name}</DishLink> : r.preOrder.find((p) => p.menuItemId === id)?.name}<span className="muted small d-block">{money(price(id))}</span></span>
                   <div className="stepper round">
                     <button type="button" onClick={() => change(id, -1)}>−</button>
                     <span className="value">{q}</span>
@@ -115,11 +116,13 @@ function Dialog({ r, onClose, onSaved }) {
             </div>
             <div className="po-list pick">
               {menu.filter((m) => m.category === current).map((m) => (
-                <button key={m.id} type="button" className="po-row" onClick={() => { change(m.id, 1); setPicking(false) }}>
-                  {m.imageUrl && <img src={m.imageUrl} alt="" />}
-                  <span className="name">{m.name}<span className="muted small d-block">{m.description}</span><DishTags tags={m.tags} /></span>
-                  <span className="price">{money(m.price)}</span>
-                </button>
+                <div key={m.id} className="po-row">
+                  {m.imageUrl && <DishLink item={m} className="dish-pic"><img src={m.imageUrl} alt="" /></DishLink>}
+                  <button type="button" className="po-pick" onClick={() => { change(m.id, 1); setPicking(false) }}>
+                    <span className="name">{m.name}<span className="muted small d-block">{m.description}</span><DishTags tags={m.tags} /></span>
+                    <span className="price">{money(m.price)}</span>
+                  </button>
+                </div>
               ))}
             </div>
           </>

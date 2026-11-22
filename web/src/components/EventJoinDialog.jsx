@@ -4,6 +4,7 @@ import { useAuth } from '../auth'
 import { useI18n } from '../i18n'
 import { EDGE_KEY, money, pickZone, stageOf, ZONE_KEY, zonesOf } from '../utils'
 import FloorPlan, { FloorLegend } from './FloorPlan'
+import DishLink from './DishInfo'
 import { CloseIcon } from './Icons'
 
 const EVENT_EXTRAS = [['bottle', 95], ['flowers', 45]]
@@ -126,9 +127,9 @@ export default function EventJoinDialog({ e, onClose, onJoined }) {
             {e.items.length > 0 && <p className="eyebrow">{t('ej.drinks')}</p>}
             {e.items.map((d) => (
               <div key={d.id} className="addon">
-                {d.imageUrl && <img className="addon-photo" src={d.imageUrl} alt="" />}
+                {d.imageUrl && <DishLink item={{ ...d, name: itemName(d), tags: null }} className="dish-pic"><img className="addon-photo" src={d.imageUrl} alt="" /></DishLink>}
                 <div className="text">
-                  <span className="name">{itemName(d)}</span>
+                  <DishLink item={{ ...d, name: itemName(d), tags: null }} className="dish-name"><span className="name">{itemName(d)}</span></DishLink>
                   <span className="desc">{d.description}</span>
                 </div>
                 <span className="price">{money(d.price)}</span>
