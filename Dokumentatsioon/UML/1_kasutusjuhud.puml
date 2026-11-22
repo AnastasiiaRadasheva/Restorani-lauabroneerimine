@@ -1,0 +1,60 @@
+@startuml
+left to right direction
+actor Klient
+actor Teenindaja
+actor Admin
+actor "Teenus (Worker)" as Teenus
+Admin --|> Teenindaja
+
+rectangle "Argent lauabroneerimine" {
+  usecase "Registreeru / logi sisse" as UC1
+  usecase "Broneeri laud" as UC2
+  usecase "Tee eeltellimus" as UC3
+  usecase "Maksa" as UC4
+  usecase "Vaata, muuda, tühista broneeringut" as UC5
+  usecase "Kirjuta restoranile" as UC6
+  usecase "Registreeru õhtule" as UC7
+  usecase "Vaata laudade plaani" as UC8
+  usecase "Märgi saabunuks / ei tulnud" as UC9
+  usecase "Telefonibroneering" as UC10
+  usecase "Vasta sõnumitele" as UC11
+  usecase "Kirjuta kõigile päeva külalistele" as UC12
+  usecase "Halda laudu" as UC13
+  usecase "Halda menüüd" as UC14
+  usecase "Halda õhtuid" as UC15
+  usecase "Vaata statistikat" as UC16
+  usecase "Saada meeldetuletused" as UC17
+  usecase "Märgi no-show" as UC18
+  usecase "Tühista maksmata broneeringud" as UC19
+  usecase "Muuda broneeringut külalise palvel" as UC20
+  usecase "Märgi päevi kalendris" as UC21
+  usecase "Vaata kliendi kaarti" as UC22
+}
+
+Klient --> UC1
+Klient --> UC2
+Klient --> UC3
+Klient --> UC5
+Klient --> UC6
+Klient --> UC7
+UC2 ..> UC4 : <<include>>
+UC7 ..> UC4 : <<include>>
+
+Teenindaja --> UC8
+Teenindaja --> UC9
+Teenindaja --> UC10
+Teenindaja --> UC11
+Teenindaja --> UC12
+Teenindaja --> UC20
+Teenindaja --> UC21
+Teenindaja --> UC22
+
+Admin --> UC13
+Admin --> UC14
+Admin --> UC15
+Admin --> UC16
+
+UC17 <-- Teenus
+UC18 <-- Teenus
+UC19 <-- Teenus
+@enduml

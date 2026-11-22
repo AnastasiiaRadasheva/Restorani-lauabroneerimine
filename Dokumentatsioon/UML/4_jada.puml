@@ -1,0 +1,23 @@
+@startuml
+actor "Klient (brauser)" as K
+participant ReservationsController as C
+participant ReservationService as S
+database "AppDbContext / SQLite" as DB
+participant TableSocketHub as H
+actor "Teenindaja (brauser)" as T
+
+K -> C : POST /api/reservations (JWT)
+C -> S : CreateAsync(dto)
+S -> DB : GetOccupyingAsync(lauad, aeg)
+DB --> S : hõivatud broneeringud
+alt laud on hõivatud
+  S --> C : ConflictException
+  C --> K : 409 Conflict
+else laud on vaba
+  S -> DB : AddAsync(reservation) ja SaveChanges
+  S -> H : ReservationCreatedAsync(dto)
+  H -> T : ReservationCreated (WebSocket)
+  S --> C : ReservationDto
+  C --> K : 201 Created
+end
+@enduml
