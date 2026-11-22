@@ -28,7 +28,7 @@ export function useExtrasCatalog() {
  */
 export default function EveningDetails({ ev, setEv, catalog, userName }) {
   const { t } = useI18n()
-  const [open, setOpen] = useState(ev.occasion !== 'None' || ev.extras.length > 0)
+  const [open, setOpen] = useState(ev.occasion !== 'None')
   const [langOpen, setLangOpen] = useState(false)
   // Kas on vaja tordi kirjeldust (tellimustort või kingitusena minitort)
   const cake = ev.extras.includes('bigcake') || (ev.occasion !== 'None' && ev.gift === 'Cake')
@@ -37,7 +37,7 @@ export default function EveningDetails({ ev, setEv, catalog, userName }) {
     set({ extras: ev.extras.includes(code) ? ev.extras.filter((c) => c !== code) : [...ev.extras, code] })
 
   const extrasTotal = catalog.filter((x) => ev.extras.includes(x.code)).reduce((s, x) => s + x.price, 0)
-  const summary = [ev.occasion !== 'None' && t(`occasion.${ev.occasion}`).toLowerCase(), ev.extras.length && `+${ev.extras.length}`]
+  const summary = [ev.occasion !== 'None' && t(`occasion.${ev.occasion}`).toLowerCase()]
     .filter(Boolean)
     .join(' · ')
 
@@ -52,6 +52,44 @@ export default function EveningDetails({ ev, setEv, catalog, userName }) {
 
   return (
     <>
+      <div className="block">
+        <div className="extras-head">
+          <p className="eyebrow">{t('evening.extras')}</p>
+          <span className="italic">{money(extrasTotal)}</span>
+        </div>
+        {catalog.map((x) => {
+          const on = ev.extras.includes(x.code)
+          return (
+            <div key={x.code} className="extra">
+              <span className={on ? 'diamond ox' : 'diamond hollow'} aria-hidden="true" />
+              <div className="text">
+                <span className="name">{t(`extra.${x.code}`)}</span>
+                <span className="desc">{t(`extra.${x.code}.desc`)}</span>
+              </div>
+              <span className="price">{x.price ? money(x.price) : t('evening.free')}</span>
+              <button type="button" className={on ? 'square on' : 'square'} onClick={() => toggleExtra(x.code)} aria-pressed={on} aria-label={t(`extra.${x.code}`)}>
+                {on ? '✓' : '+'}
+              </button>
+            </div>
+          )
+        })}
+      </div>
+
+      {cake && (
+        <div className="paper white cake-card">
+          <p className="card-title">{t('cake.title')}</p>
+          <p className="muted small">{t('cake.note')}</p>
+          <textarea
+            className="box"
+            rows={3}
+            maxLength={250}
+            value={ev.cakeNote ?? ''}
+            onChange={(e) => set({ cakeNote: e.target.value })}
+            placeholder={t('cake.placeholder')}
+          />
+        </div>
+      )}
+
       <button type="button" className={open ? 'details-toggle open' : 'details-toggle'} onClick={() => setOpen(!open)} aria-expanded={open}>
         <span className="plus" aria-hidden="true">{open ? '−' : '+'}</span>
         <span className="text">
@@ -149,43 +187,6 @@ export default function EveningDetails({ ev, setEv, catalog, userName }) {
             </div>
           )}
 
-          <div className="block">
-            <div className="extras-head">
-              <p className="eyebrow">{t('evening.extras')}</p>
-              <span className="italic">{money(extrasTotal)}</span>
-            </div>
-            {catalog.map((x) => {
-              const on = ev.extras.includes(x.code)
-              return (
-                <div key={x.code} className="extra">
-                  <span className={on ? 'diamond ox' : 'diamond hollow'} aria-hidden="true" />
-                  <div className="text">
-                    <span className="name">{t(`extra.${x.code}`)}</span>
-                    <span className="desc">{t(`extra.${x.code}.desc`)}</span>
-                  </div>
-                  <span className="price">{x.price ? money(x.price) : t('evening.free')}</span>
-                  <button type="button" className={on ? 'square on' : 'square'} onClick={() => toggleExtra(x.code)} aria-pressed={on} aria-label={t(`extra.${x.code}`)}>
-                    {on ? '✓' : '+'}
-                  </button>
-                </div>
-              )
-            })}
-          </div>
-
-          {cake && (
-            <div className="paper white cake-card">
-              <p className="card-title">{t('cake.title')}</p>
-              <p className="muted small">{t('cake.note')}</p>
-              <textarea
-                className="box"
-                rows={3}
-                maxLength={250}
-                value={ev.cakeNote ?? ''}
-                onChange={(e) => set({ cakeNote: e.target.value })}
-                placeholder={t('cake.placeholder')}
-              />
-            </div>
-          )}
         </div>
       )}
     </>

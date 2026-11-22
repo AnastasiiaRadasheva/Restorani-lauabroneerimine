@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api, qs } from '../../api'
 import { useI18n } from '../../i18n'
 import { money } from '../../utils'
+import DishTags from '../DishTags'
 
 const ROMAN = ['i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii']
 
@@ -60,6 +61,7 @@ export default function GastronomySection({ menu, qty, setQty, extra }) {
                   <span className="eyebrow">{m.category}</span>
                   <span className="name">{m.name}</span>
                   <span className="desc">{m.description}</span>
+                  <DishTags tags={m.tags} />
                 </div>
                 <span className="price">{money(m.price)}</span>
                 <div className="stepper round">

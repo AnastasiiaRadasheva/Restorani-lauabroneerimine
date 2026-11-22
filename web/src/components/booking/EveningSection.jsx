@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useI18n } from '../../i18n'
 import { addDays, formatDate, formatDistance, parseIsoDate, toIsoDate, weekdayShort } from '../../utils'
 import { CalendarIcon } from '../Icons'
@@ -24,6 +25,11 @@ export default function EveningSection({ b }) {
     return s ? s.every((x) => x.freeTables === 0) : false
   }
   const times = daySlots(b.date) ?? []
+  // Gastronoomiline õhtu: sel päeval on tavaline broneerimine õhtu saalis (või kogu restoranis) suletud
+  const eventOf = (iso) => b.slots.find((d) => d.date === iso)?.event
+  const evTitle = (ev) => t(`event.${ev.code}.title`, {}, ev.title)
+  const dayEvent = eventOf(b.date)
+  const anyEvent = b.slots.some((d) => d.event)
   const weekdays = Array.from({ length: 7 }, (_, i) => weekdayShort(addDays(new Date(2026, 10, 16), i), locale))
 
   return (
@@ -53,9 +59,11 @@ export default function EveningSection({ b }) {
                       onClick={() => b.setDate(iso)}
                       disabled={isFull(iso)}
                       aria-pressed={iso === b.date}
+                      title={eventOf(iso) ? evTitle(eventOf(iso)) : undefined}
                     >
                       <span className="dow">{weekdayShort(d, locale)}</span>
                       <span className="num">{d.getDate()}</span>
+                      {eventOf(iso) && <span className="ev-mark" aria-hidden="true">♪</span>}
                     </button>
                   )
                 })}
@@ -93,8 +101,10 @@ export default function EveningSection({ b }) {
                           onClick={() => b.setDate(iso)}
                           aria-pressed={iso === b.date}
                           aria-label={formatDate(d, locale) + (full ? `, ${t('booking.full')}` : '')}
+                          title={eventOf(iso) ? evTitle(eventOf(iso)) : undefined}
                         >
                           {d.getDate()}
+                          {eventOf(iso) && <span className="ev-mark" aria-hidden="true">♪</span>}
                         </button>
                       )
                     })}
@@ -124,6 +134,15 @@ export default function EveningSection({ b }) {
               <p className="hint">
                 <span>{t('booking.fullTimes')}</span>
               </p>
+              {dayEvent && (
+                <p className="ev-note">
+                  ♪ {dayEvent.zone
+                    ? t('booking.eventZone', { title: evTitle(dayEvent), zone: t({ Hall: 'booking.hall', Terrace: 'booking.terrace', Upstairs: 'booking.upstairs' }[dayEvent.zone]) })
+                    : t('booking.eventDay', { title: evTitle(dayEvent) })}{' '}
+                  <Link to="/#events">{t('booking.eventLink')}</Link>
+                </p>
+              )}
+              {!dayEvent && anyEvent && <p className="muted small">♪ — {t('booking.eventLegend')} <Link to="/#events">{t('booking.eventLink')}</Link></p>}
             </div>
 
             {/* ----- Külalised ----- */}
