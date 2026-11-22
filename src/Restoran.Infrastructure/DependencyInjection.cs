@@ -26,6 +26,7 @@ public static class DependencyInjection
         services.AddScoped<IReservationRepository, ReservationRepository>();
         services.AddScoped<IEventRepository, EventRepository>();
         services.AddScoped<ISupportRepository, SupportRepository>();
+        services.AddScoped<IDayNoteRepository, DayNoteRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
 
         // Teenused (äriloogika)
@@ -37,6 +38,7 @@ public static class DependencyInjection
         services.AddScoped<IStatsService, StatsService>();
         services.AddScoped<IEventService, EventService>();
         services.AddScoped<ISupportService, SupportService>();
+        services.AddScoped<IDayNoteService, DayNoteService>();
         services.AddScoped<ICustomerService, CustomerService>();
 
         // SMS ja e-kiri (demo, kui võtmeid pole seadistatud)

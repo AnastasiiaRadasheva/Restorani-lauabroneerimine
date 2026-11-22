@@ -1823,6 +1823,45 @@ namespace Restoran.Infrastructure.Data.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Restoran.Application.Services.DayNote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("AuthorName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("RestaurantId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Date");
+
+                    b.HasIndex("RestaurantId");
+
+                    b.ToTable("DayNotes", (string)null);
+                });
+
             modelBuilder.Entity("Restoran.Application.Services.SupportMessage", b =>
                 {
                     b.Property<int>("Id")
@@ -1997,6 +2036,16 @@ namespace Restoran.Infrastructure.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Reservation");
+                });
+
+            modelBuilder.Entity("Restoran.Application.Services.DayNote", b =>
+                {
+                    b.HasOne("Restoran.Application.Entities.Restaurant", "Restaurant")
+                        .WithMany()
+                        .HasForeignKey("RestaurantId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Restaurant");
                 });
 
             modelBuilder.Entity("Restoran.Application.Services.SupportMessage", b =>
