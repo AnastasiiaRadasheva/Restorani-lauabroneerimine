@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../api'
 import { useAuth } from '../auth'
 import DetailsSection from '../components/booking/DetailsSection'
 import EveningDetails, { useExtrasCatalog } from '../components/booking/EveningDetails'
+import AllergyBlock from '../components/booking/AllergyBlock'
 import EveningSection from '../components/booking/EveningSection'
 import GastronomySection, { useMenu } from '../components/booking/GastronomySection'
 import PlaceSection from '../components/booking/PlaceSection'
@@ -15,7 +16,7 @@ import { money } from '../utils'
 
 const EXTRA_KEY = 'argent-booking-extra'
 
-const emptyEvening = { occasion: 'None', gift: 'Cake', hostType: 'Me', hostName: '', addressForm: 'Name', serviceLanguage: 'et', extras: [], cakeNote: '' }
+const emptyEvening = { occasion: 'None', gift: 'Cake', hostType: 'Social', hostName: '', addressForm: 'Name', serviceLanguage: 'et', extras: [], cakeNote: '' }
 
 function readExtra() {
   try {
@@ -27,7 +28,7 @@ function readExtra() {
 
 /** Tipptunnid 18:00–20:00: laua ise valimine maksab 30 €, muul ajal 10 € (sama reegel on API-s). */
 const isPeak = (time) => time >= '18:00' && time <= '20:00'
-const seatFee = (manual, time) => (!manual ? 0 : isPeak(time) ? 30 : 10)
+const seatFee = (manual, time) => (!manual ? 0 : isPeak(time) ? 40 : 30)
 
 export default function Booking() {
   const { user } = useAuth()
@@ -50,6 +51,40 @@ export default function Booking() {
   useEffect(() => {
     if (!langTouched.current) setEvState((e) => ({ ...e, serviceLanguage: lang }))
   }, [lang])
+  const [allergies, setAllergies] = useState(saved.allergies ?? [])
+  const [allergyNote, setAllergyNote] = useState(saved.allergyNote ?? '')
+
+  // Eeltellimus, soovid, õhtu detailid ja allergiad salvestuvad jooksvalt (vt ka useBooking mustand)
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(EXTRA_KEY, JSON.stringify({ qty, wish, ev, allergies, allergyNote }))
+    } catch {
+      /* privaatne aken */
+    }
+  }, [qty, wish, ev, allergies, allergyNote])
+  const [params] = useSearchParams()
+
+  // "Korda": võtame eelmise broneeringu andmed (restoran, külalised, aeg, laud, põhjus, lisateenused)
+  useEffect(() => {
+    const id = params.get('repeat')
+    if (!id) return
+    api(`/api/reservations/${id}`).then((r) => {
+      b.repeatFrom(r)
+      setEvState((e) => ({
+        ...e,
+        occasion: r.occasion,
+        gift: r.gift === 'None' ? 'Cake' : r.gift,
+        hostType: r.hostType,
+        hostName: r.hostName ?? '',
+        addressForm: r.addressForm,
+        extras: r.extras.map((x) => x.code),
+      }))
+      setAllergies(r.allergies)
+      setAllergyNote(r.allergyNote ?? '')
+      setWish(r.specialRequest ?? '')
+    }).catch(() => {})
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   const [card, setCard] = useState({ cardNumber: '4242 4242 4242 4242', expiry: '12/28', cvc: '123' })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -82,7 +117,7 @@ export default function Booking() {
     }
     if (!user) {
       b.saveDraft()
-      sessionStorage.setItem(EXTRA_KEY, JSON.stringify({ qty, wish, ev }))
+      sessionStorage.setItem(EXTRA_KEY, JSON.stringify({ qty, wish, ev, allergies, allergyNote }))
       navigate('/login', { state: { from: '/broneeri' } })
       return
     }
@@ -95,7 +130,7 @@ export default function Booking() {
 
     setBusy(true)
     try {
-      let r = await api('/api/reservations', {
+      const r = await api('/api/reservations', {
         method: 'POST',
         body: {
           restaurantId: b.restaurantId,
@@ -113,12 +148,12 @@ export default function Booking() {
           addressForm: ev.addressForm,
           serviceLanguage: ev.serviceLanguage,
           extras: ev.extras,
+          allergies,
+          allergyNote: allergyNote.trim() || null,
+          // Võltsmakse samas päringus: broneering ja makse on üks samm
+          card: total > 0 ? { cardHolder: user.name, ...card } : null,
         },
       })
-      // Võltsmakse: päris raha ei liigu
-      if (r.total > 0) {
-        r = await api(`/api/reservations/${r.id}/pay`, { method: 'POST', body: { cardHolder: user.name, ...card } })
-      }
       b.clearDraft()
       sessionStorage.removeItem(EXTRA_KEY)
       setDone(r)
@@ -162,6 +197,7 @@ export default function Booking() {
         onConfirm={confirm}
         busy={busy}
         error={error || b.error}
+        after={<AllergyBlock allergies={allergies} setAllergies={setAllergies} note={allergyNote} setNote={setAllergyNote} />}
       >
         <EveningDetails ev={ev} setEv={setEv} catalog={catalog} userName={user?.name} />
       </DetailsSection>
