@@ -200,5 +200,20 @@ Dish photos in `web/public/img/menu` are from [Unsplash](https://unsplash.com/li
 After a booking the customer gets a notification on the website, an SMS (if they have a phone number and "receive SMS" is on in the profile) and an e-mail with the receipt.
 
 - **Demo mode (default):** nothing is sent. The SMS text and the e-mail (HTML receipt) are saved to `src/Restoran.Api/outbox` – open the `.html` file in a browser.
-- **Real SMS:** create a Twilio account (free trial), verify your phone number, then fill `Sms:AccountSid`, `Sms:AuthToken` and `Sms:From` in `appsettings.json`. Estonian numbers without a country code (e.g. `58951836`) get `+372`.
-- **Real e-mail:** fill `Email:Host`, `Port`, `User`, `Password`, `From` (for Gmail: `smtp.gmail.com`, port 587 and an app password).
+- **Real SMS:** create a Twilio account (free trial), verify your phone number, then set `Sms:AccountSid`, `Sms:AuthToken` and `Sms:From` as user secrets (see below). Estonian numbers without a country code (e.g. `58951836`) get `+372`.
+- **Real e-mail:** set `Email:Host`, `Email:Port`, `Email:User`, `Email:Password`, `Email:From` as user secrets (for Gmail: `smtp.gmail.com`, port 587 and an app password).
+
+Passwords and keys are **never** written to `appsettings.json` (it is in Git). They are kept in .NET user secrets – a file in your Windows profile, outside the project:
+
+```powershell
+dotnet user-secrets set "Email:Host" "smtp.gmail.com" --project src/Restoran.Api
+dotnet user-secrets set "Email:Port" "587" --project src/Restoran.Api
+dotnet user-secrets set "Email:User" "your.address@gmail.com" --project src/Restoran.Api
+dotnet user-secrets set "Email:From" "your.address@gmail.com" --project src/Restoran.Api
+dotnet user-secrets set "Email:Password" "your-app-password" --project src/Restoran.Api
+dotnet user-secrets list --project src/Restoran.Api
+```
+
+User secrets are read in the Development environment (the default when running `dotnet run`). Restart the API after changing them.
+
+Alternatively, copy `src/Restoran.Api/appsettings.Local.example.json` to `appsettings.Local.json` in the same folder and fill it in. That file is listed in `.gitignore`, so it never reaches GitHub.

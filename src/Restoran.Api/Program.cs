@@ -14,6 +14,12 @@ using Restoran.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Salajased võtmed (SMS, e-post, JWT) on failis appsettings.Local.json – see EI lähe GitHubi (.gitignore).
+// Näidis: appsettings.Local.example.json. Keskkonnamuutujad ja käsurida jäävad kõige tugevamaks.
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
+builder.Configuration.AddEnvironmentVariables();
+builder.Configuration.AddCommandLine(args);
+
 // Andmebaas, repositooriumid ja teenused
 builder.Services.AddRestoran(builder.Configuration);
 builder.Services.AddHttpContextAccessor();
@@ -149,5 +155,6 @@ app.Map("/ws/tables", async (HttpContext context, TableSocketHub hub) =>
     await hub.HandleAsync(context);
     return Results.Empty;
 });
-
+// mida teha, kui klient kathestab ühenduse (nt lehele&) siis te peate, et WebSocketi ühendus kathestatakse, aga serveris töötab 
+//mitu  asjad nadu midddaaaaaaaaaaa
 app.Run();
