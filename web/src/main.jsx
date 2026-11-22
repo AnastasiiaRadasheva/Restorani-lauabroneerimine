@@ -10,6 +10,7 @@ import './styles/visits.css'
 import './styles/staff.css'
 import './styles/evening.css'
 import './styles/mobile.css'
+import './styles/extra.css'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
