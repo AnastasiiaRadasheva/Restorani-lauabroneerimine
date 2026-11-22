@@ -5,6 +5,7 @@ import CancelDialog from '../components/CancelDialog'
 import { useI18n } from '../i18n'
 import { useAuth } from '../auth'
 import StaffMessages from '../components/StaffMessages'
+import StaffEditBooking from '../components/StaffEditBooking'
 import Messages from '../components/Messages'
 import { useTr } from '../staff'
 import { addDays, formatDate, formatTime, money, reservationCode, toIsoDate, ZONE_KEY } from '../utils'
@@ -38,6 +39,7 @@ export default function ReservationDetails() {
   }
 
   const [cancelOpen, setCancelOpen] = useState(false)
+  const [staffEdit, setStaffEdit] = useState(false)
 
   if (!r) return <div className="container loading">{error || t('common.loading')}</div>
 
@@ -106,7 +108,10 @@ export default function ReservationDetails() {
         )}
       </div>
 
-      {isStaff && <GuestWishes r={r} />}
+      {isStaff && <GuestWishes r={r} onEdit={['Active', 'PendingPayment', 'Arrived'].includes(r.status) && !staffEdit ? () => setStaffEdit(true) : null} />}
+      {isStaff && staffEdit && (
+        <StaffEditBooking r={r} onSaved={(x, text) => updated(x, text)} onClose={() => setStaffEdit(false)} />
+      )}
       {isStaff && <div className="actions"><StaffMessages r={r} /></div>}
       {!isStaff && <div className="paper white details-card"><Messages reservationId={r.id} /></div>}
       {editing && <EditReservation r={r} onSaved={(x) => updated(x, t('details.saved'))} onError={setError} onClose={() => setEditing(false)} />}
@@ -132,14 +137,17 @@ export default function ReservationDetails() {
 }
 
 /** Personalile: kõik, mida külaline broneerides soovis (ainult lugemiseks). */
-function GuestWishes({ r }) {
+function GuestWishes({ r, onEdit }) {
   const { t } = useI18n()
   const tr = useTr()
   const none = <span className="muted">—</span>
   const host = r.hostType === 'Other' ? r.hostName : t(`host.${r.hostType}`)
   return (
     <div className="paper white details-card wishes">
-      <p className="eyebrow">{tr('Mida külaline soovis', 'Что хотел гость', 'What the guest asked for')}</p>
+      <div className="row-between">
+        <p className="eyebrow">{tr('Mida külaline soovis', 'Что хотел гость', 'What the guest asked for')}</p>
+        {onEdit && <button type="button" className="btn btn-dark btn-small" onClick={onEdit}>{tr('Muuda / lisa', 'Изменить / добавить', 'Change / add')}</button>}
+      </div>
       <dl className="receipt-dl">
         <dt>{tr('Eeltellimus', 'Предзаказ', 'Pre-order')}</dt>
         <dd>

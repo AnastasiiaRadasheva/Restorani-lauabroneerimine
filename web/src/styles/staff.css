@@ -270,6 +270,8 @@
 .day-head .chip { height: 40px; font-size: 11px; }
 .nav a.nav-extra { color: var(--muted-2, #6b7075); }
 .nav a.nav-extra::before { content: "· "; }
+@media (min-width: 1001px) and (max-width: 1599px) { .nav { gap: 8px 16px; letter-spacing: 0.12em; } }
+@media (min-width: 1001px) and (max-width: 1300px) { .nav { gap: 6px 12px; font-size: 12px; letter-spacing: 0.08em; } }
 @media (max-width: 1000px) { .chip-right { margin-left: 0; } }
 
 /* Roa kaart: klõpsatav foto ja nimi, aken koostise ja allergeenidega */
@@ -324,3 +326,11 @@
 .wish-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .wish-list li { display: flex; justify-content: space-between; gap: 16px; }
 .wish-list li span:last-child { white-space: nowrap; }
+
+/* Personal muudab broneeringut külalise palvel */
+.staff-edit { margin-top: 14px; display: flex; flex-direction: column; gap: 14px; }
+.se-form { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.se-form .field-row { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.se-form .field { width: 100%; }
+.se-menu { width: 100%; display: grid; gap: 6px; max-height: 420px; overflow: auto; }
+.se-menu .pm-item .name { min-width: 0; }

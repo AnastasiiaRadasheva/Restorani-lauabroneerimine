@@ -266,7 +266,19 @@ public class ReservationService : IReservationService
         var before = TotalOf(r);
         await ApplyPreOrderAsync(r, r.Table!.RestaurantId, dto.Items);
         var diff = TotalOf(r) - before;
-        var due = r.IsPaid ? diff : TotalOf(r) - r.Extras.Where(e => !e.Locked).Sum(e => e.Price);
+        if (_current.IsStaff)
+        {
+            // Personal lisab külalise palvel: juurde tulnud osa makstakse kohapeal, vähenemisel vähendatakse
+            // kõigepealt kohapeal makstavat osa ja alles siis tagastatakse makstud raha
+            var onSite = r.OnSitePreOrder + diff;
+            if (onSite < 0 && r.IsPaid) r.RefundAmount = (r.RefundAmount ?? 0) - onSite;
+            r.OnSitePreOrder = Math.Max(0, onSite);
+            if (dto.SpecialRequest is not null) r.SpecialRequest = Clean(dto.SpecialRequest);
+            await _reservations.SaveChangesAsync();
+            _logger.LogInformation("Broneering {Id}: personal muutis eeltellimust ({Diff} €, kohapeal {OnSite} €)", r.Id, diff, r.OnSitePreOrder);
+            return await GetByIdAsync(id);
+        }
+        var due = r.IsPaid ? diff : TotalOf(r) - r.Extras.Where(e => !e.Locked).Sum(e => e.Price) - r.OnSitePreOrder;
         if (due > 0)
         {
             var digits = new string((dto.Card?.CardNumber ?? "").Where(char.IsDigit).ToArray());
@@ -433,6 +445,22 @@ public class ReservationService : IReservationService
         return ToDto(r);
     }
 
+    /// <summary>Personal: külalise soovid (allergiad, märkus köögile, soovid, tähtpäev). Klient seda kasutada ei saa.</summary>
+    public async Task<ReservationDto> SetStaffDetailsAsync(int id, StaffDetailsDto dto)
+    {
+        if (!_current.IsStaff) throw new ForbiddenException("Seda saab muuta ainult personal.");
+        var r = await GetOwned(id);
+        if (r.Status is not (ReservationStatus.Active or ReservationStatus.PendingPayment or ReservationStatus.Arrived))
+            throw new BusinessRuleException("Muuta saab ainult aktiivset broneeringut.");
+        r.Allergies = dto.Allergies is { Count: > 0 } ? string.Join(',', dto.Allergies.Distinct()) : null;
+        r.AllergyNote = Clean(dto.AllergyNote);
+        r.SpecialRequest = Clean(dto.SpecialRequest);
+        r.Occasion = dto.Occasion;
+        if (r.Occasion == Occasion.None) r.Gift = ChefGift.None;
+        await _reservations.SaveChangesAsync();
+        return await GetByIdAsync(id);
+    }
+
     private static MessageDto ToMessageDto(ReservationMessage m) =>
         new(m.Id, m.FromStaff, m.AuthorName, m.Text, m.CreatedAt);
 
@@ -512,12 +540,12 @@ public class ReservationService : IReservationService
 
     /// <summary>Kaardiga makstud summa: kõik peale pärast makset lisatud lisateenuste (need makstakse kohapeal).</summary>
     private static decimal PaidOf(Reservation r) =>
-        r.IsPaid ? TotalOf(r) - r.Extras.Where(e => !e.Locked).Sum(e => e.Price) : 0m;
+        r.IsPaid ? TotalOf(r) - r.Extras.Where(e => !e.Locked).Sum(e => e.Price) - r.OnSitePreOrder : 0m;
 
     /// <summary>Kohapeal makstav osa: pärast broneerimist lisatud lisateenused.
     /// Makset ootava (makselingiga) broneeringu summa makstakse lingi kaudu, mitte kohapeal.</summary>
     private static decimal OnSiteOf(Reservation r) =>
-        r.Status == ReservationStatus.PendingPayment ? 0m : r.Extras.Where(e => !e.Locked).Sum(e => e.Price);
+        r.Status == ReservationStatus.PendingPayment ? 0m : r.Extras.Where(e => !e.Locked).Sum(e => e.Price) + r.OnSitePreOrder;
 
     private static decimal TotalOf(Reservation r) =>
         r.PreOrderItems.Sum(p => p.UnitPrice * p.Quantity) + r.Extras.Sum(e => e.Price) + r.SeatFee;

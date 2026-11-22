@@ -1518,6 +1518,9 @@ namespace Restoran.Infrastructure.Data.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
+                    b.Property<decimal>("OnSitePreOrder")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("PaymentToken")
                         .HasMaxLength(40)
                         .HasColumnType("TEXT");

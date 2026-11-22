@@ -208,6 +208,16 @@ public class ReservationsController : ControllerBase
     public async Task<ActionResult<ReservationDto>> Update(int id, UpdateReservationDto dto) =>
         Ok(await _reservations.UpdateAsync(id, dto));
 
+    /// <summary>Personal: muuda külalise soove (allergiad, märkus köögile, soovid, tähtpäev).</summary>
+    [Authorize(Roles = "Admin,Waiter")]
+    [HttpPut("{id:int}/details")]
+    [ProducesResponseType(typeof(ReservationDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ReservationDto>> SetDetails(int id, StaffDetailsDto dto) =>
+        Ok(await _reservations.SetStaffDetailsAsync(id, dto));
+
     /// <summary>Tühista broneering.</summary>
     /// <remarks>
     /// Rohkem kui 24 h enne: makstud summa tagastatakse.
