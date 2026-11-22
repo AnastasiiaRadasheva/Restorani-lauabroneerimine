@@ -12,7 +12,7 @@ function FitBounds({ points }) {
   const key = JSON.stringify(points)
   useEffect(() => {
     // Ilma animatsioonita: animatsiooni ajal lehe uuendamine andis Leafleti vea "_leaflet_pos"
-    if (points.length > 1) map.fitBounds(points, { padding: [60, 60], animate: false })
+    if (points.length > 1) map.fitBounds(points, { paddingTopLeft: [50, 50], paddingBottomRight: [130, 50], animate: false }) // nimesildid on markerist paremal
     else if (points.length === 1) map.setView(points[0], 14, { animate: false })
   }, [map, key]) // eslint-disable-line react-hooks/exhaustive-deps
   return null
@@ -69,10 +69,10 @@ export default function RestaurantMap({ restaurants, userPos, selectedId, onSele
 
         {userPos && <Marker position={[userPos.lat, userPos.lng]} icon={meIcon} />}
       </MapContainer>
-      <div className="map-legend">
+      {userPos && <div className="map-legend">
         <span><i className="me" />{labels.me}</span>
         <span><i className="dash" />{labels.distance}</span>
-      </div>
+      </div>}
       <span className="map-credit">© OpenStreetMap</span>
     </div>
   )
