@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 import { api } from '../api'
 import { useI18n } from '../i18n'
 import { formatTime } from '../utils'
+import QuickReplies from './QuickReplies'
 
 /**
  * Sõnumid broneeringu kohta. Klient kirjutab restoranile, personal vastab.
  * Uued sõnumid laetakse iga 20 sekundi järel.
  */
-export default function Messages({ reservationId, staff = false, onSent }) {
+export default function Messages({ reservationId, staff = false, guestName, onSent }) {
   const { t, locale } = useI18n()
   const [list, setList] = useState(null)
   const [draft, setDraft] = useState('')
@@ -59,6 +60,7 @@ export default function Messages({ reservationId, staff = false, onSent }) {
         ))}
       </div>
       <form className="msg-form" onSubmit={send}>
+        {staff && <QuickReplies name={guestName} onPick={setDraft} />}
         <label className="field">
           {t('messages.yours')}
           <textarea rows={2} maxLength={1000} value={draft} onChange={(e) => setDraft(e.target.value)} />
