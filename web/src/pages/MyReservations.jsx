@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import CancelDialog from '../components/CancelDialog'
 import { ChevronDown } from '../components/Icons'
 import { useI18n } from '../i18n'
 import { formatDate, formatTime, money, ZONE_KEY } from '../utils'
+import PreOrderEditor from '../components/PreOrderEditor'
+import EventVisits from '../components/EventVisits'
 
 /** Teie külastused: tulevased (avatavad kaardid) ja varasemad. */
 export default function MyReservations({ renderExtra }) {
   const { t, locale } = useI18n()
+  const location = useLocation()
   const [list, setList] = useState(null)
   const [error, setError] = useState('')
   const [open, setOpen] = useState(null)
@@ -45,6 +48,9 @@ export default function MyReservations({ renderExtra }) {
 
         {error && <p className="alert alert-error">{error}</p>}
 
+        {/* Gastronoomilised õhtud (makstud või makset ootavad) */}
+        <EventVisits justJoined={location.state?.eventJoined} />
+
         <p className="eyebrow">{t('visits.upcoming')}</p>
         {upcoming.length === 0 && (
           <div className="paper empty">
@@ -80,7 +86,7 @@ export default function MyReservations({ renderExtra }) {
                     {r.status === 'Cancelled' && r.refundAmount > 0 && <span className="small refund">{t('cancel.refundNote', { sum: money(r.refundAmount) })}</span>}
                     {r.status === 'Cancelled' && r.isPaid && r.refundAmount === 0 && <span className="small refund no">{t('cancel.noRefundNote')}</span>}
                   </div>
-                  <Link to={`/broneeri?restaurant=${r.restaurantId}&guests=${r.guests}`} className="link-caps">
+                  <Link to={`/broneeri?repeat=${r.id}`} className="link-caps">
                     {t('visits.repeat')}
                   </Link>
                 </div>
@@ -106,7 +112,7 @@ function VisitCard({ r, open, onToggle, onChanged, setError, renderExtra }) {
   const [cancelOpen, setCancelOpen] = useState(false)
 
   return (
-    <article className={open ? 'visit open' : 'visit'}>
+    <article className={`visit${open ? ' open' : ''}${r.occasion !== 'None' ? ' important' : ''}`}>
       <button type="button" className="visit-head" onClick={onToggle} aria-expanded={open}>
         <span className="when">
           <span className="eyebrow">
@@ -137,6 +143,7 @@ function VisitCard({ r, open, onToggle, onChanged, setError, renderExtra }) {
               <dt>{t('gastro.preorder')}</dt>
               <dd>
                 {r.preOrder.length ? r.preOrder.map((p) => <div key={p.menuItemId}>{p.quantity} × {p.name}</div>) : '—'}
+                {r.status === 'Active' && <PreOrderEditor r={r} onChanged={onChanged} />}
               </dd>
               {r.specialRequest && (
                 <>
@@ -157,11 +164,19 @@ function VisitCard({ r, open, onToggle, onChanged, setError, renderExtra }) {
                 </>
               )}
               <dt>{t('details4.total')}</dt>
-              <dd className="sum">{money(r.total)}{r.isPaid ? ` · ${t('visits.paid')}` : ''}</dd>
+              <dd className="sum">
+                {money(r.total)}
+                {r.paidAmount > 0 && <span className="small d-block">{t('visits.paidPart', { sum: money(r.paidAmount) })}</span>}
+                {r.onSiteAmount > 0 && <span className="small d-block ox">{t('visits.onSitePart', { sum: money(r.onSiteAmount) })}</span>}
+              </dd>
             </dl>
-            {!r.canModify && <p className="lock-note">{t('visits.locked')}</p>}
+            {r.status === 'PendingPayment' && <p className="lock-note">{t('pay.note')}</p>}
+            {r.status === 'Active' && !r.canModify && <p className="lock-note">{t('visits.locked')}</p>}
             <div className="actions">
-              <button className="btn btn-dark" disabled={!r.canModify} onClick={() => navigate(`/broneering/${r.id}`)}>
+              {r.status === 'PendingPayment' && r.paymentToken && (
+                <button className="btn btn-dark" onClick={() => navigate(`/maksa/${r.paymentToken}`)}>{t('pay.confirmBtn')}</button>
+              )}
+              <button className={r.status === 'PendingPayment' ? 'btn' : 'btn btn-dark'} disabled={!r.canModify} onClick={() => navigate(`/broneering/${r.id}?muuda=1`)}>
                 {t('details.change')}
               </button>
               <button className="btn btn-ox-line" onClick={() => setCancelOpen(true)}>{t('details.cancel')}</button>

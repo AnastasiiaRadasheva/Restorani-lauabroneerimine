@@ -2,23 +2,20 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api'
 import { useMenu } from '../components/booking/GastronomySection'
+import DishTags, { TagLegend } from '../components/DishTags'
 import { Arrow } from '../components/Icons'
 import { useI18n } from '../i18n'
 import { money } from '../utils'
 
-/** Menüü leht: restorani valik ja toidud kategooriate kaupa. */
+/** Menüü leht: menüü on kõigis restoranides sama. Klassikaline nimekiri koos väikeste fotodega. */
 export default function Menu() {
   const { t } = useI18n()
-  const [restaurants, setRestaurants] = useState([])
   const [restaurantId, setRestaurantId] = useState(null)
   const menu = useMenu(restaurantId)
   const categories = [...new Set(menu.map((m) => m.category))]
 
   useEffect(() => {
-    api('/api/restaurants').then((l) => {
-      setRestaurants(l)
-      setRestaurantId(l[0]?.id ?? null)
-    })
+    api('/api/restaurants').then((l) => setRestaurantId(l[0]?.id ?? null))
   }, [])
 
   return (
@@ -33,35 +30,29 @@ export default function Menu() {
             <p>{t('menu.lead')}</p>
           </div>
 
-          <div className="chips">
-            {restaurants.map((r) => (
-              <button key={r.id} type="button" className={r.id === restaurantId ? 'chip on' : 'chip'} onClick={() => setRestaurantId(r.id)}>
-                {r.name}
-              </button>
-            ))}
-          </div>
+          <TagLegend />
 
           <div className="menu-cols">
             {categories.map((c) => (
               <div key={c} className="menu-cat">
                 <h2>{c}</h2>
-                <div className="menu-cards">
-                  {menu.filter((m) => m.category === c).map((m) => (
-                    <article key={m.id} className="menu-card">
-                      {m.imageUrl && <img src={m.imageUrl} alt={m.name} loading="lazy" />}
-                      <div className="body">
-                        <span className="name">{m.name}</span>
-                        <span className="desc">{m.description}</span>
-                        <span className="price">{money(m.price)}</span>
-                      </div>
-                    </article>
-                  ))}
-                </div>
+                {menu.filter((m) => m.category === c).map((m) => (
+                  <div key={m.id} className="menu-row">
+                    {m.imageUrl && <img className="menu-thumb" src={m.imageUrl} alt="" loading="lazy" />}
+                    <div className="menu-text">
+                      <span className="name">{m.name}</span>
+                      <span className="desc">{m.description}</span>
+                      <DishTags tags={m.tags} />
+                    </div>
+                    <span className="dots" />
+                    <span className="price">{money(m.price)}</span>
+                  </div>
+                ))}
               </div>
             ))}
           </div>
 
-          <Link to={`/broneeri?restaurant=${restaurantId ?? ''}`} className="btn-chamfer menu-book">
+          <Link to="/broneeri" className="btn-chamfer menu-book">
             {t('menu.book')}
             <Arrow />
           </Link>
