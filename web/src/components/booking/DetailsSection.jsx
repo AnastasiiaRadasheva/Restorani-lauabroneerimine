@@ -6,7 +6,7 @@ import { money } from '../../utils'
  * children – lisaplokid (tähtpäev, kingitus, lisateenused), mis tulevad hiljem.
  * lines – summade read paremal kastis: [[nimi, summa-tekst, klass]].
  */
-export default function DetailsSection({ user, wish, setWish, card, setCard, lines, total, onConfirm, busy, error, children }) {
+export default function DetailsSection({ user, wish, setWish, card, setCard, lines, total, onConfirm, busy, error, children, after }) {
   const { t } = useI18n()
   const set = (f) => (e) => setCard({ ...card, [f]: e.target.value })
 
@@ -36,6 +36,7 @@ export default function DetailsSection({ user, wish, setWish, card, setCard, lin
                 placeholder={t('details4.wishPlaceholder')}
               />
             </div>
+            {after}
           </div>
 
           <div className="details4-side">

@@ -1,5 +1,4 @@
 import { useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import { useI18n } from '../i18n'
 import { formatDate, formatTime, money, reservationCode, ZONE_KEY } from '../utils'
 import { CheckIcon, CloseIcon } from './Icons'
@@ -74,6 +73,12 @@ export default function Receipt({ r, total, onClose, rows = [], children }) {
               {r.preOrder.length === 0 && <span className="italic muted">{t('receipt.noPreorder')}</span>}
             </div>
             {children}
+            {r.allergies?.length > 0 && (
+              <div className="wish-box">
+                <span className="eyebrow ox">{t('allergy.title')}</span>
+                <span>{r.allergies.map((a) => t(`allergy.${a}`)).join(', ')}{r.allergyNote ? ` – ${r.allergyNote}` : ''}</span>
+              </div>
+            )}
             {r.specialRequest && (
               <div className="wish-box">
                 <span className="eyebrow ox">{t('details4.wish')}</span>
@@ -97,7 +102,6 @@ export default function Receipt({ r, total, onClose, rows = [], children }) {
 
         <div className="receipt-actions">
           <button type="button" className="btn btn-dark btn-pill" onClick={onClose}>{t('details.close')}</button>
-          <Link to="/minu" className="btn btn-pill">{t('nav.my')}</Link>
         </div>
       </div>
     </div>

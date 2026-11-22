@@ -11,8 +11,9 @@ function FitBounds({ points }) {
   const map = useMap()
   const key = JSON.stringify(points)
   useEffect(() => {
-    if (points.length > 1) map.fitBounds(points, { padding: [60, 60] })
-    else if (points.length === 1) map.setView(points[0], 14)
+    // Ilma animatsioonita: animatsiooni ajal lehe uuendamine andis Leafleti vea "_leaflet_pos"
+    if (points.length > 1) map.fitBounds(points, { padding: [60, 60], animate: false })
+    else if (points.length === 1) map.setView(points[0], 14, { animate: false })
   }, [map, key]) // eslint-disable-line react-hooks/exhaustive-deps
   return null
 }
