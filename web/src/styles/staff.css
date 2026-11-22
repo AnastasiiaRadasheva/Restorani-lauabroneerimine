@@ -172,6 +172,14 @@
 .dash-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 18px; margin-bottom: 26px; }
 .dash-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); }
 .admin-tabs { margin: 10px 0 18px; }
+/* Töölaua tervitus ja suured kiirnupud */
+.dash-hello { margin: 6px 0 22px; }
+.dash-hello-title { font-size: 34px; line-height: 1.15; }
+.dash-actions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 14px; margin-bottom: 30px; }
+.dash-actions .chip { display: flex; align-items: center; justify-content: center; height: auto; min-height: 84px; padding: 18px 16px; font-size: 14px; text-align: center; line-height: 1.5; text-decoration: none; background: var(--white); transition: background .15s, color .15s; }
+.dash-actions .chip:hover, .dash-actions .chip.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+@media (max-width: 1000px) { .dash-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .dash-actions .chip { min-height: 68px; font-size: 12px; letter-spacing: 0.14em; } .dash-hello-title { font-size: 28px; } }
 /* Telefonibroneering */
 .phone-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .phone-col { display: grid; gap: 14px; align-content: start; }
@@ -234,11 +242,14 @@
 .phone-mode { margin-bottom: 16px; }
 .phone-form { display: grid; gap: 20px; }
 .phone-extra, .phone-event { display: grid; gap: 12px; }
-.phone-menu { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; max-height: 420px; overflow: auto; }
+.phone-menu { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 8px; max-height: 460px; overflow: auto; }
 .pm-item { display: flex; align-items: center; gap: 10px; padding: 6px; border: 1px solid var(--line); background: #fff; }
 .pm-item.on { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
 .pm-item img { width: 72px; height: 54px; object-fit: cover; flex: none; }
-.pm-item .name { flex: 1; font-weight: 600; font-size: 15px; }
+.pm-item .name { flex: 1; min-width: 0; font-weight: 600; font-size: 15px; line-height: 1.3; }
+.pm-item .stepper { flex: none; }
+.pm-item .stepper button { width: 34px; height: 34px; }
+.pm-item .stepper .value { min-width: 26px; }
 
 /* Laudade kiirmuudatused */
 .admin-block .plan-room { height: 560px; }
@@ -251,3 +262,65 @@
 .broadcast { display: grid; gap: 10px; margin-bottom: 14px; }
 .broadcast-form { display: grid; gap: 10px; }
 .broadcast-form textarea { white-space: pre-line; }
+
+/* Lingid nupu kujul, admini lisafunktsioonid, kalender <-> nimekiri */
+.chip-link { display: inline-flex; align-items: center; text-decoration: none; }
+.chip-right { margin-left: auto; }
+.day-head { gap: 12px; flex-wrap: wrap; align-items: center; }
+.day-head .chip { height: 40px; font-size: 11px; }
+.nav a.nav-extra { color: var(--muted-2, #6b7075); }
+.nav a.nav-extra::before { content: "· "; }
+@media (max-width: 1000px) { .chip-right { margin-left: 0; } }
+
+/* Roa kaart: klõpsatav foto ja nimi, aken koostise ja allergeenidega */
+.dish-link { padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: inherit; cursor: pointer; }
+.dish-link.dish-pic { display: block; flex: none; line-height: 0; }
+.dish-link.dish-pic img { transition: opacity .15s; }
+.dish-link.dish-pic:hover img { opacity: .85; }
+@media (max-width: 1000px) { .dish > .dish-link.dish-pic { width: 100%; order: -1; } }
+.dish-link.dish-name { display: inline; text-decoration: underline dotted 1px; text-underline-offset: 4px; }
+.dish-link.dish-name:hover { text-decoration-style: solid; }
+.dish-dialog { position: relative; width: min(600px, 100%); max-height: calc(92vh / var(--zoom)); overflow-y: auto; gap: 14px; }
+.dish-close { position: absolute; top: 12px; right: 12px; }
+.dish-big { width: 100%; height: 240px; object-fit: cover; }
+.dish-price { font-size: 26px; white-space: nowrap; }
+.dish-ingredients { margin: 6px 0 0; padding-left: 20px; columns: 2; column-gap: 28px; }
+.dish-ingredients li { break-inside: avoid; margin-bottom: 4px; }
+.dish-allergens { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 6px; }
+.dish-diet { display: flex; gap: 16px; margin-top: 8px; }
+.po-pick { flex: 1; display: flex; align-items: center; gap: 12px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.po-pick .name { flex: 1; }
+@media (max-width: 600px) { .dish-ingredients { columns: 1; } .dish-big { height: 180px; } }
+
+/* Kliendi kaart: vasakul ruut kliendi andmetega, paremal broneeringud filtritega */
+.cc-grid { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 28px; align-items: start; }
+.cc-card { position: sticky; top: 120px; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 28px 24px; text-align: center; }
+.cc-avatar { display: grid; place-items: center; width: 96px; height: 96px; border-radius: 50%; background: var(--ink); color: var(--bg); font-size: 34px; letter-spacing: 0.06em; }
+.cc-name { font-size: 32px; font-weight: 400; line-height: 1.1; }
+.cc-contact { color: var(--muted); font-size: 15px; line-height: 1.6; }
+.cc-stats { display: grid; grid-template-columns: repeat(4, 1fr); width: 100%; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.cc-stats > div { display: flex; flex-direction: column; padding: 10px 2px; }
+.cc-stats > div + div { border-left: 1px solid var(--line); }
+.cc-stats strong { font-size: 24px; font-weight: 400; }
+.cc-stats span { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.cc-dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; width: 100%; margin: 0; text-align: left; font-size: 14px; }
+.cc-dl dt { font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); align-self: center; }
+.cc-dl dd { margin: 0; text-align: right; }
+.cc-main { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.cc-filters { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.cc-filters .chip { height: 40px; padding: 0 14px; }
+.cc-count { margin-left: 6px; font-weight: 400; opacity: 0.6; letter-spacing: 0; }
+.cc-list { display: flex; flex-direction: column; gap: 8px; }
+.cc-row { display: grid; grid-template-columns: 170px minmax(0, 1fr) auto auto; align-items: center; gap: 16px; padding: 12px 16px; border: 1px solid var(--line); background: var(--white); }
+.cc-row.important { border-left: 4px solid var(--ox); }
+.cc-when { display: flex; flex-direction: column; white-space: nowrap; }
+.cc-when span { color: var(--muted); font-size: 14px; }
+.cc-what { display: flex; flex-direction: column; gap: 2px; font-size: 15px; }
+.cc-actions { display: flex; gap: 6px; }
+@media (max-width: 1000px) { .cc-grid { grid-template-columns: 1fr; } .cc-card { position: static; } .cc-row { grid-template-columns: 1fr auto; } .cc-actions { grid-column: 1 / -1; } }
+
+/* Broneeringu vaade personalile: mida külaline soovis */
+.wishes { margin-top: 14px; }
+.wish-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.wish-list li { display: flex; justify-content: space-between; gap: 16px; }
+.wish-list li span:last-child { white-space: nowrap; }

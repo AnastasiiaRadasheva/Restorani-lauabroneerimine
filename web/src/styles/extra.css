@@ -52,10 +52,11 @@ h1, h2, h3, .card-title, .big, .name { font-weight: 600; }
 .menu-cat { break-inside: avoid; margin-bottom: 52px; }
 .menu-row { align-items: center; gap: 16px; padding: 14px 0; }
 .menu-thumb { flex: none; width: 168px; height: 126px; object-fit: cover; box-shadow: 0 10px 20px -12px rgba(12, 13, 14, 0.5); }
+@media (max-width: 700px) { .menu-thumb { width: 104px; height: 80px; } .menu-row { gap: 12px; } }
 .menu-text { display: flex; flex-direction: column; min-width: 0; }
 
 /* Õhtule registreerimise aken */
-.dialog.wide { width: min(1240px, 100%); max-height: calc(100vh - 40px); overflow-y: auto; }
+.dialog.wide { width: min(1240px, 100%); max-height: calc(100vh / var(--zoom) - 40px); overflow-y: auto; }
 .ej-grid { display: flex; flex-wrap: wrap; gap: 32px; }
 .ej-plan { flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
 .ej-side { flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
@@ -97,7 +98,7 @@ h1, h2, h3, .card-title, .big, .name { font-weight: 600; }
 .cal-wrap > .paper { flex: 1 1 560px; display: flex; flex-direction: column; gap: 16px; }
 .staff-cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
 .staff-cal .wd { text-align: center; font-size: 13px; font-weight: 800; color: var(--muted); }
-.sc-day { min-height: 84px; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 8px; border: 1px solid var(--line-2); background: var(--paper); text-align: left; }
+.sc-day { min-height: 84px; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 8px; border: 1px solid var(--line-2); background: var(--paper); text-align: left; }
 .sc-day .n { font-size: 20px; }
 .sc-day .c { font-size: 12px; color: var(--muted); }
 .sc-day .i { font-size: 12px; color: var(--ox); font-weight: 800; }
@@ -124,3 +125,159 @@ h1, h2, h3, .card-title, .big, .name { font-weight: 600; }
 .faq details p { padding: 0 20px 18px; margin: 0; color: var(--muted); font-size: 17px; line-height: 1.6; }
 .faq-cta { margin: 34px 0 14px; display: grid; gap: 4px; }
 .faq-cta h2 { font-size: 30px; }
+
+/* Kalendri sildid: automaatsed (olulised, palju külalisi, õhtu) ja personali märked */
+.lc-ox { --lc: var(--ox); }
+.lc-gold { --lc: #93732a; }
+.lc-green { --lc: #2f6f4c; }
+.lc-blue { --lc: #2f5687; }
+.lc-grey { --lc: #6b7075; }
+.sc-labels { display: flex; flex-direction: column; gap: 2px; width: 100%; margin-top: auto; }
+.sc-label { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 1px 6px; background: var(--lc, var(--ink)); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.5; }
+.sc-label.more { background: none; color: var(--muted); padding: 0; }
+.sc-day.on .sc-label.more { color: var(--line-2); }
+.sc-day.tint-ox { background: #f6e9ec; }
+.sc-day.tint-gold { background: #f6f0e1; }
+.sc-day.tint-green { background: #e7f1eb; }
+.sc-day.tint-blue { background: #e6edf6; }
+.sc-day.tint-grey { background: #eceeef; }
+.sc-day.on { background: var(--ink); }
+.sc-legend { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; font-size: 14px; }
+.sc-legend ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.sc-legend li { display: flex; align-items: center; gap: 8px; }
+.sc-legend li .dot, .sc-legend li .sw { flex: none; }
+.sc-legend .lg-head { font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.sc-legend .sw { width: 16px; height: 16px; margin: 0; border-radius: 3px; }
+@media (max-width: 600px) { .sc-legend { grid-template-columns: 1fr; } }
+.sw { display: inline-block; width: 14px; height: 14px; margin-right: 6px; vertical-align: -2px; background: var(--lc, var(--ink)); }
+.sw-note { background: linear-gradient(90deg, #93732a 0 33%, #2f6f4c 33% 66%, #6b7075 66%); }
+.day-notes { display: flex; flex-direction: column; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line-2); }
+.dn-row { display: flex; align-items: center; gap: 10px; }
+.dn-row .sc-label { flex: 0 1 auto; font-size: 13px; padding: 3px 10px; }
+.dn-row .small { flex: 1; }
+.dn-presets { gap: 6px; }
+.dn-form { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.dn-form input { flex: 1 1 160px; height: 36px; padding: 0 10px; font-size: 15px; }
+.dn-colors { display: flex; gap: 6px; }
+.dn-colors .sw { width: 20px; height: 20px; margin: 0; border: 0; border-radius: 50%; cursor: pointer; }
+.dn-colors .sw.on { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* Kalendri lahtris ainult värvitäpid; legend ja märke rida kalendri all */
+.sc-dots { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; }
+.dot { display: block; width: 9px; height: 9px; border-radius: 50%; background: var(--lc); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.6); }
+
+.dn-label { font-size: 12px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.dn-form .btn-small { height: 36px; min-width: 40px; font-size: 18px; }
+.dn-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.dn-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 4px 3px 8px; border: 1px solid var(--line-2); background: var(--white); font-size: 13px; }
+.dn-chip .sw { width: 10px; height: 10px; margin: 0; border-radius: 50%; }
+.dn-chip button { padding: 0 4px; border: 0; background: none; font-size: 16px; line-height: 1; cursor: pointer; color: var(--muted); }
+
+/* Märkega päev on tervenisti märke värvi */
+.sc-day.filled { background: var(--lc); border-color: var(--lc); color: #fff; }
+.sc-day.filled .c, .sc-day.filled .i { color: rgba(255, 255, 255, 0.85); }
+.sc-day.filled.other { opacity: 0.55; }
+.sc-day.filled.on { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+/* Käsitsi märgitud oluline päev: paksem punane raam */
+.sc-day.marked { box-shadow: inset 0 0 0 2px var(--ox); }
+.sc-legend .frame { flex: none; display: inline-block; width: 16px; height: 16px; border: 2px solid var(--ox); }
+.dn-marks { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.dn-marks .chip { height: 34px; }
+
+/* ===== Avaleht: avaplokk mahub täpselt ekraanile ===== */
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.hero-fit { padding: 24px 0 48px; }
+/* ekraani kõrgus (suumi arvestades) miinus päis ja veerised */
+.hero-fit .hero-inner { min-height: 0; height: calc(100vh / var(--zoom) - 140px); }
+.hero-fit .hero-text { padding: clamp(32px, 5vh, 64px) 72px; gap: 24px; }
+.hero-fit .hero-figure { padding: 32px; }
+.crest-anim { width: 360px; height: 530px; max-height: calc(100vh / var(--zoom) - 300px); animation: crest-float 7s ease-in-out infinite; }
+.crest-anim > div > div { position: relative; }
+.crest-anim > div > div::after { content: ""; position: absolute; inset: 0; clip-path: var(--shape); pointer-events: none;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.55) 50%, transparent 65%); background-size: 250% 100%;
+  animation: crest-shine 6s ease-in-out infinite; }
+/* Suurel ekraanil (≥1440 px) suurem pealkiri ja märk, et plokk poleks tühi */
+@media (min-width: 1440px) {
+  .hero-fit .hero-text .kicker { font-size: 17px; }
+  .hero-fit .hero-title { font-size: 150px; }
+  .hero-fit .hero-tag { font-size: 66px; }
+  .hero-fit .hero-cta { max-width: 640px; }
+  .hero-fit .hero-cta p { font-size: 26px; }
+  .hero-fit .btn-chamfer { height: 72px; font-size: 15px; }
+  .crest-anim { width: 470px; height: 690px; }
+}
+@keyframes crest-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes crest-shine { 0%, 55% { background-position: 150% 0; } 85%, 100% { background-position: -60% 0; } }
+
+/* ===== Sujuv ilmumine kerimisel ===== */
+.reveal { opacity: 0; transform: translateY(36px); transition: opacity 0.9s ease, transform 0.9s cubic-bezier(.2, .7, .2, 1); }
+.reveal.in { opacity: 1; transform: none; }
+.reveal.d1 { transition-delay: 0.12s; }
+.reveal.d2 { transition-delay: 0.24s; }
+.reveal.d3 { transition-delay: 0.36s; }
+
+/* ===== Firmaroad ===== */
+.sig-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; }
+.sig-card { position: relative; display: block; overflow: hidden; aspect-ratio: 3 / 4; background: var(--ink); color: #fff; text-align: left; }
+.sig-photo { position: absolute; inset: 0; }
+.sig-photo img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.02); transition: transform 1.4s cubic-bezier(.2, .7, .2, 1), filter 0.6s; filter: saturate(0.9); }
+.sig-card::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(12, 13, 14, 0) 40%, rgba(12, 13, 14, 0.85) 100%); }
+.sig-no { position: absolute; top: 16px; left: 18px; z-index: 1; font-size: 15px; letter-spacing: 0.2em; opacity: 0.85; }
+.sig-text { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; display: flex; flex-direction: column; gap: 6px; padding: 22px;
+  transform: translateY(46px); transition: transform 0.6s cubic-bezier(.2, .7, .2, 1); }
+.sig-name { font-size: 26px; line-height: 1.15; }
+.sig-desc { font-size: 14px; opacity: 0.8; }
+.sig-price { font-size: 14px; letter-spacing: 0.08em; opacity: 0; transition: opacity 0.5s 0.1s; }
+.sig-price em { font-style: italic; text-decoration: underline; text-underline-offset: 3px; }
+.sig-card:hover .sig-photo img, .sig-card:focus-visible .sig-photo img { transform: scale(1.12); filter: saturate(1.1); }
+.sig-card:hover .sig-text, .sig-card:focus-visible .sig-text { transform: none; }
+.sig-card:hover .sig-price, .sig-card:focus-visible .sig-price { opacity: 1; }
+.sig-all { align-self: center; display: inline-flex; align-items: center; gap: 10px; }
+
+/* ===== Jooksev riba roogade nimedega ===== */
+.ticker { overflow: hidden; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--ink); color: var(--bg); }
+.ticker-track { display: flex; width: max-content; animation: ticker 60s linear infinite; }
+.ticker-track span { display: inline-flex; align-items: center; gap: 28px; padding: 18px 14px; font-size: 22px; font-style: italic; white-space: nowrap; }
+.ticker-track i { font-style: normal; font-size: 12px; color: #c9cdd1; }
+.ticker:hover .ticker-track { animation-play-state: paused; }
+@keyframes ticker { to { transform: translateX(-50%); } }
+
+/* ===== Meie restoranid ===== */
+.places-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 28px; align-items: stretch; }
+.places-map .map-box, .places-map .map { height: 100%; min-height: 560px; }
+.places-list { display: flex; flex-direction: column; gap: 14px; }
+.place-card { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 18px; padding: 14px; overflow: hidden; border: 1px solid var(--line); background: var(--white);
+  transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s; outline: none; }
+.place-card img { width: 100%; height: 100%; min-height: 150px; object-fit: cover; transition: transform 0.8s; }
+.place-card.on { border-color: var(--ink); box-shadow: 0 20px 40px -24px rgba(12, 13, 14, 0.35); transform: translateX(-4px); }
+.place-card.on img { transform: scale(1.06); }
+.place-text { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.place-text h3 { font-size: 28px; font-weight: 400; line-height: 1.1; }
+.place-addr { font-size: 15px; }
+.place-desc { font-size: 14px; color: var(--muted); }
+.place-actions { display: flex; align-items: center; gap: 18px; margin-top: auto; padding-top: 6px; }
+
+@media (max-width: 1000px) {
+  .hero-fit .hero-inner { height: auto; max-height: none; }
+  .hero-fit .hero-text { padding: 28px 22px 32px; }
+  .crest-anim { width: 240px; height: 354px; max-height: none; }
+  .sig-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .sig-name { font-size: 20px; }
+  .sig-text { transform: none; padding: 14px; }
+  .sig-price { opacity: 1; }
+  .places-grid { grid-template-columns: 1fr; }
+  .places-map .map-box, .places-map .map { min-height: 320px; }
+  .place-card { grid-template-columns: 96px minmax(0, 1fr); }
+  .place-card.on { transform: none; }
+}
+@media (max-width: 600px) {
+  .sig-desc { display: none; }
+  .sig-name { font-size: 18px; }
+  .sig-price { font-size: 12px; letter-spacing: 0.04em; }
+  .sig-price em { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .crest-anim, .crest-anim > div > div::after, .ticker-track { animation: none; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
