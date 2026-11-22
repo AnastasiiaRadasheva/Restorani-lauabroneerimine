@@ -3,6 +3,9 @@ import { Link, useLocation, useParams } from 'react-router-dom'
 import { api, qs } from '../api'
 import CancelDialog from '../components/CancelDialog'
 import { useI18n } from '../i18n'
+import { useAuth } from '../auth'
+import StaffMessages from '../components/StaffMessages'
+import Messages from '../components/Messages'
 import { addDays, formatDate, formatTime, reservationCode, toIsoDate, ZONE_KEY } from '../utils'
 
 /** Ühe broneeringu vaade: andmed, muutmine (rohkem kui 24 h enne) ja tühistamine. */
@@ -10,10 +13,15 @@ export default function ReservationDetails() {
   const { id } = useParams()
   const location = useLocation()
   const { t, locale } = useI18n()
+  const { isStaff } = useAuth()
   const [r, setR] = useState(null)
   const [error, setError] = useState('')
   const [message, setMessage] = useState(location.state?.justCreated ? t('details.created') : '')
-  const [editing, setEditing] = useState(false)
+  // "Muuda kuupäeva ja lauda" (Minu broneeringud) avab kohe muutmise vormi
+  const [editing, setEditing] = useState(() => new URLSearchParams(location.search).has('muuda'))
+  useEffect(() => {
+    if (editing && r) document.querySelector('.edit-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [editing, r])
 
   useEffect(() => {
     api(`/api/reservations/${id}`).then(setR).catch((e) => setError(e.message))
@@ -31,7 +39,9 @@ export default function ReservationDetails() {
 
   if (!r) return <div className="container loading">{error || t('common.loading')}</div>
 
-  const active = r.status === 'Active'
+  const active = r.status === 'Active' || r.status === 'PendingPayment'
+  // Personal võib kliendi palvel muuta iga broneeringut ka vähem kui 24 h enne
+  const canModify = r.canModify || (isStaff && active)
   const zone = t(ZONE_KEY[r.tableLocation])
 
   return (
@@ -49,8 +59,20 @@ export default function ReservationDetails() {
 
       <div className="paper white details-card">
         <dl className="receipt-dl">
+          {isStaff && (
+            <>
+              <dt>{t('receipt.who')}</dt>
+              <dd><Link to={`/personal/klient?q=${encodeURIComponent(r.customerEmail)}`}>{r.customerName}</Link><br /><span className="muted small">{r.customerPhone ?? ''} {r.customerEmail}</span></dd>
+            </>
+          )}
           <dt>{t('details.status')}</dt>
-          <dd>{t(`status.${r.status}`)}</dd>
+          <dd className={r.status === 'PendingPayment' ? 'ox' : ''}>{t(`status.${r.status}`)}</dd>
+          {isStaff && r.status === 'PendingPayment' && r.paymentToken && (
+            <>
+              <dt>{t('pay.title')}</dt>
+              <dd className="small"><a href={`/maksa/${r.paymentToken}`}>{`${window.location.origin}/maksa/${r.paymentToken}`}</a></dd>
+            </>
+          )}
           <dt>{t('details.where')}</dt>
           <dd>{r.restaurantName}<br /><span className="muted">{r.restaurantAddress}</span></dd>
           <dt>{t('details.when')}</dt>
@@ -67,14 +89,14 @@ export default function ReservationDetails() {
           )}
         </dl>
 
-        {active && !r.canModify && <p className="lock-note">{t('details.locked')}</p>}
+        {active && !canModify && <p className="lock-note">{t('details.locked')}</p>}
 
-        {active && !r.canModify && (
+        {active && !canModify && (
           <div className="actions">
             <button className="btn btn-ox-line" onClick={() => setCancelOpen(true)}>{t('details.cancel')}</button>
           </div>
         )}
-        {active && r.canModify && !editing && (
+        {active && canModify && !editing && (
           <div className="actions">
             <button className="btn btn-dark" onClick={() => setEditing(true)}>{t('details.change')}</button>
             <button className="btn btn-ox-line" onClick={() => setCancelOpen(true)}>{t('details.cancel')}</button>
@@ -82,6 +104,8 @@ export default function ReservationDetails() {
         )}
       </div>
 
+      {isStaff && <div className="actions"><StaffMessages r={r} /></div>}
+      {!isStaff && <div className="paper white details-card"><Messages reservationId={r.id} /></div>}
       {editing && <EditReservation r={r} onSaved={(x) => updated(x, t('details.saved'))} onError={setError} onClose={() => setEditing(false)} />}
 
       {cancelOpen && (
