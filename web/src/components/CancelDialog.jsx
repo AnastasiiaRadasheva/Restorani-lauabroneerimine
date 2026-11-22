@@ -10,8 +10,9 @@ import { money } from '../utils'
  */
 export default function CancelDialog({ r, onClose, onCancelled }) {
   const { t } = useI18n()
-  const late = !r.canModify
-  const paid = r.isPaid ? r.total : 0
+  // Hoiatus "raha ei tagastata" ainult siis, kui on midagi makstud ja külastuseni on alla 24 h
+  const late = !r.canModify && r.status === 'Active' && r.paidAmount > 0
+  const paid = r.paidAmount ?? 0 // kohapeal makstavat osa ei tagastata
   const [step, setStep] = useState(1)
   const [agreed, setAgreed] = useState(false)
   const [busy, setBusy] = useState(false)

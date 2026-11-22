@@ -44,8 +44,8 @@ export function I18nProvider({ children }) {
     }
   }
 
-  function t(key, vars = {}) {
-    let value = current.dict[key] ?? et[key] ?? key
+  function t(key, vars = {}, fallback) {
+    let value = current.dict[key] ?? et[key] ?? fallback ?? key
     if (typeof value === 'object') {
       const form = new Intl.PluralRules(current.locale).select(vars.n ?? 0)
       value = value[form] ?? value.other
