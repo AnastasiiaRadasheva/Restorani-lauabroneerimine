@@ -27,7 +27,7 @@ export default function StaffSupport() {
     return () => clearInterval(timer)
   }, [])
 
-  useLeaveWarning(Boolean(draft.trim()), tr('Vastus on saatmata. Kas lahkuda lehelt?', 'Ответ не отправлен. Уйти со страницы?', 'The reply has not been sent. Leave the page?'))
+  const leaveDialog = useLeaveWarning(Boolean(draft.trim()), tr('Vastus on saatmata. Kas lahkuda lehelt?', 'Ответ не отправлен. Уйти со страницы?', 'The reply has not been sent. Leave the page?'))
 
   // Kliendi uus küsimus või teise töötaja vastus ilmub kohe
   useTableSocket((msg) => {
@@ -117,6 +117,7 @@ export default function StaffSupport() {
           )}
         </div>
       </div>
+      {leaveDialog}
     </div>
   )
 }
