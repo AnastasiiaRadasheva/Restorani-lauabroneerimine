@@ -23,8 +23,12 @@ public class SupportMessage
 
 public record SupportMessageDto(int Id, bool FromStaff, string AuthorName, string Text, DateTime CreatedAt);
 
-/// <summary>Vestluse kokkuvõte administraatorile. Külalise vestlusel on UserId asemel GuestKey.</summary>
-public record SupportThreadDto(int? UserId, string? GuestKey, string Name, string Email, string? Phone, string LastText, DateTime LastAt, int Unread);
+/// <summary>
+/// Vestluse kokkuvõte administraatorile. Külalise vestlusel on UserId asemel GuestKey.
+/// Answered = viimane sõnum on personalilt; WaitingSince = millal klient kirjutas esimese vastamata sõnumi.
+/// </summary>
+public record SupportThreadDto(int? UserId, string? GuestKey, string Name, string Email, string? Phone, string LastText, DateTime LastAt, int Unread,
+    bool Answered, DateTime? WaitingSince);
 
 public class NewSupportMessageDto
 {
@@ -119,12 +123,16 @@ public class SupportService : ISupportService
         return all.GroupBy(m => (m.UserId, m.GuestKey))
             .Select(g =>
             {
-                var last = g.OrderBy(m => m.CreatedAt).Last();
+                var ordered = g.OrderBy(m => m.CreatedAt).ToList();
+                var last = ordered[^1];
                 var u = g.First().User;
                 // Nimi, mille klient ise viimati kirjutas
-                var name = g.Where(m => !m.FromStaff).OrderBy(m => m.CreatedAt).LastOrDefault()?.AuthorName ?? u?.Name ?? "";
+                var name = ordered.LastOrDefault(m => !m.FromStaff)?.AuthorName ?? u?.Name ?? "";
+                // Kliendi sõnumid pärast personali viimast vastust ootavad vastust
+                var lastStaff = ordered.LastOrDefault(m => m.FromStaff)?.CreatedAt;
+                var waiting = last.FromStaff ? null : ordered.FirstOrDefault(m => !m.FromStaff && (lastStaff == null || m.CreatedAt > lastStaff))?.CreatedAt;
                 return new SupportThreadDto(g.Key.UserId, g.Key.GuestKey, name, u?.Email ?? "", u?.Phone, last.Text, last.CreatedAt,
-                    g.Count(m => !m.FromStaff && !m.ReadByStaff));
+                    g.Count(m => !m.FromStaff && !m.ReadByStaff), last.FromStaff, waiting);
             })
             .OrderByDescending(t => t.LastAt)
             .ToList();

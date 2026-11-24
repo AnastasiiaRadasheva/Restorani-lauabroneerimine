@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { api } from '../api'
-import { fmtDate, fmtTime, useTr } from '../staff'
+import { fmtDate, fmtTime, preview, useTr } from '../staff'
 import QuickReplies from '../components/QuickReplies'
 import { useTableSocket } from '../realtime'
 import { useLeaveWarning } from '../leaveGuard'
@@ -17,6 +18,9 @@ export default function StaffSupport() {
   const [messages, setMessages] = useState([])
   const [draft, setDraft] = useState('')
   const [error, setError] = useState('')
+  // ?vestlus=u5 (klient) või ?vestlus=g<võti> (külaline) – avatakse kohe see vestlus (nt töölaua nupust „Vasta“)
+  const [params, setParams] = useSearchParams()
+  const wanted = params.get('vestlus')
 
   const loadThreads = () => api('/api/support/threads').then(setThreads).catch((e) => setError(e.message))
 
@@ -26,6 +30,14 @@ export default function StaffSupport() {
     const timer = setInterval(loadThreads, 30000)
     return () => clearInterval(timer)
   }, [])
+
+  useEffect(() => {
+    if (!wanted) return
+    const th = threads.find((x) => keyOf(x) === wanted)
+    if (!th) return
+    setCurrent(th)
+    setParams({}, { replace: true })
+  }, [wanted, threads]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const leaveDialog = useLeaveWarning(Boolean(draft.trim()), tr('Vastus on saatmata. Kas lahkuda lehelt?', 'Ответ не отправлен. Уйти со страницы?', 'The reply has not been sent. Leave the page?'))
 
@@ -58,6 +70,19 @@ export default function StaffSupport() {
 
   const guestLabel = tr('külaline ilma kontota', 'гость без аккаунта', 'guest without an account')
 
+  // Filter (kõik / vastamata / uued) ja järjestus (uuemad või vanemad eespool)
+  const [filter, setFilter] = useState('all')
+  const [newestFirst, setNewestFirst] = useState(true)
+  const FILTERS = [
+    ['all', tr('Kõik', 'Все', 'All'), () => true],
+    ['unanswered', tr('Vastamata', 'Без ответа', 'Unanswered'), (th) => !th.answered],
+    ['new', tr('Uued', 'Новые', 'New'), (th) => th.unread > 0],
+  ]
+  const test = FILTERS.find((f) => f[0] === filter)[2]
+  // Vastamata vestlustes loeb aeg, millal klient kirjutas (kaua ta juba ootab)
+  const timeOf = (th) => new Date(filter === 'unanswered' && th.waitingSince ? th.waitingSince : th.lastAt).getTime()
+  const shown = threads.filter(test).sort((a, b) => (newestFirst ? timeOf(b) - timeOf(a) : timeOf(a) - timeOf(b)))
+
   return (
     <div className="staff container">
       <div className="sec-head">
@@ -71,15 +96,30 @@ export default function StaffSupport() {
 
       <div className="support-grid">
         <div className="thread-list">
-          {threads.length === 0 && <p className="italic muted">{tr('Küsimusi pole.', 'Вопросов нет.', 'No questions.')}</p>}
-          {threads.map((th) => (
+          <div className="thread-tools">
+            <div className="chips">
+              {FILTERS.map(([key, label, f]) => (
+                <button key={key} type="button" className={filter === key ? 'chip small on' : 'chip small'} onClick={() => setFilter(key)}>
+                  {label} ({threads.filter(f).length})
+                </button>
+              ))}
+            </div>
+            <button type="button" className="thread-sort" onClick={() => setNewestFirst((v) => !v)}>
+              {newestFirst ? tr('↓ Uuemad eespool', '↓ Сначала новые', '↓ Newest first') : tr('↑ Vanemad eespool', '↑ Сначала старые', '↑ Oldest first')}
+            </button>
+          </div>
+          {shown.length === 0 && <p className="italic muted">{threads.length === 0 ? tr('Küsimusi pole.', 'Вопросов нет.', 'No questions.') : tr('Selles valikus vestlusi pole.', 'В этом списке диалогов нет.', 'No conversations here.')}</p>}
+          {shown.map((th) => (
             <button key={keyOf(th)} type="button" className={current && keyOf(current) === keyOf(th) ? 'thread on' : 'thread'} onClick={() => setCurrent(th)}>
               <span className="row-between">
                 <strong>{th.name}</strong>
-                {th.unread > 0 && <span className="badge badge-Active">{th.unread} {tr('uut', 'новых', 'new')}</span>}
+                <span className="thread-badges">
+                  {th.unread > 0 && <span className="badge badge-Active">{th.unread} {tr('uut', 'новых', 'new')}</span>}
+                  {!th.answered && <span className="badge badge-Arrived">{tr('vastamata', 'без ответа', 'unanswered')}</span>}
+                </span>
               </span>
               <span className="small muted">{th.userId != null ? `${th.email}${th.phone ? ` · ${th.phone}` : ''}` : guestLabel}</span>
-              <span className="small">{th.lastText}</span>
+              <span className="small">{preview(th.lastText)}</span>
               <span className="small muted">{fmtDate(th.lastAt)} {fmtTime(th.lastAt)}</span>
             </button>
           ))}
