@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import AdminEvents from './AdminEvents'
+import AdminStats from './AdminStats'
 import { api, qs } from '../api'
 import { useAuth } from '../auth'
 import FloorPlan, { spotText } from '../components/FloorPlan'
@@ -68,7 +69,11 @@ export default function Admin() {
             {tr('Halda', 'Управлять', 'Manage')}: {tr(et, ru, en)}
           </button>
         ))}
+        <button className={tab === 'stats' ? 'chip caps on' : 'chip caps'} onClick={() => setTab(tab === 'stats' ? '' : 'stats')}>
+          {tr('Statistika', 'Статистика', 'Statistics')}
+        </button>
       </div>
+      {tab === 'stats' && <AdminStats restaurantId={restaurantId} restaurants={restaurants} />}
       {tab === 'tables' && restaurant && <TablesAdmin restaurant={restaurant} />}
       {tab === 'menu' && <MenuAdmin restaurantId={restaurantId} />}
       {tab === 'events' && restaurants.length > 0 && <AdminEvents restaurants={restaurants} />}

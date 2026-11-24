@@ -43,6 +43,7 @@ public class ReservationService : IReservationService
 
     public async Task<AvailabilityDto> GetAvailabilityAsync(int restaurantId, DateOnly date, TimeOnly time, int guests)
     {
+        restaurantId = await DefaultRestaurant(restaurantId);
         var restaurant = await GetRestaurant(restaurantId);
         var (start, end) = ValidateTime(restaurant, date, time, guests);
 
@@ -64,6 +65,7 @@ public class ReservationService : IReservationService
     /// </summary>
     public async Task<List<DaySlotsDto>> GetSlotsAsync(int restaurantId, DateOnly from, int days, int guests)
     {
+        restaurantId = await DefaultRestaurant(restaurantId);
         if (days < 1 || days > BookingRules.MaxDaysAhead + 7)
             throw new BusinessRuleException("Päevade arv peab olema 1 kuni 190.");
         if (guests < 1 || guests > 20)
@@ -369,6 +371,7 @@ public class ReservationService : IReservationService
 
     public async Task<TablePlanDto> GetPlanAsync(int restaurantId, DateOnly date)
     {
+        restaurantId = await DefaultRestaurant(restaurantId);
         var restaurant = await GetRestaurant(restaurantId);
         var tables = await _tables.GetByRestaurantAsync(restaurantId, onlyActive: true);
         var reservations = await _reservations.GetForDayAsync(restaurantId, date);
@@ -664,6 +667,15 @@ public class ReservationService : IReservationService
         if (_current.IsStaff) return; // personal võib alati muuta
         if (!BookingRules.CanCustomerModify(r.StartTime, _clock.Now))
             throw new BusinessRuleException("Vähem kui 24 tundi enne broneeringut ei saa seda enam muuta ega tühistada. Helista restorani.");
+    }
+
+    /// <summary>Kui restorani ei antud (nt GET /api/tables/available?date=&amp;time=&amp;guests=), kasutatakse esimest restorani.</summary>
+    private async Task<int> DefaultRestaurant(int id)
+    {
+        if (id > 0) return id;
+        var first = (await _restaurants.GetAllAsync(null)).OrderBy(r => r.Id).FirstOrDefault()
+                    ?? throw new NotFoundException("Restorane pole.");
+        return first.Id;
     }
 
     private async Task<Restaurant> GetRestaurant(int id) =>

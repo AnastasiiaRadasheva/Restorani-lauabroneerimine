@@ -97,6 +97,7 @@ public class EventsController : ControllerBase
     [HttpGet("payments/{token}")]
     public async Task<ActionResult<EventRegistrationDto>> ByToken(string token) => Ok(await _events.GetByPaymentTokenAsync(token));
 
+    /// <summary>Maksa õhtu registreerimine makselingi kaudu (sisselogimist pole vaja).</summary>
     [AllowAnonymous]
     [HttpPost("payments/{token}")]
     public async Task<ActionResult<EventRegistrationDto>> PayByToken(string token, FakePaymentDto card)
@@ -111,10 +112,12 @@ public class EventsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<GastroEventDto>> Create(SaveEventDto dto) => Ok(await _events.CreateAsync(dto));
 
+    /// <summary>Muuda õhtut (admin). Tekstide muutmisel jäävad admini tõlked alles.</summary>
     [Authorize(Roles = "Admin")]
     [HttpPut("{id:int}")]
     public async Task<ActionResult<GastroEventDto>> Update(int id, SaveEventDto dto) => Ok(await _events.UpdateAsync(id, dto));
 
+    /// <summary>Kustuta õhtu (admin). Kui õhtule on registreerunud külalisi, tuleb need enne tühistada.</summary>
     [Authorize(Roles = "Admin")]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)

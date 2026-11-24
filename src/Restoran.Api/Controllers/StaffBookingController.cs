@@ -37,7 +37,6 @@ public class StaffBookingController : ControllerBase
     [HttpGet("api/customers")]
     public async Task<ActionResult<List<UserDto>>> Search([FromQuery] string? search) => Ok(await _customers.SearchAsync(search));
 
-    /// <summary>Uus broneering kliendi nimel (personal). Klient saab makselingi.</summary>
     /// <summary>Saada kliendile uus link parooli loomiseks (kui ta pole veel parooli loonud).</summary>
     [Authorize(Roles = "Admin,Waiter")]
     [HttpPost("api/customers/{id:int}/password-link")]
@@ -48,6 +47,7 @@ public class StaffBookingController : ControllerBase
         return Ok(user);
     }
 
+    /// <summary>Uus broneering kliendi nimel (personal). Klient saab makselingi.</summary>
     [Authorize(Roles = "Admin,Waiter")]
     [HttpPost("api/reservations/for-customer")]
     [ProducesResponseType(typeof(ReservationDto), StatusCodes.Status200OK)]

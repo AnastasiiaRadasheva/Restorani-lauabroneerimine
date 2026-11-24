@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpLogging;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -92,7 +93,14 @@ builder.Services.AddControllers()
                 entry.Errors.Clear();
                 foreach (var t in translated) entry.Errors.Add(t);
             }
-            return defaultFactory(context);
+            var result = defaultFactory(context);
+            if (result is ObjectResult { Value: ValidationProblemDetails problem })
+            {
+                problem.Title = lang switch { "ru" => "Неверные данные", "en" => "Invalid data", _ => "Vigased andmed" };
+                // JsonResult, et kontrolleri [Produces("application/json")] ei muudaks tüüpi: vead on alati ProblemDetails
+                return new JsonResult(problem) { StatusCode = StatusCodes.Status400BadRequest, ContentType = "application/problem+json" };
+            }
+            return result;
         };
     });
 
