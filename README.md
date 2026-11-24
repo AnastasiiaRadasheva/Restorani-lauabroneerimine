@@ -153,9 +153,9 @@ web/                        React website (Vite)
 
 In Swagger press **Authorize** and log in with e-mail and password (the same accounts as on the website) –
 Swagger gets the JWT token from `POST /api/auth/token` and adds it to every request.
-Swagger has a separate list for each role (guest, customer, waiter, admin, service): after login the list of
-your role opens automatically and shows only what that role can do on the website. "Kõik toimingud" shows the whole API,
-but the server always checks the role (403 for another role's action).
+Swagger shows one short list with the main operations of the assignment (login, tables, reservations, preorder,
+menu, events, statistics and the worker's operations). The other operations (messages, notes, notifications etc.)
+still work in the API and are listed below; the server always checks the role (403 for another role's action).
 Creating, updating and deleting restaurants, tables and menu items requires the `Admin` role.
 
 ## API endpoints

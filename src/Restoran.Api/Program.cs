@@ -107,10 +107,9 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(o =>
 {
-    // Iga roll näeb ainult oma toiminguid (nagu veebilehel); "Kõik toimingud" on kogu API
-    foreach (var d in SwaggerRoles.Docs)
-        o.SwaggerDoc(d.Name, new OpenApiInfo { Title = $"Restorani lauabroneerimine API – {d.Title}", Version = "v1", Description = d.Description });
-    o.DocInclusionPredicate(SwaggerRoles.Visible);
+    // Üks loend ainult põhitoimingutega (vt SwaggerMain); ülejäänud toimingud töötavad API-s edasi
+    o.SwaggerDoc("v1", new OpenApiInfo { Title = "Restorani lauabroneerimine API", Version = "v1", Description = "Põhitoimingud: lauad, broneeringud, menüü, eeltellimus, sisselogimine, õhtud, statistika ja taustateenus." });
+    o.DocInclusionPredicate(SwaggerMain.Visible);
     var xml = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
     o.IncludeXmlComments(xml);
     var appXml = Path.Combine(AppContext.BaseDirectory, "Restoran.Application.xml");
@@ -152,10 +151,9 @@ app.UseSwagger();
 app.UseSwaggerUI(o =>
 {
     o.DocumentTitle = "Argent API";
-    foreach (var d in SwaggerRoles.Docs)
-        o.SwaggerEndpoint($"/swagger/{d.Name}/swagger.json", d.Title);
-    // Pärast sisselogimist valitakse rolli dokument automaatselt
-    o.HeadContent = SwaggerRoles.HeadContent;
+    o.SwaggerEndpoint("/swagger/v1/swagger.json", "Restorani lauabroneerimine API");
+    // Peidab sisselogimise aknast client_id ja client_secret väljad
+    o.HeadContent = SwaggerMain.HeadContent;
     // Sisselogimine jääb meelde ka lehe uuendamisel
     o.EnablePersistAuthorization();
 });
