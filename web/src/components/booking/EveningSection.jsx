@@ -3,21 +3,28 @@ import { Link } from 'react-router-dom'
 import { useI18n } from '../../i18n'
 import { addDays, formatDate, formatDistance, parseIsoDate, toIsoDate, weekdayShort } from '../../utils'
 import { CalendarIcon } from '../Icons'
+import { DAYS_AHEAD } from './useBooking'
+import { eventTitle } from '../../eventText'
 import RestaurantMap from '../RestaurantMap'
 
 /**
- * I. Teie õhtu: kuupäev (9 päeva riba + 30 päeva kalender), kellaaeg, külaliste arv
+ * I. Teie õhtu: kuupäev (9 päeva riba + kuukalender kuni 6 kuud ette), kellaaeg, külaliste arv
  * ja restoran kaardil (lähim restoran kasutaja asukoha järgi).
  */
 export default function EveningSection({ b }) {
-  const { t, locale } = useI18n()
+  const { t, locale, lang } = useI18n()
   const [monthOpen, setMonthOpen] = useState(false)
+  const [monthShift, setMonthShift] = useState(0)
 
   const today = new Date()
   const strip = Array.from({ length: 9 }, (_, i) => addDays(today, i))
-  const month = Array.from({ length: 30 }, (_, i) => addDays(today, i))
-  // Kalendri esimene rida algab esmaspäevast
-  const offset = (today.getDay() + 6) % 7
+  const lastIso = toIsoDate(addDays(today, DAYS_AHEAD))
+  const todayIso = toIsoDate(today)
+  // Kuukalender: praegune kuu + kuni 6 järgmist, kuu esimene rida algab esmaspäevast
+  const maxShift = (() => { const l = addDays(today, DAYS_AHEAD); return (l.getFullYear() - today.getFullYear()) * 12 + l.getMonth() - today.getMonth() })()
+  const first = new Date(today.getFullYear(), today.getMonth() + monthShift, 1)
+  const month = Array.from({ length: new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate() }, (_, i) => new Date(first.getFullYear(), first.getMonth(), i + 1))
+  const offset = (first.getDay() + 6) % 7
 
   const daySlots = (iso) => b.slots.find((d) => d.date === iso)?.slots
   const isFull = (iso) => {
@@ -27,7 +34,7 @@ export default function EveningSection({ b }) {
   const times = daySlots(b.date) ?? []
   // Gastronoomiline õhtu: sel päeval on tavaline broneerimine õhtu saalis (või kogu restoranis) suletud
   const eventOf = (iso) => b.slots.find((d) => d.date === iso)?.event
-  const evTitle = (ev) => t(`event.${ev.code}.title`, {}, ev.title)
+  const evTitle = (ev) => eventTitle(t, lang, ev)
   const dayEvent = eventOf(b.date)
   const anyEvent = b.slots.some((d) => d.event)
   const weekdays = Array.from({ length: 7 }, (_, i) => weekdayShort(addDays(new Date(2026, 10, 16), i), locale))
@@ -81,23 +88,24 @@ export default function EveningSection({ b }) {
               {monthOpen && (
                 <div className="month">
                   <div className="month-head">
-                    <span className="big">
-                      {formatDate(month[0], locale, { month: 'long' })} — {formatDate(month[29], locale, { month: 'long', year: 'numeric' })}
-                    </span>
-                    <span className="muted small">{t('booking.next30')}</span>
+                    <button type="button" className="month-nav" onClick={() => setMonthShift(monthShift - 1)} disabled={monthShift === 0} aria-label={t('booking.prevMonth')}>‹</button>
+                    <span className="big">{formatDate(first, locale, { month: 'long', year: 'numeric' })}</span>
+                    <button type="button" className="month-nav" onClick={() => setMonthShift(monthShift + 1)} disabled={monthShift >= maxShift} aria-label={t('booking.nextMonth')}>›</button>
                   </div>
+                  <p className="muted small">{t('booking.next30')}</p>
                   <div className="month-grid">
                     {weekdays.map((w) => <span key={w} className="wd">{w}</span>)}
                     {Array.from({ length: offset }, (_, i) => <span key={`e${i}`} />)}
                     {month.map((d) => {
                       const iso = toIsoDate(d)
-                      const full = isFull(iso)
+                      const outside = iso < todayIso || iso > lastIso
+                      const full = !outside && isFull(iso)
                       return (
                         <button
                           key={iso}
                           type="button"
-                          className={iso === b.date ? 'cal on' : 'cal'}
-                          disabled={full}
+                          className={iso === b.date ? 'cal on' : outside ? 'cal outside' : 'cal'}
+                          disabled={full || outside}
                           onClick={() => b.setDate(iso)}
                           aria-pressed={iso === b.date}
                           aria-label={formatDate(d, locale) + (full ? `, ${t('booking.full')}` : '')}

@@ -99,23 +99,30 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(o =>
 {
-    o.SwaggerDoc("v1", new OpenApiInfo { Title = "Restorani lauabroneerimine API", Version = "v1" });
+    // Iga roll näeb ainult oma toiminguid (nagu veebilehel); "Kõik toimingud" on kogu API
+    foreach (var d in SwaggerRoles.Docs)
+        o.SwaggerDoc(d.Name, new OpenApiInfo { Title = $"Restorani lauabroneerimine API – {d.Title}", Version = "v1", Description = d.Description });
+    o.DocInclusionPredicate(SwaggerRoles.Visible);
     var xml = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
     o.IncludeXmlComments(xml);
     var appXml = Path.Combine(AppContext.BaseDirectory, "Restoran.Application.xml");
     if (File.Exists(appXml)) o.IncludeXmlComments(appXml);
 
-    // Authorize nupp Swaggeris
-    o.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    // Authorize nupp Swaggeris: sisselogimine e-posti ja parooliga (samad kontod mis veebilehel).
+    // Swagger saab vastuseks JWT tokeni ja lisab selle ise igale päringule – tokenit pole vaja käsitsi kopeerida.
+    o.AddSecurityDefinition("Login", new OpenApiSecurityScheme
     {
-        Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-        Description = "Kleebi siia /api/auth/login vastusest saadud token"
+        Type = SecuritySchemeType.OAuth2,
+        Description = "Logi sisse e-posti ja parooliga nagu veebilehel (username = e-post). " +
+                      "Testkontod: admin@restoran.ee / Admin123!, waiter@restoran.ee / Waiter123!, klient@restoran.ee / Klient123!",
+        Flows = new OpenApiOAuthFlows
+        {
+            Password = new OpenApiOAuthFlow { TokenUrl = new Uri("/api/auth/token", UriKind.Relative), Scopes = new Dictionary<string, string>() }
+        }
     });
     o.AddSecurityRequirement(doc => new OpenApiSecurityRequirement
     {
-        [new OpenApiSecuritySchemeReference("Bearer", doc)] = []
+        [new OpenApiSecuritySchemeReference("Login", doc)] = []
     });
 });
 
@@ -134,7 +141,16 @@ app.UseExceptionHandler();
 app.UseStatusCodePages();
 
 app.UseSwagger();
-app.UseSwaggerUI();
+app.UseSwaggerUI(o =>
+{
+    o.DocumentTitle = "Argent API";
+    foreach (var d in SwaggerRoles.Docs)
+        o.SwaggerEndpoint($"/swagger/{d.Name}/swagger.json", d.Title);
+    // Pärast sisselogimist valitakse rolli dokument automaatselt
+    o.HeadContent = SwaggerRoles.HeadContent;
+    // Sisselogimine jääb meelde ka lehe uuendamisel
+    o.EnablePersistAuthorization();
+});
 
 app.UseCors("web");
 app.UseAuthentication();
@@ -153,6 +169,18 @@ app.Map("/ws/tables", async (HttpContext context, TableSocketHub hub) =>
         return Results.Unauthorized();
 
     await hub.HandleAsync(context);
+    return Results.Empty;
+});
+
+// Külalise vestlus ilma kontota: ws://localhost:5000/ws/support?guest=võti (GUID)
+app.Map("/ws/support", async (HttpContext context, TableSocketHub hub) =>
+{
+    if (!context.WebSockets.IsWebSocketRequest)
+        return Results.BadRequest("Ainult WebSocket ühendus.");
+    if (!Guid.TryParse(context.Request.Query["guest"], out var key) || key == Guid.Empty)
+        return Results.BadRequest("Vigane vestluse võti.");
+
+    await hub.HandleGuestAsync(context, key.ToString("N"));
     return Results.Empty;
 });
 // mida teha, kui klient kathestab ühenduse (nt lehele&) siis te peate, et WebSocketi ühendus kathestatakse, aga serveris töötab 

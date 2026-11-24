@@ -9,9 +9,11 @@ namespace Restoran.Application.Services;
 public class SupportMessage
 {
     public int Id { get; set; }
-    /// <summary>Klient, kelle vestlusega on tegu.</summary>
-    public int UserId { get; set; }
+    /// <summary>Klient, kelle vestlusega on tegu (sisse logitud kasutaja).</summary>
+    public int? UserId { get; set; }
     public User? User { get; set; }
+    /// <summary>Konto puudumisel: külalise vestluse võti (GUID). Vestlus on nähtav ainult selle võtmega.</summary>
+    public string? GuestKey { get; set; }
     public bool FromStaff { get; set; }
     public string AuthorName { get; set; } = "";
     public string Text { get; set; } = "";
@@ -21,8 +23,8 @@ public class SupportMessage
 
 public record SupportMessageDto(int Id, bool FromStaff, string AuthorName, string Text, DateTime CreatedAt);
 
-/// <summary>Vestluse kokkuvõte administraatorile.</summary>
-public record SupportThreadDto(int UserId, string Name, string Email, string? Phone, string LastText, DateTime LastAt, int Unread);
+/// <summary>Vestluse kokkuvõte administraatorile. Külalise vestlusel on UserId asemel GuestKey.</summary>
+public record SupportThreadDto(int? UserId, string? GuestKey, string Name, string Email, string? Phone, string LastText, DateTime LastAt, int Unread);
 
 public class NewSupportMessageDto
 {
@@ -39,6 +41,7 @@ public class NewSupportMessageDto
 public interface ISupportRepository : IRepository<SupportMessage>
 {
     Task<List<SupportMessage>> GetThreadAsync(int userId);
+    Task<List<SupportMessage>> GetGuestThreadAsync(string guestKey);
     Task<List<SupportMessage>> GetAllWithUsersAsync();
 }
 
@@ -49,6 +52,10 @@ public interface ISupportService
     Task<List<SupportThreadDto>> GetThreadsAsync();
     Task<List<SupportMessageDto>> GetThreadAsync(int userId);
     Task<SupportMessageDto> ReplyAsync(int userId, NewSupportMessageDto dto);
+    Task<List<SupportMessageDto>> GetGuestAsync(Guid guestKey);
+    Task<SupportMessageDto> SendGuestAsync(Guid guestKey, NewSupportMessageDto dto);
+    Task<List<SupportMessageDto>> GetGuestThreadAsync(Guid guestKey);
+    Task<SupportMessageDto> ReplyGuestAsync(Guid guestKey, NewSupportMessageDto dto);
 }
 
 public class SupportService : ISupportService
@@ -58,14 +65,17 @@ public class SupportService : ISupportService
     private readonly INotificationService _notifications;
     private readonly ICurrentUser _current;
     private readonly IClock _clock;
+    private readonly IRealtimeNotifier _realtime;
 
-    public SupportService(ISupportRepository messages, IUserRepository users, INotificationService notifications, ICurrentUser current, IClock clock)
+    public SupportService(ISupportRepository messages, IUserRepository users, INotificationService notifications, ICurrentUser current, IClock clock,
+        IRealtimeNotifier realtime)
     {
         _messages = messages;
         _users = users;
         _notifications = notifications;
         _current = current;
         _clock = clock;
+        _realtime = realtime;
     }
 
     public async Task<List<SupportMessageDto>> GetMineAsync() =>
@@ -75,24 +85,45 @@ public class SupportService : ISupportService
     {
         var userId = RequireUser();
         var user = await _users.GetByIdAsync(userId) ?? throw new NotFoundException("Kasutajat ei leitud.");
-        // Klient peab kirjutama oma nime, et personal teaks, kuidas tema poole pöörduda
-        var name = (dto.Name ?? "").Trim();
-        if (name.Length < 2)
-            throw new BusinessRuleException("Palun kirjutage oma nimi.");
-        return await AddAsync(userId, false, name, dto.Text);
+        return await AddAsync(userId, null, false, RequireName(dto), dto.Text);
+    }
+
+    /// <summary>Külaline ilma kontota: vestlus on seotud ainult võtmega, mis on külalise brauseris (lehelt lahkudes see kaob).</summary>
+    public async Task<List<SupportMessageDto>> GetGuestAsync(Guid guestKey) =>
+        (await _messages.GetGuestThreadAsync(Key(guestKey))).Select(ToDto).ToList();
+
+    public async Task<SupportMessageDto> SendGuestAsync(Guid guestKey, NewSupportMessageDto dto) =>
+        await AddAsync(null, Key(guestKey), false, RequireName(dto), dto.Text);
+
+    /// <summary>Personal avab külalise vestluse (märgib loetuks).</summary>
+    public async Task<List<SupportMessageDto>> GetGuestThreadAsync(Guid guestKey)
+    {
+        var list = await _messages.GetGuestThreadAsync(Key(guestKey));
+        if (list.Count == 0) throw new NotFoundException("Vestlust ei leitud.");
+        foreach (var m in list.Where(m => !m.FromStaff)) m.ReadByStaff = true;
+        await _messages.SaveChangesAsync();
+        return list.Select(ToDto).ToList();
+    }
+
+    /// <summary>Personal vastab külalisele. Teadet (kellukest) ei ole – külaline näeb vastust vestluses, kui on veel lehel.</summary>
+    public async Task<SupportMessageDto> ReplyGuestAsync(Guid guestKey, NewSupportMessageDto dto)
+    {
+        if ((await _messages.GetGuestThreadAsync(Key(guestKey))).Count == 0)
+            throw new NotFoundException("Vestlust ei leitud.");
+        return await AddAsync(null, Key(guestKey), true, "Argent", dto.Text);
     }
 
     public async Task<List<SupportThreadDto>> GetThreadsAsync()
     {
         var all = await _messages.GetAllWithUsersAsync();
-        return all.GroupBy(m => m.UserId)
+        return all.GroupBy(m => (m.UserId, m.GuestKey))
             .Select(g =>
             {
                 var last = g.OrderBy(m => m.CreatedAt).Last();
                 var u = g.First().User;
                 // Nimi, mille klient ise viimati kirjutas
                 var name = g.Where(m => !m.FromStaff).OrderBy(m => m.CreatedAt).LastOrDefault()?.AuthorName ?? u?.Name ?? "";
-                return new SupportThreadDto(g.Key, name, u?.Email ?? "", u?.Phone, last.Text, last.CreatedAt,
+                return new SupportThreadDto(g.Key.UserId, g.Key.GuestKey, name, u?.Email ?? "", u?.Phone, last.Text, last.CreatedAt,
                     g.Count(m => !m.FromStaff && !m.ReadByStaff));
             })
             .OrderByDescending(t => t.LastAt)
@@ -111,21 +142,35 @@ public class SupportService : ISupportService
     public async Task<SupportMessageDto> ReplyAsync(int userId, NewSupportMessageDto dto)
     {
         _ = await _users.GetByIdAsync(userId) ?? throw new NotFoundException($"Kasutajat {userId} ei leitud.");
-        var result = await AddAsync(userId, true, "Argent", dto.Text);
+        var result = await AddAsync(userId, null, true, "Argent", dto.Text);
         var receiver = await _users.GetByIdAsync(userId);
         await _notifications.CreateAsync(new DTOs.CreateNotificationDto { UserId = userId, Link = "/tugi", Message = L.T(receiver?.Language, "support.reply", Short(dto.Text)) });
         return result;
     }
 
-    private async Task<SupportMessageDto> AddAsync(int userId, bool fromStaff, string author, string text)
+    private async Task<SupportMessageDto> AddAsync(int? userId, string? guestKey, bool fromStaff, string author, string text)
     {
         text = text.Trim();
         if (text.Length == 0) throw new BusinessRuleException("Sõnum on tühi.");
-        var m = new SupportMessage { UserId = userId, FromStaff = fromStaff, AuthorName = author, Text = text, CreatedAt = _clock.Now, ReadByStaff = fromStaff };
+        var m = new SupportMessage { UserId = userId, GuestKey = guestKey, FromStaff = fromStaff, AuthorName = author, Text = text, CreatedAt = _clock.Now, ReadByStaff = fromStaff };
         await _messages.AddAsync(m);
         await _messages.SaveChangesAsync();
-        return ToDto(m);
+        var result = ToDto(m);
+        // Nagu vestlusruumis: sõnum jõuab teisele poolele kohe WebSocketi kaudu, lehte uuendamata
+        await _realtime.SupportMessageAsync(userId, guestKey, result);
+        return result;
     }
+
+    // Klient peab kirjutama oma nime, et personal teaks, kuidas tema poole pöörduda
+    private static string RequireName(NewSupportMessageDto dto)
+    {
+        var name = (dto.Name ?? "").Trim();
+        if (name.Length < 2) throw new BusinessRuleException("Palun kirjutage oma nimi.");
+        return name;
+    }
+
+    private static string Key(Guid guestKey) =>
+        guestKey == Guid.Empty ? throw new BusinessRuleException("Vigane vestluse võti.") : guestKey.ToString("N");
 
     private static string Short(string s) => s.Length > 80 ? s[..80] + "…" : s;
     private int RequireUser() => _current.UserId ?? throw new UnauthorizedException("Pole sisse logitud.");

@@ -103,6 +103,8 @@ public class AppDbContext : DbContext
             e.Property(x => x.Code).HasMaxLength(20);
             e.Property(x => x.Kind).HasMaxLength(100);
             e.Property(x => x.Description).HasMaxLength(1000);
+            e.Property(x => x.Program).HasMaxLength(300);
+            e.Property(x => x.TranslationsJson).HasMaxLength(4000);
             e.Property(x => x.DressCode).HasMaxLength(100);
             e.Property(x => x.Rule).HasMaxLength(1000);
             // Foto võib olla ka väike pilt (data URL) – pikkust ei piira
@@ -156,6 +158,8 @@ public class AppDbContext : DbContext
                 .HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
             e.Property(x => x.AuthorName).HasMaxLength(100);
             e.Property(x => x.Text).HasMaxLength(1000).IsRequired();
+            e.Property(x => x.GuestKey).HasMaxLength(32);
+            e.HasIndex(x => x.GuestKey);
         });
 
         b.Entity<MenuItem>(e =>

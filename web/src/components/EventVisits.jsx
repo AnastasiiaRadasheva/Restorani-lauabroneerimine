@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import { useI18n } from '../i18n'
+import { eventTitle } from '../eventText'
 import { formatDate, formatTime, money, ZONE_KEY } from '../utils'
 
 /**
@@ -38,7 +39,7 @@ export default function EventVisits({ justJoined }) {
 }
 
 function EventVisit({ r, onChanged }) {
-  const { t, locale } = useI18n()
+  const { t, locale, lang } = useI18n()
   const [paying, setPaying] = useState(false)
   const [cancelling, setCancelling] = useState(false)
   const [agree, setAgree] = useState(false)
@@ -46,7 +47,7 @@ function EventVisit({ r, onChanged }) {
   const [error, setError] = useState('')
   const pending = r.status === 'PendingPayment'
   const active = r.status === 'Active' || pending
-  const title = t(`event.${r.eventCode}.title`, {}, r.eventTitle)
+  const title = eventTitle(t, lang, r)
   const lateNoRefund = active && r.isPaid && !r.freeCancel
 
   async function pay(e) {

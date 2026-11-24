@@ -11,7 +11,10 @@ public static class ErrorTranslator
 {
     private static readonly (string Et, string Ru, string En)[] Texts =
     {
-        ("Broneerida saab kuni 90 päeva ette.", "Бронировать можно не более чем на 90 дней вперёд.", "You can book up to 90 days ahead."),
+        ("Broneerida saab kuni 6 kuud ette.", "Бронировать можно не более чем на 6 месяцев вперёд.", "You can book up to 6 months ahead."),
+        ("Selle telefoninumbriga konto on juba olemas. Logige sisse oma kontoga.", "Аккаунт с этим номером телефона уже существует. Войдите в свой аккаунт.", "An account with this phone number already exists. Please sign in to your account."),
+        ("See telefoninumber on juba teise konto juures.", "Этот номер телефона уже привязан к другому аккаунту.", "This phone number already belongs to another account."),
+        ("Selle telefoninumbriga klient on juba olemas – leidke ta otsingust.", "Клиент с этим номером телефона уже есть — найдите его через поиск.", "A guest with this phone number already exists – find them in the search."),
         ("Broneering on juba makstud.", "Бронь уже оплачена.", "The booking is already paid."),
         ("Broneeringu aeg ei saa olla minevikus.", "Время брони не может быть в прошлом.", "The booking time cannot be in the past."),
         ("Eeltellimust saab lisada ainult aktiivsele broneeringule.", "Предзаказ можно добавить только к активной брони.", "A pre-order can only be added to an active booking."),
@@ -36,7 +39,7 @@ public static class ErrorTranslator
         ("Pilt peab olema väike (kuni 300 KB) JPEG või PNG.", "Фото должно быть JPEG или PNG до 300 КБ.", "The photo must be a JPEG or PNG up to 300 KB."),
         ("Pole midagi maksta: eeltellimus ja lisateenused puuduvad.", "Оплачивать нечего: нет предзаказа и дополнительных услуг.", "Nothing to pay: no pre-order or extras."),
         ("Pole sisse logitud.", "Вы не вошли в систему.", "You are not signed in."),
-        ("Päevade arv peab olema 1 kuni 60.", "Число дней должно быть от 1 до 60.", "The number of days must be 1 to 60."),
+        ("Päevade arv peab olema 1 kuni 190.", "Число дней должно быть от 1 до 190.", "The number of days must be 1 to 190."),
         ("Päevade arv peab olema 1 kuni 62.", "Число дней должно быть от 1 до 62.", "The number of days must be 1 to 62."),
         ("Registreerimiseks tuleb nõustuda õhtu reeglitega.", "Для записи нужно согласиться с правилами вечера.", "You must accept the evening's rules to register."),
         ("See broneering on juba kinnitatud või tühistatud.", "Эта бронь уже подтверждена или отменена.", "This booking is already confirmed or cancelled."),

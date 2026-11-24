@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, qs } from '../api'
+import { eventTitle } from '../eventText'
 import { useTr } from '../staff'
 import { money, toIsoDate, ZONE_KEY } from '../utils'
 import { useMenu } from '../components/booking/GastronomySection'
@@ -266,7 +267,7 @@ function EventMode() {
           <option value="">—</option>
           {events.map((x) => (
             <option key={x.id} value={x.id} disabled={x.seatsLeft === 0}>
-              {tr.t(`event.${x.code}.title`, {}, x.title)} · {new Date(x.startTime).toLocaleDateString(tr.lang, { day: 'numeric', month: 'short' })} · {x.restaurantName} · {x.seatsLeft} {tr('vaba kohta', 'мест свободно', 'seats left')}
+              {eventTitle(tr.t, tr.lang, x)} · {new Date(x.startTime).toLocaleDateString(tr.lang, { day: 'numeric', month: 'short' })} · {x.restaurantName} · {x.seatsLeft} {tr('vaba kohta', 'мест свободно', 'seats left')}
             </option>
           ))}
         </select>

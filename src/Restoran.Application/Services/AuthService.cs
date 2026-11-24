@@ -38,6 +38,9 @@ public class AuthService : IAuthService
             }
             throw new ConflictException("Selle e-postiga kasutaja on juba olemas.");
         }
+        // Üks inimene – üks konto: sama telefoninumbriga teist kontot luua ei saa
+        if (!string.IsNullOrWhiteSpace(dto.Phone) && await _users.GetByPhoneAsync(dto.Phone) is not null)
+            throw new ConflictException("Selle telefoninumbriga konto on juba olemas. Logige sisse oma kontoga.");
 
         var user = new User
         {
@@ -111,6 +114,9 @@ public class AuthService : IAuthService
     {
         var id = _current.UserId ?? throw new UnauthorizedException("Pole sisse logitud.");
         var user = await _users.GetByIdAsync(id) ?? throw new NotFoundException("Kasutajat ei leitud.");
+        if (!string.IsNullOrWhiteSpace(dto.Phone) && !PhoneNumber.Same(dto.Phone, user.Phone)
+            && await _users.GetByPhoneAsync(dto.Phone, user.Id) is not null)
+            throw new ConflictException("See telefoninumber on juba teise konto juures.");
         user.Name = dto.Name.Trim();
         user.Phone = string.IsNullOrWhiteSpace(dto.Phone) ? null : dto.Phone.Trim();
         user.SmsOptIn = dto.SmsOptIn;

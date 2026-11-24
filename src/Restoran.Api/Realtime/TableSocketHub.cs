@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Restoran.Application.DTOs;
 using Restoran.Application.Interfaces;
+using Restoran.Application.Services;
 
 namespace Restoran.Api.Realtime;
 
@@ -18,6 +19,8 @@ namespace Restoran.Api.Realtime;
 ///   ReservationCreated  – ainult personalile (Admin, Waiter), sisaldab kliendi nime
 ///   TableStatusChanged  – kõigile (broneerimise leht uuendab vabu laudu)
 ///   TableSelecting      – keegi valib praegu seda lauda (oranž laud plaanil)
+///   SupportMessage      – uus sõnum klienditoe vestluses (sellele kliendile või külalisele ja personalile)
+/// Külaline ilma kontota ühendub aadressil /ws/support?guest=võti ja saab ainult oma vestluse sõnumeid.
 /// Sõnum kliendilt:
 ///   { "type": "Selecting", "restaurantId": 1, "tableId": 5, "startTime": "...", "selecting": true }
 /// </summary>
@@ -28,6 +31,8 @@ public class TableSocketHub : IRealtimeNotifier
         public required WebSocket Socket { get; init; }
         public required int UserId { get; init; }
         public required bool IsStaff { get; init; }
+        /// <summary>Külaline ilma kontota (ainult klienditoe vestlus).</summary>
+        public string? GuestKey { get; init; }
         public SemaphoreSlim SendLock { get; } = new(1, 1);
     }
 
@@ -51,13 +56,26 @@ public class TableSocketHub : IRealtimeNotifier
     {
         var user = context.User;
         var role = user.FindFirstValue(ClaimTypes.Role);
-        var client = new Client
+        await RunAsync(context, new Client
         {
             Socket = await context.WebSockets.AcceptWebSocketAsync(),
             UserId = int.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!),
             IsStaff = role is "Admin" or "Waiter"
-        };
+        }, role);
+    }
 
+    /// <summary>Külalise ühendus (/ws/support?guest=võti): saab ainult oma vestluse sõnumeid.</summary>
+    public async Task HandleGuestAsync(HttpContext context, string guestKey) =>
+        await RunAsync(context, new Client
+        {
+            Socket = await context.WebSockets.AcceptWebSocketAsync(),
+            UserId = 0,
+            IsStaff = false,
+            GuestKey = guestKey
+        }, "Guest");
+
+    private async Task RunAsync(HttpContext context, Client client, string? role)
+    {
         var id = Guid.NewGuid();
         _clients[id] = client;
         _logger.LogInformation("WebSocket ühendus avati: kasutaja {UserId} ({Role}), ühendusi {Count}", client.UserId, role, _clients.Count);
@@ -69,7 +87,7 @@ public class TableSocketHub : IRealtimeNotifier
             {
                 var result = await client.Socket.ReceiveAsync(buffer, context.RequestAborted);
                 if (result.MessageType == WebSocketMessageType.Close) break;
-                if (result.MessageType == WebSocketMessageType.Text && result.EndOfMessage)
+                if (result.MessageType == WebSocketMessageType.Text && result.EndOfMessage && client.GuestKey is null)
                     await OnClientMessage(id, Encoding.UTF8.GetString(buffer, 0, result.Count));
             }
         }
@@ -103,7 +121,7 @@ public class TableSocketHub : IRealtimeNotifier
             msg.TableId,
             msg.StartTime,
             msg.Selecting
-        }, _ => true, except: senderId);
+        }, c => c.GuestKey is null, except: senderId);
     }
 
     public Task ReservationCreatedAsync(ReservationDto r) =>
@@ -132,10 +150,15 @@ public class TableSocketHub : IRealtimeNotifier
             r.StartTime,
             r.EndTime,
             r.Status
-        }, _ => true);
+        }, c => c.GuestKey is null);
 
     public Task UserNotifiedAsync(int userId) =>
         BroadcastAsync(new { type = "Notification", userId }, c => c.UserId == userId);
+
+    /// <summary>Klienditoe vestlus: sõnum jõuab kohe kliendile ja kogu personalile.</summary>
+    public Task SupportMessageAsync(int? customerUserId, string? guestKey, SupportMessageDto message) =>
+        BroadcastAsync(new { type = "SupportMessage", userId = customerUserId, guestKey, message },
+            c => c.IsStaff || (customerUserId is not null && c.UserId == customerUserId) || (guestKey is not null && c.GuestKey == guestKey));
 
     private async Task BroadcastAsync(object message, Func<Client, bool> filter, Guid? except = null)
     {

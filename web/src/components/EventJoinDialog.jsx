@@ -2,9 +2,12 @@ import { useEffect, useState } from 'react'
 import { api } from '../api'
 import { useAuth } from '../auth'
 import { useI18n } from '../i18n'
-import { EDGE_KEY, money, pickZone, stageOf, ZONE_KEY, zonesOf } from '../utils'
+import { EDGE_KEY, formatDate, formatTime, money, pickZone, stageOf, ZONE_KEY, zonesOf } from '../utils'
 import FloorPlan, { FloorLegend } from './FloorPlan'
 import DishLink from './DishInfo'
+import DishTags from './DishTags'
+import { drinkDescription, drinkTags } from '../dishInfo'
+import { useEventText } from '../eventText'
 import { CloseIcon } from './Icons'
 
 const EVENT_EXTRAS = [['bottle', 95], ['flowers', 45]]
@@ -13,9 +16,10 @@ const EVENT_EXTRAS = [['bottle', 95], ['flowers', 45]]
  * Õhtule registreerimine: laua valik plaanilt (osa laudu on juba võetud, plaanil on näha lava),
  * külaliste arv, "ainult sel õhtul" pakkumised, lubatud lisateenused, reeglitega nõustumine ja makse.
  * Ise registreerudes makstakse kohe – registreerimine ilmub "Minu broneeringutesse".
+ * Enne makset avaneb kinnitusaken: tingimused on veel kord kirjas ja maksta saab alles pärast linnukest.
  */
 export default function EventJoinDialog({ e, onClose, onJoined }) {
-  const { t } = useI18n()
+  const { t, locale, lang } = useI18n()
   const { user } = useAuth()
   const [tables, setTables] = useState(null)
   const [restaurant, setRestaurant] = useState(null)
@@ -25,10 +29,13 @@ export default function EventJoinDialog({ e, onClose, onJoined }) {
   const [drinks, setDrinks] = useState({})
   const [extras, setExtras] = useState([])
   const [agreed, setAgreed] = useState(false)
+  const [confirming, setConfirming] = useState(false)
+  const [sure, setSure] = useState(false)
   const [card, setCard] = useState({ cardHolder: user?.name ?? '', cardNumber: '4242 4242 4242 4242', expiry: '12/28', cvc: '123' })
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const needsConsent = Boolean(e.rule || e.noChildren)
+  const { rule, field } = useEventText(e)
 
   useEffect(() => {
     api(`/api/events/${e.id}/tables`).then((list) => {
@@ -51,10 +58,19 @@ export default function EventJoinDialog({ e, onClose, onJoined }) {
 
   const changeDrink = (id, d) => setDrinks((x) => ({ ...x, [id]: Math.max(0, Math.min(20, (x[id] ?? 0) + d)) }))
 
-  async function join() {
+  // 1. samm: kontrollid ja kinnitusaken („Kas olete kindel?“)
+  function askConfirm() {
     setError('')
     if (!tableId) return setError(t('ej.chooseTable'))
     if (needsConsent && !agreed) return setError(t('ej.needConsent'))
+    setSure(false)
+    setConfirming(true)
+  }
+
+  // 2. samm: alles pärast kinnitust registreeritakse ja makstakse
+  async function join() {
+    setError('')
+    if (!sure) return
     setBusy(true)
     try {
       const result = await api(`/api/events/${e.id}/join`, {
@@ -70,6 +86,7 @@ export default function EventJoinDialog({ e, onClose, onJoined }) {
       })
       onJoined(result)
     } catch (err) {
+      setConfirming(false)
       setError(err.message)
       if (err.status === 409) api(`/api/events/${e.id}/tables`).then(setTables)
     } finally {
@@ -84,7 +101,7 @@ export default function EventJoinDialog({ e, onClose, onJoined }) {
           <p className="eyebrow">{t('ej.title')}</p>
           <button className="btn btn-small" onClick={onClose} aria-label={t('details.close')}><CloseIcon /></button>
         </div>
-        <p className="dialog-title">{t(`event.${e.code}.title`, {}, e.title)}</p>
+        <p className="dialog-title">{field('title', e.title)}</p>
         {e.zone && <p className="muted small">{t('ej.onlyZone', { zone: t(ZONE_KEY[e.zone]) })}</p>}
 
         <div className="ej-grid">
@@ -127,10 +144,11 @@ export default function EventJoinDialog({ e, onClose, onJoined }) {
             {e.items.length > 0 && <p className="eyebrow">{t('ej.drinks')}</p>}
             {e.items.map((d) => (
               <div key={d.id} className="addon">
-                {d.imageUrl && <DishLink item={{ ...d, name: itemName(d), tags: null }} className="dish-pic"><img className="addon-photo" src={d.imageUrl} alt="" /></DishLink>}
+                {d.imageUrl && <DishLink item={{ ...d, name: itemName(d), description: drinkDescription(d, lang), tags: drinkTags(d.code) }} className="dish-pic"><img className="addon-photo" src={d.imageUrl} alt="" /></DishLink>}
                 <div className="text">
-                  <DishLink item={{ ...d, name: itemName(d), tags: null }} className="dish-name"><span className="name">{itemName(d)}</span></DishLink>
-                  <span className="desc">{d.description}</span>
+                  <DishLink item={{ ...d, name: itemName(d), description: drinkDescription(d, lang), tags: drinkTags(d.code) }} className="dish-name"><span className="name">{itemName(d)}</span></DishLink>
+                  <span className="desc">{drinkDescription(d, lang)}</span>
+                  <DishTags tags={drinkTags(d.code)} />
                 </div>
                 <span className="price">{money(d.price)}</span>
                 <div className="stepper round">
@@ -153,7 +171,7 @@ export default function EventJoinDialog({ e, onClose, onJoined }) {
             {needsConsent && (
               <div className="consent">
                 <p className="eyebrow ox">{t('events.conditions')}</p>
-                {e.rule && <p>{t(`event.${e.code}.rule`, {}, e.rule)}</p>}
+                {e.rule && <p>{rule()}</p>}
                 {e.noChildren && <p className="warning-text">{t('event.noChildren')}</p>}
                 <label className="check ox">
                   <input type="checkbox" checked={agreed} onChange={(x) => setAgreed(x.target.checked)} />
@@ -177,12 +195,40 @@ export default function EventJoinDialog({ e, onClose, onJoined }) {
               </div>
             )}
             {error && <p className="alert alert-error">{error}</p>}
-            <button className="btn btn-ox btn-block" disabled={busy || (needsConsent && !agreed)} onClick={join}>
+            <button className="btn btn-ox btn-block" disabled={busy || (needsConsent && !agreed)} onClick={askConfirm}>
               {total > 0 ? t('ej.payAndJoin', { sum: money(total) }) : t('events.confirm')}
             </button>
           </div>
         </div>
       </div>
+
+      {confirming && (
+        <div className="dialog-backdrop ej-confirm" role="alertdialog" aria-modal="true" aria-label={t('ej.confirmTitle')}>
+          <div className="dialog">
+            <p className="eyebrow ox">{t('ej.confirmEyebrow')}</p>
+            <p className="dialog-title">{t('ej.confirmTitle')}</p>
+            <p>{t('ej.confirmLead')}</p>
+            <ul className="ej-confirm-list">
+              <li><strong>{field('title', e.title)}</strong> · {formatDate(e.startTime, locale)} {formatTime(e.startTime, locale)}</li>
+              <li>{t('booking.guests')}: {guests} · {chosen ? t('booking.table', { n: chosen.number }) : ''}</li>
+              {e.rule && <li className="ox">{rule()}</li>}
+              {e.noChildren && <li className="ox">{t('event.noChildren')}</li>}
+              {needsConsent && <li className="ox">{t('ej.confirmNoRefund')}</li>}
+              <li>{t('details4.total')}: <strong>{money(total)}</strong></li>
+            </ul>
+            <label className="check ox">
+              <input type="checkbox" checked={sure} onChange={(x) => setSure(x.target.checked)} />
+              <span>{needsConsent ? t('ej.confirmCheck') : t('ej.confirmCheckPlain')}</span>
+            </label>
+            <div className="dialog-actions">
+              <button type="button" className="btn btn-ox" disabled={!sure || busy} onClick={join}>
+                {total > 0 ? t('ej.confirmPay', { sum: money(total) }) : t('ej.confirmJoin')}
+              </button>
+              <button type="button" className="btn" disabled={busy} onClick={() => setConfirming(false)}>{t('ej.back')}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -5,7 +5,7 @@ import { money } from '../utils'
 import { TAGS } from './DishTags'
 import { CloseIcon } from './Icons'
 
-const ALLERGENS = ['gluten', 'milk', 'egg', 'nuts', 'fish', 'shellfish']
+const ALLERGENS = ['gluten', 'milk', 'egg', 'nuts', 'fish', 'shellfish', 'sulphites']
 const DIET = ['vegetarian', 'vegan']
 
 /** Roa kaart: foto, kirjeldus, koostis ja allergeenid. */

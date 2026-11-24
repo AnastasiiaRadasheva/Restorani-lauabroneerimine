@@ -347,3 +347,9 @@ section[id] { scroll-margin-top: calc(var(--header-h, 88px) + 70px); }
 .ev-mark { position: absolute; top: 2px; right: 4px; font-size: 12px; color: var(--ox); }
 .ev-note { margin-top: 10px; padding: 10px 14px; border-left: 3px solid var(--ox); background: #fff; font-size: 15px; }
 .ev-note a { color: var(--ox); font-weight: 600; white-space: nowrap; }
+
+/* Kuukalender kuni 6 kuud ette: nooled kuude vahel */
+.month-head { align-items: center; }
+.month-nav { width: 40px; height: 40px; border: 1px solid var(--ink); background: var(--paper); font-size: 22px; line-height: 1; cursor: pointer; }
+.month-nav:disabled { opacity: .3; cursor: default; }
+.month-grid .cal.outside { visibility: hidden; }

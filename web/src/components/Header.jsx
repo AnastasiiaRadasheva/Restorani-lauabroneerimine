@@ -100,15 +100,19 @@ export default function Header() {
           )}
         </div>
 
-        {/* Telefonis: kasutaja ikoon paremal */}
+        {/* Kitsal ekraanil: paremal ainult konto ikoon, kõik muu on menüüs */}
         <Link to={!user ? '/login' : isStaff ? '/personal/plaan' : '/profiil'} state={!user ? backHere : undefined} className="user-icon" aria-label={user ? t('nav.my') : t('nav.login')}>
           <UserIcon />
         </Link>
       </div>
 
-      {/* Telefoni menüü */}
+      {/* Kitsa ekraani menüü (kuni 1279 px): keeled, teated ja kõik lingid */}
       {open && (
         <div className="mobile-menu">
+          <div className="mobile-menu-top">
+            <LangSwitch />
+            {user && <Notifications />}
+          </div>
           <nav aria-label={t('nav.menu')}>
             {links}
             {user && !isStaff && <NavLink to="/minu">{t('nav.my')}</NavLink>}

@@ -67,6 +67,8 @@ public class CustomerService : ICustomerService
         var email = dto.Email.Trim().ToLowerInvariant();
         var same = await _users.GetByEmailAsync(email);
         if (same is not null) return ToDto(same); // sama e-postiga klient on juba olemas
+        if (!string.IsNullOrWhiteSpace(dto.Phone) && await _users.GetByPhoneAsync(dto.Phone) is not null)
+            throw new ConflictException("Selle telefoninumbriga klient on juba olemas – leidke ta otsingust.");
 
         var user = new User { Name = dto.Name.Trim(), Email = email, Phone = string.IsNullOrWhiteSpace(dto.Phone) ? null : dto.Phone.Trim(), Role = UserRole.Customer, Language = L.Norm(dto.Language) };
         // Juhuslik parool, mida keegi ei tea: klient loob ise parooli lingi kaudu (saadetakse koos makselingiga)

@@ -5,6 +5,9 @@ import { useI18n } from '../../i18n'
 import { useTableSocket } from '../../realtime'
 import { toIsoDate } from '../../utils'
 
+/** Kui kaugele ette saab broneerida (sama mis serveris BookingRules.MaxDaysAhead). */
+export const DAYS_AHEAD = 183
+
 const DRAFT_KEY = 'argent-booking-draft'
 
 function readDraft() {
@@ -69,10 +72,10 @@ export function useBooking() {
       .catch((e) => setError(e.message))
   }, [userPos])
 
-  // Vabad ajad 30 päevaks (kalendri ja kellaaegade jaoks)
+  // Vabad ajad kuni 6 kuud ette (kalendri ja kellaaegade jaoks)
   useEffect(() => {
     if (!restaurantId) return
-    api('/api/tables/slots' + qs({ restaurantId, from: toIsoDate(new Date()), days: 30, guests }))
+    api('/api/tables/slots' + qs({ restaurantId, from: toIsoDate(new Date()), days: DAYS_AHEAD + 1, guests }))
       .then(setSlots)
       .catch((e) => setError(e.message))
   }, [restaurantId, guests])

@@ -13,6 +13,10 @@ public class GastroEvent
     /// <summary>Õhtu liik, nt "Degustatsiooniõhtusöök".</summary>
     public string Kind { get; set; } = "";
     public string Description { get; set; } = "";
+    /// <summary>Muusika ja programm (plaat kaardil), nt "Džässitrio ja tantsud keskööni".</summary>
+    public string? Program { get; set; }
+    /// <summary>Admini tõlked vene ja inglise keelde (JSON: {"ru": {...}, "en": {...}}). Vt EventTexts.</summary>
+    public string? TranslationsJson { get; set; }
     public DateTime StartTime { get; set; }
     public decimal PricePerGuest { get; set; }
     /// <summary>Riietus, nt "smart elegant".</summary>

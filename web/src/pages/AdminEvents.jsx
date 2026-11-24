@@ -2,11 +2,16 @@ import { useCallback, useEffect, useState } from 'react'
 import { api, qs } from '../api'
 import { fmtDate, fmtTime, timeSlots, useTr, ZONE_LIST } from '../staff'
 import { addDays, money, toIsoDate } from '../utils'
+import { DRESS_OPTIONS, dressRuleEt } from '../eventText'
+import { eventTitle } from '../eventText'
 
 const MIN_DAYS = 14
+// Riietuse valikud ('' = riietuse reeglit pole); need tõlgitakse veebis automaatselt
+const DRESS = DRESS_OPTIONS
+const dressRule = dressRuleEt
 const empty = (restaurantId) => ({
   restaurantId, title: '', kind: '', description: '', date: '', time: '19:00', pricePerGuest: '', capacity: '',
-  zone: '', dressCode: '', rule: '', noChildren: false, imageUrl: '', items: [],
+  zone: '', dressCode: '', rule: '', noChildren: false, program: '', translations: { ru: {}, en: {} }, imageUrl: '', items: [],
 })
 
 /** Admin: gastronoomiliste õhtute loomine ja muutmine, külaliste nimekiri ja kliendi registreerimine. */
@@ -30,7 +35,8 @@ export default function AdminEvents({ restaurants }) {
     setForm({
       restaurantId: e.restaurantId, title: e.title, kind: e.kind, description: e.description,
       date: toIsoDate(d), time: fmtTime(d), pricePerGuest: e.pricePerGuest, capacity: e.capacity, zone: e.zone ?? '',
-      dressCode: e.dressCode, rule: e.rule ?? '', noChildren: e.noChildren, imageUrl: e.imageUrl ?? '',
+      dressCode: e.dressCode, rule: e.rule ?? '', noChildren: e.noChildren, program: e.program ?? '', imageUrl: e.imageUrl ?? '',
+      translations: { ru: { ...(e.translations?.ru ?? {}) }, en: { ...(e.translations?.en ?? {}) } },
       items: e.items.map((i) => ({ menuItemId: i.menuItemId, name: i.name, description: i.description, price: i.price, imageUrl: i.imageUrl })),
     })
     setError('')
@@ -77,7 +83,7 @@ export default function AdminEvents({ restaurants }) {
           <div key={e.id} className="paper white ae-row">
             {e.imageUrl && <img src={e.imageUrl} alt="" />}
             <div className="ae-text">
-              <strong>{tr.t(`event.${e.code}.title`, {}, e.title)}</strong>
+              <strong>{eventTitle(tr.t, tr.lang, e)}</strong>
               <span className="small">{fmtDate(e.startTime)} {fmtTime(e.startTime)} · {e.restaurantName}{e.zone ? ` · ${tr.zone(e.zone)}` : ''}</span>
               <span className="small muted">{money(e.pricePerGuest)} · {e.capacity - e.seatsLeft}/{e.capacity} {tr('kohta täis', 'мест занято', 'seats taken')} · {e.items.length} {tr('eripakkumist', 'спецпозиций', 'specials')}</span>
             </div>
@@ -103,6 +109,20 @@ function EventForm({ form, setForm, editId, restaurants, onCancel, onSaved }) {
   const [error, setError] = useState('')
   const restaurant = restaurants.find((r) => r.id === Number(form.restaurantId))
   const set = (f) => (e) => setForm({ ...form, [f]: e.target.type === 'checkbox' ? e.target.checked : e.target.value })
+  // Tekstid kolmes keeles: ET on põhitekst, RU ja EN on valikulised tõlked (tühi väli = näidatakse eesti keeles)
+  const [textLang, setTextLang] = useState('et')
+  const txt = (f) => (textLang === 'et' ? form[f] ?? '' : form.translations?.[textLang]?.[f] ?? '')
+  const setTxt = (f) => (e) => (textLang === 'et'
+    ? setForm({ ...form, [f]: e.target.value })
+    : setForm({ ...form, translations: { ...form.translations, [textLang]: { ...(form.translations?.[textLang] ?? {}), [f]: e.target.value } } }))
+  const translated = (l) => Object.values(form.translations?.[l] ?? {}).some((v) => v?.trim())
+  const [customDress, setCustomDress] = useState(() => !DRESS.includes(form.dressCode))
+  function pickDress(v) {
+    if (v === 'custom') return setCustomDress(true)
+    setCustomDress(false)
+    // Ilma riietuse reeglita kaob ka riietuse range reegel
+    setForm({ ...form, dressCode: v, rule: v ? (form.rule && form.rule === dressRule(form.dressCode) ? dressRule(v) : form.rule) : '' })
+  }
   const minDate = toIsoDate(addDays(new Date(), MIN_DAYS))
 
   useEffect(() => {
@@ -147,6 +167,7 @@ function EventForm({ form, setForm, editId, restaurants, onCancel, onSaved }) {
       capacity: Number(form.capacity),
       zone: form.zone || null,
       rule: form.rule || null,
+      program: form.program || null,
       imageUrl: form.imageUrl || null,
       items: form.items.map((i) => ({ ...i, price: Number(String(i.price).replace(',', '.')) })),
     }
@@ -170,9 +191,21 @@ function EventForm({ form, setForm, editId, restaurants, onCancel, onSaved }) {
               {restaurants.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
             </select>
           </label>
-          <label className="field">{tr('Pealkiri', 'Название', 'Title')}<input value={form.title} onChange={set('title')} placeholder={tr('nt Trühvliõhtu', 'например, Трюфельный вечер', 'e.g. Truffle night')} /></label>
-          <label className="field">{tr('Õhtu liik', 'Тип вечера', 'Kind')}<input value={form.kind} onChange={set('kind')} placeholder={tr('nt Degustatsiooniõhtusöök', 'например, Дегустационный ужин', 'e.g. Tasting dinner')} /></label>
-          <label className="field">{tr('Kirjeldus', 'Описание', 'Description')}<textarea rows={3} value={form.description} onChange={set('description')} /></label>
+          <div className="ae-langs">
+            <span className="eyebrow">{tr('Tekstid', 'Тексты', 'Texts')}</span>
+            <div className="chips">
+              {['et', 'ru', 'en'].map((l) => (
+                <button key={l} type="button" className={textLang === l ? 'chip small on' : 'chip small'} onClick={() => setTextLang(l)} aria-pressed={textLang === l}>
+                  {l.toUpperCase()}{l !== 'et' && translated(l) ? ' ✓' : ''}
+                </button>
+              ))}
+            </div>
+            {textLang !== 'et' && <p className="small muted">{tr('Tõlge on valikuline – tühjad väljad näidatakse eesti keeles.', 'Перевод необязателен — пустые поля показываются по-эстонски.', 'The translation is optional – empty fields are shown in Estonian.')}</p>}
+          </div>
+          <label className="field">{tr('Pealkiri', 'Название', 'Title')} · {textLang.toUpperCase()}<input value={txt('title')} maxLength={100} onChange={setTxt('title')} placeholder={textLang === 'et' ? tr('nt Trühvliõhtu', 'например, Трюфельный вечер', 'e.g. Truffle night') : form.title} /></label>
+          <label className="field">{tr('Õhtu liik', 'Тип вечера', 'Kind')} · {textLang.toUpperCase()}<input value={txt('kind')} maxLength={100} onChange={setTxt('kind')} placeholder={textLang === 'et' ? tr('nt Degustatsiooniõhtusöök', 'например, Дегустационный ужин', 'e.g. Tasting dinner') : form.kind} /></label>
+          <label className="field">{tr('Kirjeldus', 'Описание', 'Description')} · {textLang.toUpperCase()}<textarea rows={3} maxLength={1000} value={txt('description')} onChange={setTxt('description')} placeholder={textLang === 'et' ? '' : form.description} /></label>
+          <label className="field">{tr('Muusika ja programm (plaat kaardil)', 'Музыка и программа (плашка на карточке)', 'Music and programme (shown on the card)')} · {textLang.toUpperCase()}<input value={txt('program')} maxLength={300} onChange={setTxt('program')} placeholder={textLang === 'et' ? tr('nt Džässitrio ja tantsud keskööni', 'например, джазовое трио и танцы до полуночи', 'e.g. Jazz trio and dancing until midnight') : form.program} /></label>
           <div className="field-row">
             <label className="field">{tr('Hind külalise kohta €', 'Цена за гостя €', 'Price per guest €')}<input value={form.pricePerGuest} onChange={set('pricePerGuest')} inputMode="decimal" /></label>
             <label className="field">{tr('Kohti', 'Мест', 'Seats')} ({tr('max', 'макс.', 'max')} {maxSeats})<input type="number" min={1} max={maxSeats} value={form.capacity} onChange={set('capacity')} /></label>
@@ -183,11 +216,23 @@ function EventForm({ form, setForm, editId, restaurants, onCancel, onSaved }) {
               {zones.map((z) => <option key={z} value={z}>{tr.zone(z)}{restaurant?.stageZone === z ? ` · ♪ ${tr('lava', 'сцена', 'stage')}` : ''}</option>)}
             </select>
           </label>
-          <div className="field-row">
-            <label className="field">{tr('Riietus', 'Дресс-код', 'Dress code')}<input value={form.dressCode} onChange={set('dressCode')} placeholder="smart elegant" /></label>
-          </div>
-          <label className="field">{tr('Range reegel (külaline peab nõustuma)', 'Строгое правило (гость должен согласиться)', 'Strict rule (guest must accept)')}<textarea rows={2} value={form.rule} onChange={set('rule')} /></label>
-          <label className="check"><input type="checkbox" checked={form.noChildren} onChange={set('noChildren')} /> {tr('Ainult täiskasvanutele', 'Только для взрослых', 'Adults only')}</label>
+          <p className="eyebrow">{tr('Õhtu reeglid', 'Правила вечера', 'Evening rules')}</p>
+          <label className="field">{tr('Riietus', 'Дресс-код', 'Dress code')}
+            <select value={customDress ? 'custom' : form.dressCode} onChange={(e) => pickDress(e.target.value)}>
+              <option value="">{tr('Riietuse reeglit pole', 'Без дресс-кода', 'No dress code')}</option>
+              {DRESS.filter(Boolean).map((d) => <option key={d} value={d}>{d}</option>)}
+              <option value="custom">{tr('Muu…', 'Другой…', 'Other…')}</option>
+            </select>
+          </label>
+          {customDress && <label className="field">{tr('Oma riietus', 'Свой дресс-код', 'Own dress code')}<input value={form.dressCode} onChange={set('dressCode')} placeholder={tr('nt pastelsed toonid', 'например, пастельные тона', 'e.g. pastel colours')} /></label>}
+          {form.dressCode && (
+            <label className="check">
+              <input type="checkbox" checked={Boolean(form.rule)} onChange={(e) => setForm({ ...form, rule: e.target.checked ? dressRule(form.dressCode) : '' })} />
+              {tr('Riietus on kohustuslik (külaline peab nõustuma, rikkumisel osalustasu ei tagastata)', 'Дресс-код обязателен (гость должен согласиться, при нарушении оплата не возвращается)', 'Dress code is mandatory (guest must accept; fee not refunded if broken)')}
+            </label>
+          )}
+          {form.rule && <label className="field">{tr('Reegli tekst (külaline näeb seda)', 'Текст правила (видит гость)', 'Rule text (shown to the guest)')}<textarea rows={2} value={form.rule} onChange={set('rule')} /></label>}
+          <label className="check"><input type="checkbox" checked={form.noChildren} onChange={set('noChildren')} /> {tr('Lastega ei saa tulla (ainult täiskasvanutele)', 'Нельзя с детьми (только для взрослых)', 'No children (adults only)')}</label>
         </div>
 
         <div className="ae-col">

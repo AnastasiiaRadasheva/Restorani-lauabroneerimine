@@ -8,6 +8,8 @@ public interface IUserRepository : IRepository<User>
     Task<User?> GetByEmailAsync(string email);
     Task<User?> GetByPasswordTokenAsync(string token);
     Task<bool> EmailExistsAsync(string email);
+    /// <summary>Kasutaja sama telefoninumbriga (võrreldakse ainult numbreid), välja arvatud exceptUserId.</summary>
+    Task<User?> GetByPhoneAsync(string phone, int? exceptUserId = null);
     Task<List<User>> SearchCustomersAsync(string search, int take);
     Task<List<User>> GetStaffAsync();
 }
