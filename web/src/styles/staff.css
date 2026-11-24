@@ -344,3 +344,24 @@
 .ae-langs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 0 4px; border-top: 1px solid var(--line); }
 .ae-langs .chips { gap: 6px; }
 .ae-langs p { flex: 1 1 100%; margin: 0; }
+
+/* Admin: statistika (hõivatumad päevad ja kellaajad) */
+.admin-stats { display: flex; flex-direction: column; gap: 18px; }
+.stats-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.stats-tile { display: flex; flex-direction: column; gap: 6px; padding: 16px 18px; border: 1px solid var(--line); background: var(--bg); }
+.stats-tile .big { font-size: 34px; line-height: 1; }
+.stats-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
+.stats-bars { display: flex; flex-direction: column; gap: 8px; }
+.bar-row { display: grid; grid-template-columns: 120px 1fr 44px; align-items: center; gap: 10px; font-size: 15px; }
+.bar-label { text-transform: capitalize; }
+.bar-track { height: 14px; background: var(--line-soft, #eceeef); }
+.bar-fill { display: block; height: 100%; background: var(--line-3); border-radius: 0 4px 4px 0; }
+.bar-row.top .bar-fill { background: var(--ox); }
+.bar-row.top .bar-label, .bar-row.top .bar-value { font-weight: 700; }
+.bar-value { text-align: right; font-variant-numeric: tabular-nums; }
+.stats-dates { display: flex; flex-direction: column; gap: 6px; margin: 0; padding-left: 22px; }
+.stats-dates li span + span { margin-left: 10px; }
+@media (max-width: 760px) {
+  .stats-tiles, .stats-grid { grid-template-columns: 1fr; }
+  .bar-row { grid-template-columns: 96px 1fr 36px; }
+}
