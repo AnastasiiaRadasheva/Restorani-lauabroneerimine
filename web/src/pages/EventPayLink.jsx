@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../api'
 import { useI18n } from '../i18n'
+import { eventTitle } from '../eventText'
 import { formatDate, formatTime, money } from '../utils'
 
 /** Gastronoomilise õhtu makseleht lingi kaudu (sisselogimist pole vaja). */
 export default function EventPayLink() {
   const { token } = useParams()
-  const { t, locale } = useI18n()
+  const { t, locale, lang } = useI18n()
   const [r, setR] = useState(null)
   const [card, setCard] = useState({ cardHolder: '', cardNumber: '4242 4242 4242 4242', expiry: '12/28', cvc: '123' })
   const [error, setError] = useState('')
@@ -44,7 +45,7 @@ export default function EventPayLink() {
           <div className="head">
             <span className="diamond" aria-hidden="true" />
             <p className="eyebrow ox">{pending ? t('pay.pending') : r.status === 'Active' ? t('visits.paid') : t(`status.${r.status}`)}</p>
-            <h1>{t(`event.${r.eventCode}.title`, {}, r.eventTitle)}</h1>
+            <h1>{eventTitle(t, lang, r)}</h1>
           </div>
           <dl className="receipt-dl">
             <dt>{t('receipt.who')}</dt><dd>{r.customerName}</dd>

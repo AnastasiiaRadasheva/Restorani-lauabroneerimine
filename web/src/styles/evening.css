@@ -247,3 +247,62 @@
   .extra { gap: 14px; flex-wrap: wrap; }
   .extra .name { font-size: 21px; }
 }
+
+/* Õhtu makse kinnitus: „Kas olete kindel?“ */
+.dialog-backdrop.ej-confirm { z-index: 210; }
+.ej-confirm-list { display: flex; flex-direction: column; gap: 8px; margin: 0; padding-left: 20px; }
+.ej-confirm-list li.ox { color: var(--ox); }
+.dialog-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* Õhtute karussell: kolm kaarti korraga; lohistamine hiirega, edenemise riba ja nooled */
+.event-carousel { display: flex; flex-direction: column; gap: 28px; }
+.event-carousel .event-list { flex-wrap: nowrap; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 6px 2px 10px; cursor: grab; user-select: none; }
+.event-carousel .event-list::-webkit-scrollbar { display: none; }
+.event-carousel.dragging .event-list { cursor: grabbing; scroll-snap-type: none; }
+.event-carousel.dragging .event { pointer-events: none; }
+.event-carousel .event { flex: 0 0 calc((100% - 64px) / 3); scroll-snap-align: start; transition: transform .35s ease; }
+.event-carousel:not(.dragging) .event:hover { transform: translateY(-6px); }
+.event-carousel .event img { -webkit-user-drag: none; }
+.carousel-nav { display: flex; align-items: center; gap: 18px; }
+.carousel-count { font-size: 15px; letter-spacing: 0.12em; color: var(--muted); white-space: nowrap; }
+.carousel-count strong { color: var(--ink); font-weight: 700; }
+.carousel-bar { position: relative; flex: 1; height: 2px; background: var(--line-3); overflow: hidden; }
+.carousel-bar span { position: absolute; top: 0; height: 100%; background: var(--ink); transition: left .25s ease, width .25s ease; }
+.carousel-hint { font-size: 12px; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.carousel-btn { width: 52px; height: 52px; flex: none; border: 1px solid var(--ink); border-radius: 50%; background: transparent; font-size: 20px; cursor: pointer; transition: background .2s, color .2s, transform .2s; }
+.carousel-btn:hover:not(:disabled) { background: var(--ink); color: var(--bg); transform: scale(1.05); }
+.carousel-btn:disabled { opacity: .25; cursor: default; }
+@media (max-width: 1100px) { .event-carousel .event { flex-basis: calc((100% - 32px) / 2); } }
+@media (max-width: 700px) {
+  .event-carousel .event { flex-basis: 86%; }
+  .carousel-hint { display: none; }
+  .carousel-btn { width: 44px; height: 44px; }
+}
+
+/* Kaart avab õhtu info: pildil ilmub "Vaata lähemalt" */
+button.event-pic { display: block; width: 100%; padding: 0; border: 0; background: none; text-align: inherit; cursor: pointer; }
+.event-more { position: absolute; top: 24px; right: 24px; padding: 10px 16px; background: var(--ink); color: var(--bg); font-size: 12px; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; opacity: 0; transform: translateY(-6px); transition: opacity .2s, transform .2s; }
+button.event-pic:hover .event-more, button.event-pic:focus-visible .event-more { opacity: 1; transform: none; }
+.event-title { padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: inherit; cursor: pointer; }
+.event-title:hover { text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 1px; }
+.event-program { display: inline-flex; align-self: flex-start; gap: 8px; margin-top: 4px; padding: 8px 12px; border: 1px solid var(--line-3); background: var(--paper); font-size: 14px; }
+.event-program.big { display: flex; flex-direction: column; align-self: stretch; gap: 4px; padding: 14px 16px; font-size: 16px; }
+
+/* Õhtu info aken */
+.event-info { position: relative; width: min(920px, 100%); max-height: calc(100vh / var(--zoom, 1) - 40px); overflow-y: auto; }
+.ei-grid { display: grid; grid-template-columns: 320px 1fr; gap: 28px; }
+.ei-pic { width: 100%; height: 100%; min-height: 320px; max-height: 520px; object-fit: cover; filter: grayscale(1) contrast(1.05); }
+.ei-text { display: flex; flex-direction: column; gap: 12px; }
+.ei-when { font-style: italic; }
+.ei-rules { display: flex; flex-direction: column; gap: 6px; margin: 0; padding-left: 20px; }
+.ei-rules li.ox { color: var(--ox); }
+.ei-foot { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); padding-top: 12px; font-size: 20px; }
+@media (max-width: 760px) {
+  .ei-grid { grid-template-columns: 1fr; }
+  .ei-pic { min-height: 0; height: 220px; }
+}
+
+/* Õhtu info: joogid ja väike kiri (kaardil seda pole) */
+.ei-drinks { display: flex; flex-direction: column; gap: 4px; }
+.ei-drinks p { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.ei-small { font-size: 13px; line-height: 1.5; color: var(--muted); }

@@ -86,6 +86,40 @@ const DISHES = {
   },
 }
 
+/**
+ * Gastronoomiliste õhtute joogid ("ainult sel õhtul"): allergeenid ja kirjeldus kolmes keeles.
+ * Võti on joogi kood (EventCatalog). Vein ja šampanja sisaldavad sulfiteid.
+ */
+const DRINKS = {
+  whisky: { tags: ['vegan'], et: 'suitsune Islay, Speyside ja Jaapani single malt', ru: 'дымный Islay, Speyside и японский односолодовый', en: 'smoky Islay, Speyside and Japanese single malt' },
+  oldfashioned: { tags: ['vegan'], et: 'burbon, apelsin, tammesuits', ru: 'бурбон, апельсин, дубовый дым', en: 'bourbon, orange, oak smoke' },
+  barolo: { tags: ['sulphites', 'vegan'], et: 'Piemonte, Nebbiolo', ru: 'Пьемонт, неббиоло', en: 'Piedmont, Nebbiolo' },
+  chablis: { tags: ['sulphites'], et: 'Burgundia, mineraalne', ru: 'Бургундия, минеральное', en: 'Burgundy, mineral' },
+  blanc: { tags: ['sulphites'], et: '100% Chardonnay', ru: '100% шардоне', en: '100% Chardonnay' },
+  burgundy: { tags: ['sulphites'], et: 'iga käigu juurde oma vein', ru: 'к каждой подаче своё вино', en: 'a different wine with each course' },
+  manhattan: { tags: ['vegan'], et: 'rukkiviski, amaro, kirss', ru: 'ржаной виски, амаро, вишня', en: 'rye whiskey, amaro, cherry' },
+  espresso: { tags: ['vegan'], et: 'viin, espresso, kohvilikköör', ru: 'водка, эспрессо, кофейный ликёр', en: 'vodka, espresso, coffee liqueur' },
+  rose: { tags: ['sulphites'], et: 'brut rosé, Prantsusmaa', ru: 'брют розе, Франция', en: 'brut rosé, France' },
+  barbaresco: { tags: ['sulphites'], et: 'Piemonte, Nebbiolo', ru: 'Пьемонт, неббиоло', en: 'Piedmont, Nebbiolo' },
+  trufflemartini: { tags: ['vegan'], et: 'džinn, kuiv vermut, trühvliõli', ru: 'джин, сухой вермут, трюфельное масло', en: 'gin, dry vermouth, truffle oil' },
+  muscadet: { tags: ['sulphites'], et: 'Loire, mineraalne', ru: 'Луара, минеральное', en: 'Loire, mineral' },
+  brutnature: { tags: ['sulphites'], et: 'kuiv ja värske', ru: 'сухое и свежее', en: 'dry and fresh' },
+  natural: { tags: ['sulphites'], et: 'väikeveinimajast, sommeljee valik', ru: 'от небольшой винодельни, выбор сомелье', en: "from a small house, the sommelier's choice" },
+  pinot: { tags: ['sulphites'], et: 'Burgundia', ru: 'Бургундия', en: 'Burgundy' },
+  rhubarb: { tags: ['sulphites', 'vegan'], et: 'rabarber, vahuvein, piparmünt', ru: 'ревень, игристое вино, мята', en: 'rhubarb, sparkling wine, mint' },
+  riesling: { tags: ['sulphites'], et: 'Mosel, kerge', ru: 'Мозель, лёгкое', en: 'Mosel, light' },
+}
+
+/** Õhtu joogi allergeenid (null, kui jook on tundmatu – siis palutakse küsida teenindajalt). */
+export function drinkTags(code) {
+  return DRINKS[code]?.tags ?? null
+}
+
+/** Õhtu joogi kirjeldus valitud keeles (või serverist tulnud tekst). */
+export function drinkDescription(item, lang) {
+  return DRINKS[item.code]?.[lang] ?? item.description
+}
+
 /** Roa koostis valitud keeles või null, kui seda pole (nt admini lisatud uus roog). */
 export function ingredientsOf(item, lang) {
   const key = item?.imageUrl?.split('/').pop()?.replace(/\.[a-z]+$/i, '')

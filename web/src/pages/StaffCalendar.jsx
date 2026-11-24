@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api, qs } from '../api'
+import { eventTitle } from '../eventText'
 import StaffMessages from '../components/StaffMessages'
 import DayBroadcast from '../components/DayBroadcast'
 import { Link, useSearchParams } from 'react-router-dom'
@@ -153,7 +154,7 @@ export default function StaffCalendar() {
     const list = []
     for (const e of events) {
       if (e.startTime?.slice(0, 10) === d.date && (!restaurantId || e.restaurantId === Number(restaurantId))) {
-        list.push({ key: 'ev' + e.id, color: 'blue', text: tr.t(`event.${e.code}.title`, {}, e.title) })
+        list.push({ key: 'ev' + e.id, color: 'blue', text: eventTitle(tr.t, tr.lang, e) })
       }
     }
     // Üks tähtpäevaga broneering on näha punase raami ja ◆ märgiga; silt alates kahest

@@ -8,6 +8,7 @@ export const TAGS = {
   nuts: 'N',
   fish: 'K',
   shellfish: 'C',
+  sulphites: 'S',
   vegetarian: 'VG',
   vegan: 'V',
 }
@@ -31,7 +32,7 @@ export function TagLegend() {
   const { t } = useI18n()
   return (
     <div className="tag-legend">
-      {Object.entries(TAGS).map(([tag, letter]) => (
+      {Object.entries(TAGS).filter(([tag]) => tag !== 'sulphites').map(([tag, letter]) => (
         <span key={tag}>
           <span className={`dtag dtag-${tag}`}>{letter}</span> {t(`tag.${tag}`)}
         </span>
