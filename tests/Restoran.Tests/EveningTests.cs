@@ -130,6 +130,23 @@ public class EveningTests
     }
 
     [Fact]
+    public void EventTranslations_KeepOnlyRussianAndEnglish_AndSkipEmptyFields()
+    {
+        var json = EventTexts.Serialize(new()
+        {
+            ["RU"] = new EventTextDto { Title = "  Трюфельный вечер ", Program = "" },
+            ["en"] = new EventTextDto(),                       // tühi – jäetakse ära
+            ["de"] = new EventTextDto { Title = "Trüffelabend" }, // keelt ei toetata
+        });
+
+        var back = EventTexts.Parse(json);
+        Assert.Equal(new[] { "ru" }, back.Keys);
+        Assert.Equal("Трюфельный вечер", back["ru"].Title);
+        Assert.Null(back["ru"].Program);
+        Assert.Empty(EventTexts.Parse("vigane json"));
+    }
+
+    [Fact]
     public void EveningEnd_AfterMidnight_IsNextDay()
     {
         var end = BookingRules.EveningEnd(new DateOnly(2026, 11, 20), new TimeOnly(17, 0), new TimeOnly(3, 0));

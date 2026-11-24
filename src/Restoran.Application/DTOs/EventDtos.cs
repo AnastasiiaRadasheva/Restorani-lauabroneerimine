@@ -5,6 +5,16 @@ namespace Restoran.Application.DTOs;
 /// <summary>Õhtu eripakkumine ("ainult sel õhtul").</summary>
 public record EventItemDto(int Id, string? Code, string Name, string Description, decimal Price, string? ImageUrl, int? MenuItemId);
 
+/// <summary>Õhtu tekst ühes keeles (admini tõlge). Tühi väli = näidatakse eestikeelset teksti.</summary>
+public class EventTextDto
+{
+    /// <example>Трюфельный вечер</example>
+    public string? Title { get; set; }
+    public string? Kind { get; set; }
+    public string? Description { get; set; }
+    public string? Program { get; set; }
+}
+
 /// <summary>Gastronoomiline õhtu koos vabade kohtade arvuga.</summary>
 public record GastroEventDto(
     int Id,
@@ -14,6 +24,7 @@ public record GastroEventDto(
     string Title,
     string Kind,
     string Description,
+    string? Program,
     DateTime StartTime,
     decimal PricePerGuest,
     string DressCode,
@@ -32,7 +43,9 @@ public record GastroEventDto(
     decimal MyTotal,
     string? MyStatus,
     bool MyIsPaid,
-    List<EventItemDto> Items);
+    List<EventItemDto> Items,
+    // Admini tõlked: "ru" ja "en"
+    Dictionary<string, EventTextDto> Translations);
 
 /// <summary>Laud õhtu plaanil: kas see on juba võetud.</summary>
 public record EventTableDto(
@@ -70,7 +83,9 @@ public record EventRegistrationDto(
     int UserId,
     string CustomerName,
     string CustomerEmail,
-    string? CustomerPhone);
+    string? CustomerPhone,
+    // Õhtu admini tõlked ("ru", "en")
+    Dictionary<string, EventTextDto> Translations);
 
 public class EventDrinkLineDto
 {
@@ -130,6 +145,11 @@ public class SaveEventDto
     [Required, StringLength(100, MinimumLength = 2)] public string Title { get; set; } = "";
     [StringLength(100)] public string Kind { get; set; } = "";
     [StringLength(1000)] public string Description { get; set; } = "";
+    /// <summary>Muusika ja programm. Tühi = ei näidata.</summary>
+    /// <example>Klaveriõhtu, peakokk tutvustab iga käiku</example>
+    [StringLength(300)] public string? Program { get; set; }
+    /// <summary>Tõlked vene ja inglise keelde (valikuline): { "ru": { "title": "..." }, "en": { ... } }.</summary>
+    public Dictionary<string, EventTextDto>? Translations { get; set; }
     public DateTime StartTime { get; set; }
     [Range(0, 10000)] public decimal PricePerGuest { get; set; }
     [StringLength(100)] public string DressCode { get; set; } = "";

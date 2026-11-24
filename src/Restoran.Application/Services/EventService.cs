@@ -311,10 +311,17 @@ public class EventService : IEventService
         if (!isNew && dto.RestaurantId != e.RestaurantId && Active(e).Any())
             throw new BusinessRuleException("Õhtule on registreerunud külalisi – restorani ei saa muuta.");
 
+        // Kas admin muutis tekste? Kui muutis ainult kuupäeva, hinda vms, jääb tõlge (kood) alles
+        string Clean(string? s) => (s ?? "").Trim();
+        var textChanged = !isNew && (Clean(dto.Title) != e.Title || Clean(dto.Kind) != e.Kind || Clean(dto.Description) != e.Description
+            || Clean(dto.DressCode) != e.DressCode || Clean(dto.Rule) != Clean(e.Rule) || Clean(dto.Program) != Clean(e.Program));
+
         e.RestaurantId = restaurant.Id;
         e.Title = dto.Title.Trim();
         e.Kind = dto.Kind.Trim();
         e.Description = dto.Description.Trim();
+        e.Program = string.IsNullOrWhiteSpace(dto.Program) ? null : dto.Program.Trim();
+        e.TranslationsJson = EventTexts.Serialize(dto.Translations);
         e.StartTime = dto.StartTime;
         e.PricePerGuest = dto.PricePerGuest;
         e.DressCode = dto.DressCode.Trim();
@@ -324,7 +331,7 @@ public class EventService : IEventService
         e.Capacity = dto.Capacity;
         e.Zone = dto.Zone;
         // Admin muutis teksti: edaspidi näidatakse admini teksti, mitte näidisõhtu tõlget
-        if (!isNew) e.Code = "";
+        if (textChanged) e.Code = "";
 
         // Eripakkumised: menüüst võetud roog (nimi, kirjeldus, hind ja foto menüüst) või uus rida
         var menuIds = dto.Items.Where(i => i.MenuItemId != null).Select(i => i.MenuItemId!.Value).ToList();
@@ -388,11 +395,12 @@ public class EventService : IEventService
     {
         var mine = Active(e).FirstOrDefault(r => r.UserId == _current.UserId);
         return new(
-            e.Id, e.RestaurantId, e.Restaurant?.Name ?? "", e.Code, e.Title, e.Kind, e.Description, e.StartTime,
+            e.Id, e.RestaurantId, e.Restaurant?.Name ?? "", e.Code, e.Title, e.Kind, e.Description, e.Program, e.StartTime,
             e.PricePerGuest, e.DressCode, e.Rule, e.NoChildren, e.ImageUrl, e.Capacity, SeatsLeft(e),
             e.Zone?.ToString(), e.StartTime - JoinDeadline <= _clock.Now,
             mine?.Id, mine?.Guests ?? 0, mine?.Table?.Number, mine?.Total ?? 0, mine?.Status.ToString(), mine?.IsPaid ?? false,
-            e.Items.OrderBy(i => i.Id).Select(i => new EventItemDto(i.Id, i.Code, L.Word(i.Name, _current.Language), L.Word(i.Description, _current.Language), i.Price, i.ImageUrl, i.MenuItemId)).ToList());
+            e.Items.OrderBy(i => i.Id).Select(i => new EventItemDto(i.Id, i.Code, L.Word(i.Name, _current.Language), L.Word(i.Description, _current.Language), i.Price, i.ImageUrl, i.MenuItemId)).ToList(),
+            EventTexts.Parse(e.TranslationsJson));
     }
 
     private EventRegistrationDto ToDto(EventRegistration r)
@@ -406,7 +414,8 @@ public class EventService : IEventService
             string.IsNullOrEmpty(r.Extras) ? new List<string>() : r.Extras.Split(',').ToList(),
             r.Total, r.Status.ToString(), r.IsPaid, r.PaymentToken, r.CancelledAt, r.RefundAmount,
             e.StartTime - _clock.Now > PayDeadline,
-            r.UserId, r.User?.Name ?? "", r.User?.Email ?? "", r.User?.Phone);
+            r.UserId, r.User?.Name ?? "", r.User?.Email ?? "", r.User?.Phone,
+            EventTexts.Parse(e.TranslationsJson));
     }
 
     private static List<EventLineDto> ReadLines(string text)

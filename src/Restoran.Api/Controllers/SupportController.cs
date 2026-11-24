@@ -26,6 +26,16 @@ public class SupportController : ControllerBase
     [HttpPost("my")]
     public async Task<ActionResult<SupportMessageDto>> Send(NewSupportMessageDto dto) => Ok(await _support.SendMineAsync(dto));
 
+    /// <summary>Külalise vestlus ilma kontota (võti on ainult külalise brauseris).</summary>
+    [AllowAnonymous]
+    [HttpGet("guest/{key:guid}")]
+    public async Task<ActionResult<List<SupportMessageDto>>> Guest(Guid key) => Ok(await _support.GetGuestAsync(key));
+
+    /// <summary>Külaline kirjutab ilma kontota. Vestlus ei salvestu kontole – lehelt lahkudes see kaob.</summary>
+    [AllowAnonymous]
+    [HttpPost("guest/{key:guid}")]
+    public async Task<ActionResult<SupportMessageDto>> SendGuest(Guid key, NewSupportMessageDto dto) => Ok(await _support.SendGuestAsync(key, dto));
+
     /// <summary>Kõik vestlused (personal).</summary>
     [Authorize(Roles = "Admin,Waiter")]
     [HttpGet("threads")]
@@ -35,6 +45,16 @@ public class SupportController : ControllerBase
     [Authorize(Roles = "Admin,Waiter")]
     [HttpGet("threads/{userId:int}")]
     public async Task<ActionResult<List<SupportMessageDto>>> Thread(int userId) => Ok(await _support.GetThreadAsync(userId));
+
+    /// <summary>Külalise vestlus (personal). Märgib külalise sõnumid loetuks.</summary>
+    [Authorize(Roles = "Admin,Waiter")]
+    [HttpGet("threads/guest/{key:guid}")]
+    public async Task<ActionResult<List<SupportMessageDto>>> GuestThread(Guid key) => Ok(await _support.GetGuestThreadAsync(key));
+
+    /// <summary>Vasta külalisele (personal).</summary>
+    [Authorize(Roles = "Admin,Waiter")]
+    [HttpPost("threads/guest/{key:guid}")]
+    public async Task<ActionResult<SupportMessageDto>> ReplyGuest(Guid key, NewSupportMessageDto dto) => Ok(await _support.ReplyGuestAsync(key, dto));
 
     /// <summary>Vasta kliendile (personal).</summary>
     [Authorize(Roles = "Admin,Waiter")]

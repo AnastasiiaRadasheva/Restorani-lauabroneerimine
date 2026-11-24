@@ -14,6 +14,9 @@ public static class BookingRules
     /// <summary>Kõige hilisem saabumise aeg (ka siis, kui restoran on avatud ööni).</summary>
     public static readonly TimeOnly LatestArrival = new(23, 30);
 
+    /// <summary>Kui kaugele ette saab broneerida (umbes 6 kuud).</summary>
+    public const int MaxDaysAhead = 183;
+
     /// <summary>Kui palju laudu võib üks külaline ühel õhtul broneerida.</summary>
     public const int MaxTablesPerEvening = 3;
 

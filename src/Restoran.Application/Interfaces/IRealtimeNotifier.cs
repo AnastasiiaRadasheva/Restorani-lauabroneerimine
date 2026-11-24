@@ -1,4 +1,5 @@
 using Restoran.Application.DTOs;
+using Restoran.Application.Services;
 
 namespace Restoran.Application.Interfaces;
 
@@ -16,4 +17,7 @@ public interface IRealtimeNotifier
 
     /// <summary>Kasutajale tuli uus teade (kelluke uueneb kohe).</summary>
     Task UserNotifiedAsync(int userId);
+
+    /// <summary>Uus sõnum klienditoe vestluses. Läheb sellele kliendile (või külalisele võtme järgi) ja personalile.</summary>
+    Task SupportMessageAsync(int? customerUserId, string? guestKey, SupportMessageDto message);
 }

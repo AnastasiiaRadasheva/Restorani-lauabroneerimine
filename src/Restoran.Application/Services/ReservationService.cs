@@ -64,8 +64,8 @@ public class ReservationService : IReservationService
     /// </summary>
     public async Task<List<DaySlotsDto>> GetSlotsAsync(int restaurantId, DateOnly from, int days, int guests)
     {
-        if (days < 1 || days > 60)
-            throw new BusinessRuleException("Päevade arv peab olema 1 kuni 60.");
+        if (days < 1 || days > BookingRules.MaxDaysAhead + 7)
+            throw new BusinessRuleException("Päevade arv peab olema 1 kuni 190.");
         if (guests < 1 || guests > 20)
             throw new BusinessRuleException("Inimeste arv peab olema 1 kuni 20.");
 
@@ -105,7 +105,7 @@ public class ReservationService : IReservationService
                 slots.Add(new SlotDto(time.ToString("HH:mm"), free));
             }
             var ev = dayEvents.FirstOrDefault();
-            result.Add(new DaySlotsDto(date, slots, ev is null ? null : new DayEventDto(ev.Id, ev.Code, ev.Title, ev.Zone?.ToString())));
+            result.Add(new DaySlotsDto(date, slots, ev is null ? null : new DayEventDto(ev.Id, ev.Code, ev.Title, ev.Zone?.ToString(), EventTexts.Parse(ev.TranslationsJson))));
         }
         return result;
     }
@@ -595,8 +595,8 @@ public class ReservationService : IReservationService
 
         if (start <= _clock.Now)
             throw new BusinessRuleException("Broneeringu aeg ei saa olla minevikus.");
-        if (date > DateOnly.FromDateTime(_clock.Now).AddDays(90))
-            throw new BusinessRuleException("Broneerida saab kuni 90 päeva ette.");
+        if (date > DateOnly.FromDateTime(_clock.Now).AddDays(BookingRules.MaxDaysAhead))
+            throw new BusinessRuleException("Broneerida saab kuni 6 kuud ette.");
         if (time < restaurant.OpensAt || time > last)
             throw new BusinessRuleException(
                 $"Saabuda saab {restaurant.OpensAt:HH\\:mm} kuni {last:HH\\:mm}. Restoran on avatud {restaurant.OpensAt:HH\\:mm}-{restaurant.ClosesAt:HH\\:mm}.");

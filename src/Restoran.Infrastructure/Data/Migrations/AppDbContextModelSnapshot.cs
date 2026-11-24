@@ -756,6 +756,10 @@ namespace Restoran.Infrastructure.Data.Migrations
                         .HasPrecision(10, 2)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Program")
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("RestaurantId")
                         .HasColumnType("INTEGER");
 
@@ -769,6 +773,10 @@ namespace Restoran.Infrastructure.Data.Migrations
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TranslationsJson")
+                        .HasMaxLength(4000)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Zone")
@@ -1882,6 +1890,10 @@ namespace Restoran.Infrastructure.Data.Migrations
                     b.Property<bool>("FromStaff")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("GuestKey")
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("ReadByStaff")
                         .HasColumnType("INTEGER");
 
@@ -1890,10 +1902,12 @@ namespace Restoran.Infrastructure.Data.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("GuestKey");
 
                     b.HasIndex("UserId");
 
@@ -2056,8 +2070,7 @@ namespace Restoran.Infrastructure.Data.Migrations
                     b.HasOne("Restoran.Application.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("User");
                 });

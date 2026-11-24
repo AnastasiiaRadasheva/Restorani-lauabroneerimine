@@ -36,6 +36,24 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<AuthResponseDto>> Login(LoginDto dto) => Ok(await _auth.LoginAsync(dto));
 
+    /// <summary>
+    /// Swaggeri "Authorize" aken (OAuth2 password): e-post (username) ja parool nagu veebilehel.
+    /// Tagastab sama JWT tokeni nagu /api/auth/login, kuid OAuth2 kujul (access_token).
+    /// </summary>
+    [HttpPost("token")]
+    [Consumes("application/x-www-form-urlencoded")]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    public async Task<IActionResult> Token([FromForm] string? username, [FromForm] string? password)
+    {
+        var result = await _auth.LoginAsync(new LoginDto { Email = username ?? "", Password = password ?? "" });
+        return Ok(new
+        {
+            access_token = result.Token,
+            token_type = "bearer",
+            expires_in = (int)Math.Max(0, (result.ExpiresAt - DateTime.UtcNow).TotalSeconds)
+        });
+    }
+
     /// <summary>Parooli loomise link: kellele see kuulub (personali loodud klient).</summary>
     [HttpGet("password/{token}")]
     public async Task<ActionResult<PasswordLinkDto>> PasswordLink(string token) => Ok(await _auth.GetPasswordLinkAsync(token));

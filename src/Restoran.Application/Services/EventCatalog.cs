@@ -26,6 +26,31 @@ public static class EventCatalog
             new("espresso", "Espresso Martini", "viin, espresso, kohvilikköör", 16m),
             new("rose", "Roosa šampanja, klaas", "brut rosé, Prantsusmaa", 24m),
         },
+        ["truffle"] = new()
+        {
+            new("barbaresco", "Barbaresco, klaas", "Piemonte, Nebbiolo", 24m),
+            new("trufflemartini", "Trühvlimartini", "džinn, kuiv vermut, trühvliõli", 17m),
+        },
+        ["oyster"] = new()
+        {
+            new("muscadet", "Muscadet, klaas", "Loire, mineraalne", 14m),
+            new("brutnature", "Šampanja Brut Nature, klaas", "kuiv ja värske", 20m),
+        },
+        ["vinyl"] = new()
+        {
+            new("natural", "Naturaalvein, klaas", "väikeveinimajast, sommeljee valik", 12m),
+            new("pinot", "Pinot Noir, klaas", "Burgundia", 18m),
+        },
+        ["spring"] = new()
+        {
+            new("rhubarb", "Rabarberi spritz", "rabarber, vahuvein, piparmünt", 12m),
+            new("riesling", "Riesling, klaas", "Mosel, kerge", 13m),
+        },
+        ["midnight"] = new()
+        {
+            new("manhattan", "Black Manhattan", "rukkiviski, amaro, kirss", 19m),
+            new("rose", "Roosa šampanja, klaas", "brut rosé, Prantsusmaa", 24m),
+        },
     };
 
     /// <summary>Õhtutel lubatud lisateenused (viiuldajat jms ei saa – õhtul on oma muusika).</summary>

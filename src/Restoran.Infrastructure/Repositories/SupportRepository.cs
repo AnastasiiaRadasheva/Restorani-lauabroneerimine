@@ -11,6 +11,9 @@ public class SupportRepository : Repository<SupportMessage>, ISupportRepository
     public Task<List<SupportMessage>> GetThreadAsync(int userId) =>
         Db.SupportMessages.Where(m => m.UserId == userId).OrderBy(m => m.CreatedAt).ToListAsync();
 
+    public Task<List<SupportMessage>> GetGuestThreadAsync(string guestKey) =>
+        Db.SupportMessages.Where(m => m.GuestKey == guestKey).OrderBy(m => m.CreatedAt).ToListAsync();
+
     public Task<List<SupportMessage>> GetAllWithUsersAsync() =>
         Db.SupportMessages.Include(m => m.User).ToListAsync();
 }

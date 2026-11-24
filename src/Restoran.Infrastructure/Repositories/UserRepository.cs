@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Restoran.Application.Common;
 using Restoran.Application.Entities;
 using Restoran.Application.Interfaces;
 using Restoran.Infrastructure.Data;
@@ -17,6 +18,14 @@ public class UserRepository : Repository<User>, IUserRepository
 
     public Task<bool> EmailExistsAsync(string email) =>
         Db.Users.AnyAsync(u => u.Email == email);
+
+    public async Task<User?> GetByPhoneAsync(string phone, int? exceptUserId = null)
+    {
+        if (PhoneNumber.Digits(phone).Length == 0) return null;
+        // Numbreid hoitakse eri kujul (+372 5555 1234, 55551234), seega võrdleme mälus
+        var withPhone = await Db.Users.Where(u => u.Phone != null && (exceptUserId == null || u.Id != exceptUserId)).ToListAsync();
+        return withPhone.FirstOrDefault(u => PhoneNumber.Same(u.Phone, phone));
+    }
 
     public Task<List<User>> SearchCustomersAsync(string search, int take)
     {

@@ -297,7 +297,7 @@ public record SlotDto(string Time, int FreeTables);
 public record DaySlotsDto(DateOnly Date, List<SlotDto> Slots, DayEventDto? Event = null);
 
 /// <summary>Sel päeval toimub gastronoomiline õhtu: Zone == null tähendab kogu restorani.</summary>
-public record DayEventDto(int Id, string Code, string Title, string? Zone);
+public record DayEventDto(int Id, string Code, string Title, string? Zone, Dictionary<string, EventTextDto>? Translations = null);
 
 /// <summary>Päeva plaani üks broneering.</summary>
 public record PlanReservationDto(

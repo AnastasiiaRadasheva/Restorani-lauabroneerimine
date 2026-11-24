@@ -95,10 +95,12 @@ Customers see the reminders under the bell icon on the website.
 ## Real-time updates (WebSocket)
 
 - Endpoint in the API project: `ws://localhost:5000/ws/tables?access_token=<JWT>` (the token is required).
+- Guest chat without an account: `ws://localhost:5000/ws/support?guest=<key>` – only messages of that conversation.
 - Messages are sent from the **service layer after saving** to the database:
   - `ReservationCreated` – only to staff (Admin, Waiter), includes the customer name;
   - `TableStatusChanged` – to everyone (new, changed, cancelled, arrived, no-show);
   - `TableSelecting` – someone is choosing this table right now (orange on the floor plan).
+  - `SupportMessage` – new message in the "Küsi meilt" chat (to that customer or guest and to staff).
 - The website uses the browser `WebSocket` API (`web/src/realtime.js`) and reconnects automatically.
 - Demo: open the staff floor plan in one browser and book a table in another – the plan updates instantly.
 
@@ -149,7 +151,11 @@ web/                        React website (Vite)
 | Customer | klient@restoran.ee | Klient123! |
 | Service (worker) | service@restoran.ee | Service123! |
 
-Login with `POST /api/auth/login`, then press **Authorize** in Swagger and paste the token.
+In Swagger press **Authorize** and log in with e-mail and password (the same accounts as on the website) –
+Swagger gets the JWT token from `POST /api/auth/token` and adds it to every request.
+Swagger has a separate list for each role (guest, customer, waiter, admin, service): after login the list of
+your role opens automatically and shows only what that role can do on the website. "Kõik toimingud" shows the whole API,
+but the server always checks the role (403 for another role's action).
 Creating, updating and deleting restaurants, tables and menu items requires the `Admin` role.
 
 ## API endpoints
