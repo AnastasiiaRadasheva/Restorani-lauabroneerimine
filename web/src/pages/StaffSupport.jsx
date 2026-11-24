@@ -2,8 +2,14 @@ import { useEffect, useState } from 'react'
 import { api } from '../api'
 import { fmtDate, fmtTime, useTr } from '../staff'
 import QuickReplies from '../components/QuickReplies'
+import { useTableSocket } from '../realtime'
+import { useLeaveWarning } from '../leaveGuard'
 
-/** Personal: klientide küsimused ja vastamine. */
+// Vestluse tunnus: kliendil konto id, külalisel (ilma kontota) vestluse võti
+const keyOf = (x) => (x.userId != null ? `u${x.userId}` : `g${x.guestKey}`)
+const urlOf = (x) => (x.userId != null ? `/api/support/threads/${x.userId}` : `/api/support/threads/guest/${x.guestKey}`)
+
+/** Personal: klientide küsimused ja vastamine. Uued sõnumid tulevad reaalajas (WebSocket, SupportMessage). */
 export default function StaffSupport() {
   const tr = useTr()
   const [threads, setThreads] = useState([])
@@ -16,27 +22,41 @@ export default function StaffSupport() {
 
   useEffect(() => {
     loadThreads()
-    const timer = setInterval(loadThreads, 10000)
+    // Varuvariant, kui WebSocket on katkenud
+    const timer = setInterval(loadThreads, 30000)
     return () => clearInterval(timer)
   }, [])
 
+  useLeaveWarning(Boolean(draft.trim()), tr('Vastus on saatmata. Kas lahkuda lehelt?', 'Ответ не отправлен. Уйти со страницы?', 'The reply has not been sent. Leave the page?'))
+
+  // Kliendi uus küsimus või teise töötaja vastus ilmub kohe
+  useTableSocket((msg) => {
+    if (msg.type !== 'SupportMessage') return
+    loadThreads()
+    if (!current || keyOf(current) !== keyOf(msg)) return
+    if (msg.message.fromStaff) setMessages((l) => (l.some((m) => m.id === msg.message.id) ? l : [...l, msg.message]))
+    else api(urlOf(msg)).then(setMessages).catch(() => {}) // avatud vestlus: märgitakse loetuks
+  })
+
   useEffect(() => {
     if (!current) return
-    api(`/api/support/threads/${current.userId}`).then(setMessages).then(loadThreads).catch((e) => setError(e.message))
-  }, [current?.userId]) // eslint-disable-line react-hooks/exhaustive-deps
+    api(urlOf(current)).then(setMessages).then(loadThreads).catch((e) => setError(e.message))
+  }, [current && keyOf(current)]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function reply(e) {
     e.preventDefault()
     if (!draft.trim() || !current) return
     try {
-      const m = await api(`/api/support/threads/${current.userId}`, { method: 'POST', body: { text: draft } })
-      setMessages((l) => [...l, m])
+      const m = await api(urlOf(current), { method: 'POST', body: { text: draft } })
+      setMessages((l) => (l.some((x) => x.id === m.id) ? l : [...l, m])) // WebSocket võis sama sõnumi juba tuua
       setDraft('')
       loadThreads()
     } catch (err) {
       setError(err.message)
     }
   }
+
+  const guestLabel = tr('külaline ilma kontota', 'гость без аккаунта', 'guest without an account')
 
   return (
     <div className="staff container">
@@ -53,12 +73,12 @@ export default function StaffSupport() {
         <div className="thread-list">
           {threads.length === 0 && <p className="italic muted">{tr('Küsimusi pole.', 'Вопросов нет.', 'No questions.')}</p>}
           {threads.map((th) => (
-            <button key={th.userId} type="button" className={current?.userId === th.userId ? 'thread on' : 'thread'} onClick={() => setCurrent(th)}>
+            <button key={keyOf(th)} type="button" className={current && keyOf(current) === keyOf(th) ? 'thread on' : 'thread'} onClick={() => setCurrent(th)}>
               <span className="row-between">
                 <strong>{th.name}</strong>
                 {th.unread > 0 && <span className="badge badge-Active">{th.unread} {tr('uut', 'новых', 'new')}</span>}
               </span>
-              <span className="small muted">{th.email}{th.phone ? ` · ${th.phone}` : ''}</span>
+              <span className="small muted">{th.userId != null ? `${th.email}${th.phone ? ` · ${th.phone}` : ''}` : guestLabel}</span>
               <span className="small">{th.lastText}</span>
               <span className="small muted">{fmtDate(th.lastAt)} {fmtTime(th.lastAt)}</span>
             </button>
@@ -69,7 +89,14 @@ export default function StaffSupport() {
           {!current && <p className="italic muted">{tr('Valige vasakult vestlus.', 'Выберите диалог слева.', 'Choose a conversation on the left.')}</p>}
           {current && (
             <>
-              <p className="card-title"><a href={`/personal/klient?q=${encodeURIComponent(current.email)}`}>{current.name}</a></p>
+              {current.userId != null
+                ? <p className="card-title"><a href={`/personal/klient?q=${encodeURIComponent(current.email)}`}>{current.name}</a></p>
+                : (
+                  <>
+                    <p className="card-title">{current.name} <span className="small muted">· {guestLabel}</span></p>
+                    <p className="small muted">{tr('Külaline näeb vastust ainult siis, kui ta on veel vestluse lehel.', 'Гость увидит ответ, только если он ещё на странице чата.', 'The guest sees the reply only while still on the chat page.')}</p>
+                  </>
+                )}
               <div className="msg-list tall">
                 {messages.map((m) => (
                   <div key={m.id} className={m.fromStaff ? 'msg mine' : 'msg'}>

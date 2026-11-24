@@ -49,3 +49,43 @@ export function useTableSocket(onMessage) {
     if (socket.current?.readyState === WebSocket.OPEN) socket.current.send(JSON.stringify(message))
   }
 }
+
+/**
+ * Külalise vestlus ilma kontota: ws://localhost:5000/ws/support?guest=võti.
+ * Server saadab siia ainult selle vestluse sõnumid (SupportMessage).
+ */
+export function useGuestSocket(guestKey, onMessage) {
+  const handler = useRef(onMessage)
+
+  useEffect(() => {
+    handler.current = onMessage
+  })
+
+  useEffect(() => {
+    if (!guestKey) return undefined
+    let closed = false
+    let retry
+    let ws
+
+    function connect() {
+      ws = new WebSocket(`${API_URL.replace(/^http/, 'ws')}/ws/support?guest=${encodeURIComponent(guestKey)}`)
+      ws.onmessage = (e) => {
+        try {
+          handler.current(JSON.parse(e.data))
+        } catch {
+          /* vigane sõnum – ignoreerime */
+        }
+      }
+      ws.onclose = () => {
+        if (!closed) retry = setTimeout(connect, 3000)
+      }
+    }
+
+    connect()
+    return () => {
+      closed = true
+      clearTimeout(retry)
+      ws?.close()
+    }
+  }, [guestKey])
+}
