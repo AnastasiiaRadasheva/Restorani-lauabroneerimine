@@ -57,7 +57,7 @@
     background: var(--bg);
   }
   .mobile-menu nav { display: flex; flex-direction: column; }
-  .mobile-menu a, .mobile-menu button {
+  .mobile-menu nav a, .mobile-menu nav button {
     padding: 14px 0;
     border: 0;
     border-bottom: 1px solid var(--line);
@@ -153,3 +153,42 @@
 @media (max-width: 700px) { .plan-table em.plan-spot { display: none; } .plan-stage span { font-size: 13px; } }
 
 @media (max-width: 700px) { .menu-thumb { width: 110px; height: 84px; } }
+
+/* ==========================================================
+   Päis kuni 1279 px: menüünupp | ARGENT | konto.
+   Täismenüü ei mahu kitsamale ekraanile (logo peale), seega on
+   lingid, keelevalik ja teated menüü sees.
+   ========================================================== */
+@media (max-width: 1279px) {
+  .header-inner { grid-template-columns: 44px 1fr 44px; grid-template-rows: auto; row-gap: 0; padding-top: 14px; padding-bottom: 14px; }
+  .nav, .nav-right, .header.open .nav, .header.open .nav-right { display: none !important; }
+  .menu-toggle { display: flex; align-items: center; justify-content: flex-start; grid-column: 1; grid-row: 1; width: 44px; height: 44px; padding: 0; border: 0; background: transparent; font-size: 24px; }
+  .logo { grid-column: 2; grid-row: 1; text-align: center; font-size: 26px; }
+  .user-icon { display: flex; grid-column: 3; grid-row: 1; align-items: center; justify-content: flex-end; color: var(--ink); }
+  .mobile-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px var(--gutter) 28px;
+    border-top: 1px solid var(--line);
+    background: var(--bg);
+    max-height: calc(100vh / var(--zoom, 1) - 90px);
+    overflow-y: auto;
+  }
+  .mobile-menu-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
+  /* Teated avanevad menüü sees täislaiuses (mitte hüpikaknana, mis jääks kerimisala taha) */
+  .mobile-menu-top .bell { display: contents; }
+  .mobile-menu-top .bell-menu { position: static; flex: 1 1 100%; width: auto; max-height: 360px; box-shadow: none; }
+  .mobile-menu nav { display: flex; flex-direction: column; }
+  .mobile-menu nav a, .mobile-menu nav button {
+    padding: 14px 0;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: none;
+    text-align: left;
+    text-decoration: none;
+    font-size: 26px;
+    line-height: 1.1;
+  }
+  .mobile-menu nav a.active { font-style: italic; color: var(--ox); }
+}

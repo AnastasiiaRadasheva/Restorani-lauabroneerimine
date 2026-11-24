@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import { useAuth } from './auth'
+import { useTr } from './staff'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -63,12 +64,26 @@ function SupportRoute() {
   return <Support />
 }
 
+/** Administraatorile: nool tagasi töölauale kõigil personali lehtedel. */
+function AdminBack() {
+  const { isAdmin } = useAuth()
+  const { pathname } = useLocation()
+  const tr = useTr()
+  if (!isAdmin || !(pathname.startsWith('/personal/') || pathname.startsWith('/broneering/'))) return null
+  return (
+    <div className="container admin-back">
+      <Link to="/admin">← {tr('Töölaud', 'Рабочий стол', 'Dashboard')}</Link>
+    </div>
+  )
+}
+
 export default function App() {
   return (
     <div className="app">
       <ScrollToTop />
       <Header />
       <main className="main">
+        <AdminBack />
         <Routes>
           <Route path="/" element={<GuestOnly><Home /></GuestOnly>} />
           <Route path="/login" element={<Login />} />

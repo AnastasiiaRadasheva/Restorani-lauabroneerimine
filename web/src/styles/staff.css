@@ -334,3 +334,13 @@
 .se-form .field { width: 100%; }
 .se-menu { width: 100%; display: grid; gap: 6px; max-height: 420px; overflow: auto; }
 .se-menu .pm-item .name { min-width: 0; }
+
+/* Administraatori nool tagasi töölauale */
+.admin-back { padding-top: 22px; margin-bottom: -18px; }
+.admin-back a { font-size: 13px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; text-decoration: none; border-bottom: 1px solid transparent; }
+.admin-back a:hover { border-bottom-color: var(--ink); }
+
+/* Õhtu vorm: tekstide keel (ET põhitekst, RU/EN tõlked) */
+.ae-langs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 0 4px; border-top: 1px solid var(--line); }
+.ae-langs .chips { gap: 6px; }
+.ae-langs p { flex: 1 1 100%; margin: 0; }
