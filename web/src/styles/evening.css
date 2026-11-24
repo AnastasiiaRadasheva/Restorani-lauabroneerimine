@@ -171,6 +171,8 @@
   line-height: 1.45;
 }
 .msg.mine { align-self: flex-end; background: var(--ink); color: var(--bg); border-color: var(--ink); }
+/* Sõnumi reavahetused (nt kiirvastuse loetelu) jäävad alles */
+.msg > span:not(.who) { white-space: pre-line; }
 .msg .who { font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.7; }
 .msg-form { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
 .msg-form .field { width: 100%; }

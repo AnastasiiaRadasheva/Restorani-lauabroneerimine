@@ -2,6 +2,37 @@ import { useTr } from '../staff'
 
 /** Personali kiirvastused: klõps lisab valmis teksti vastuse väljale (saab enne saatmist muuta). */
 const REPLIES = [
+  ['Broneeringu andmed', 'Данные для брони', 'Booking details',
+    [
+      'Broneerime Teile laua hea meelega. Palun kirjutage:',
+      '– ees- ja perekonnanimi;',
+      '– e-post ja telefoninumber;',
+      '– restoran, kuupäev ja kellaaeg;',
+      '– külaliste arv (ja mitu neist on lapsed);',
+      '– erisoovid: allergiad, tähtpäev, laud akna all vms.',
+      '',
+      'Vormistame broneeringu ja loome Teile konto. E-postile saadame makselingi ning lingi parooli loomiseks – pärast parooli loomist näete ja saate broneeringut ise veebilehel muuta.',
+    ].join('\n'),
+    [
+      'С удовольствием забронируем для Вас стол. Пожалуйста, напишите:',
+      '– имя и фамилию;',
+      '– e-mail и номер телефона;',
+      '– ресторан, дату и время;',
+      '– число гостей (и сколько из них детей);',
+      '– особые пожелания: аллергии, повод, стол у окна и т. п.',
+      '',
+      'Мы оформим бронь и создадим для Вас аккаунт. На e-mail придут ссылка на оплату и ссылка для создания пароля – после этого Вы сможете сами просматривать и изменять бронь на сайте.',
+    ].join('\n'),
+    [
+      'We will be happy to book a table for you. Please send us:',
+      '– your first and last name;',
+      '– e-mail and phone number;',
+      '– restaurant, date and time;',
+      '– number of guests (and how many of them are children);',
+      '– special requests: allergies, occasion, window table etc.',
+      '',
+      'We will make the booking and create an account for you. You will receive a payment link and a link to set your password by e-mail – once the password is set, you can view and change the booking on the website yourself.',
+    ].join('\n')],
   ['Makselink', 'Ссылка на оплату', 'Payment link',
     'Saatsime Teie e-postile makselingi. Palun tasuge broneering – kui kõik on korras, saabub kinnitus koos tšekiga.',
     'Мы отправили Вам на почту ссылку на оплату. Пожалуйста, оплатите бронь — если всё хорошо, придёт подтверждение с чеком.',

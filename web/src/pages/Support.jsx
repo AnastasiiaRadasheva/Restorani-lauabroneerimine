@@ -50,8 +50,9 @@ export default function Support() {
   const [sending, setSending] = useState(false)
   const box = useRef(null)
 
-  const guestHasChat = !user && (list?.length > 0 || Boolean(draft.trim()))
-  useLeaveWarning(user ? Boolean(draft.trim()) : guestHasChat, user ? t('support.leaveWarn') : t('support.guestLeaveWarn'))
+  // Külaline: hoiatame, kui vestlus on alanud või midagi on juba kirjutatud (ka ainult nimi)
+  const guestHasChat = !user && (list?.length > 0 || Boolean(draft.trim()) || Boolean(name.trim()))
+  const leaveDialog = useLeaveWarning(user ? Boolean(draft.trim()) : guestHasChat, user ? t('support.leaveWarn') : t('support.guestLeaveWarn'))
 
   useEffect(() => {
     if (user) writeDraft({ name, text: draft })
@@ -170,6 +171,7 @@ export default function Support() {
           <a className="mail" href="mailto:argent@restoran.ee">argent@restoran.ee</a>
         </aside>
       </div>
+      {leaveDialog}
     </div>
   )
 }

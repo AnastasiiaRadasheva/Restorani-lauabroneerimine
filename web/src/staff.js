@@ -46,3 +46,12 @@ export function nowSlot(from = '17:00', to = '23:00') {
   const clamped = Math.min(Math.max(m, toMin(from)), toMin(to))
   return `${String(Math.floor(clamped / 60)).padStart(2, '0')}:${String(clamped % 60).padStart(2, '0')}`
 }
+
+/** Vestluse eelvaade nimekirjas: ainult kaks esimest lauset (ja kuni 160 märki), edasi „…“. */
+export function preview(text, sentences = 2, max = 160) {
+  const flat = (text ?? '').replace(/\s+/g, ' ').trim()
+  const parts = flat.match(/[^.!?…]+[.!?…]+["“”»)]*\s*|[^.!?…]+$/g) ?? [flat]
+  let out = parts.slice(0, sentences).join('').trim()
+  if (out.length > max) out = out.slice(0, max).replace(/\s+\S*$/, '')
+  return out.length < flat.length ? out + ' …' : out
+}

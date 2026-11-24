@@ -7,7 +7,7 @@ import { useAuth } from '../auth'
 import FloorPlan, { spotText } from '../components/FloorPlan'
 import Pager from '../components/Pager'
 import StaffMessages from '../components/StaffMessages'
-import { fmtDate, fmtTime, useTr, ZONE_LIST } from '../staff'
+import { fmtDate, fmtTime, preview, useTr, ZONE_LIST } from '../staff'
 import { addDays, money, pickZone, stageOf, toIsoDate, zonesOf } from '../utils'
 
 const TABS = [
@@ -177,9 +177,10 @@ function Attention({ restaurantId }) {
           <p className="card-title">{tr('Vajab vastust', 'Ждут ответа', 'Needs a reply')}</p>
           {unreadThreads.length + unanswered.length === 0 && <p className="italic muted small">{tr('Kõik on vastatud.', 'На всё ответили.', 'All answered.')}</p>}
           {unreadThreads.map((th) => (
-            <div key={'t' + th.userId} className="dash-row">
-              <span><strong>{th.name}</strong> · <span className="small">{th.lastText}</span></span>
-              <Link className="btn btn-small btn-ox" to="/personal/tugi">{tr('Vasta', 'Ответить', 'Reply')}</Link>
+            <div key={'t' + (th.userId ?? th.guestKey)} className="dash-row">
+              <span><strong>{th.name}</strong> · <span className="small">{preview(th.lastText)}</span></span>
+              {/* Avab kohe selle kliendi vestluse */}
+              <Link className="btn btn-small btn-ox" to={`/personal/tugi?vestlus=${th.userId != null ? `u${th.userId}` : `g${th.guestKey}`}`}>{tr('Vasta', 'Ответить', 'Reply')}</Link>
             </div>
           ))}
           {unanswered.map((r) => (
