@@ -25,7 +25,10 @@ public class TablesController : ControllerBase
     /// Tagastab pakutud laua (väikseim sobiv vaba laud) ja kõik restorani lauad koos infoga,
     /// kas need on valitud ajal vabad. Broneering kestab 2 tundi.
     ///
-    /// Näide: GET /api/tables/available?restaurantId=1&amp;date=2026-11-20&amp;time=19:00&amp;guests=4
+    /// restaurantId on valikuline: kui see puudub, kasutatakse esimest restorani (Argent · Vanalinn).
+    ///
+    /// Näide: GET /api/tables/available?date=2026-11-20&amp;time=19:00&amp;guests=4
+    /// või GET /api/tables/available?restaurantId=2&amp;date=2026-11-20&amp;time=19:00&amp;guests=4
     /// </remarks>
     [HttpGet("available")]
     [ProducesResponseType(typeof(AvailabilityDto), StatusCodes.Status200OK)]
@@ -50,7 +53,11 @@ public class TablesController : ControllerBase
         Ok(await _reservations.GetSlotsAsync(restaurantId, from, days, guests));
 
     /// <summary>Päeva laudade plaan: lauad ja nende broneeringud (personal).</summary>
-    /// <remarks>Näide: GET /api/tables/plan?restaurantId=1&amp;date=2026-11-20</remarks>
+    /// <remarks>
+    /// restaurantId on valikuline: kui see puudub, kasutatakse esimest restorani.
+    ///
+    /// Näide: GET /api/tables/plan?date=2026-11-20 või GET /api/tables/plan?restaurantId=2&amp;date=2026-11-20
+    /// </remarks>
     [Authorize(Roles = "Admin,Waiter")]
     [HttpGet("plan")]
     [ProducesResponseType(typeof(TablePlanDto), StatusCodes.Status200OK)]
