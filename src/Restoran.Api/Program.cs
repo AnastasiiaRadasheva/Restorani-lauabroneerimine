@@ -110,6 +110,7 @@ builder.Services.AddSwaggerGen(o =>
     // Üks loend ainult põhitoimingutega (vt SwaggerMain); ülejäänud toimingud töötavad API-s edasi
     o.SwaggerDoc("v1", new OpenApiInfo { Title = "Restorani lauabroneerimine API", Version = "v1", Description = "Põhitoimingud: lauad, broneeringud, menüü, eeltellimus, sisselogimine, õhtud, statistika ja taustateenus." });
     o.DocInclusionPredicate(SwaggerMain.Visible);
+    o.OperationFilter<SwaggerMain.RolesFilter>();
     var xml = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
     o.IncludeXmlComments(xml);
     var appXml = Path.Combine(AppContext.BaseDirectory, "Restoran.Application.xml");
@@ -120,7 +121,7 @@ builder.Services.AddSwaggerGen(o =>
     o.AddSecurityDefinition("Login", new OpenApiSecurityScheme
     {
         Type = SecuritySchemeType.OAuth2,
-        Description = "Logi sisse e-posti ja parooliga nagu veebilehel (username = e-post). " +
+        Description = "Logi sisse e-posti ja parooliga nagu veebilehel. " +
                       "Testkontod: admin@restoran.ee / Admin123!, waiter@restoran.ee / Waiter123!, klient@restoran.ee / Klient123!",
         Flows = new OpenApiOAuthFlows
         {
@@ -152,7 +153,7 @@ app.UseSwaggerUI(o =>
 {
     o.DocumentTitle = "Argent API";
     o.SwaggerEndpoint("/swagger/v1/swagger.json", "Restorani lauabroneerimine API");
-    // Peidab sisselogimise aknast client_id ja client_secret väljad
+    // Sisselogimise aken ainult e-posti ja parooliga, nupul kasutaja nimi, loendis rolli toimingud
     o.HeadContent = SwaggerMain.HeadContent;
     // Sisselogimine jääb meelde ka lehe uuendamisel
     o.EnablePersistAuthorization();

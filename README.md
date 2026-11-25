@@ -155,7 +155,9 @@ In Swagger press **Authorize** and log in with e-mail and password (the same acc
 Swagger gets the JWT token from `POST /api/auth/token` and adds it to every request.
 Swagger shows one short list with the main operations of the assignment (login, tables, reservations, preorder,
 menu, events, statistics and the worker's operations). The other operations (messages, notes, notifications etc.)
-still work in the API and are listed below; the server always checks the role (403 for another role's action).
+still work in the API and are listed below. Before login the list shows only public operations; after login the button
+shows who is logged in ("Logi välja" to log out) and the list shows only the operations of that role, like on the website.
+The server always checks the role itself (403 for another role's action).
 Creating, updating and deleting restaurants, tables and menu items requires the `Admin` role.
 
 ## API endpoints
