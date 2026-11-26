@@ -27,8 +27,8 @@ public class TablesController : ControllerBase
     ///
     /// restaurantId on valikuline: kui see puudub, kasutatakse esimest restorani (Argent · Vanalinn).
     ///
-    /// Näide: GET /api/tables/available?date=2026-11-20&amp;time=19:00&amp;guests=4
-    /// või GET /api/tables/available?restaurantId=2&amp;date=2026-11-20&amp;time=19:00&amp;guests=4
+    /// Näide: GET /api/tables/available?date=2027-01-15&amp;time=19:00&amp;guests=4
+    /// või GET /api/tables/available?restaurantId=2&amp;date=2027-01-15&amp;time=19:00&amp;guests=4
     /// </remarks>
     [HttpGet("available")]
     [ProducesResponseType(typeof(AvailabilityDto), StatusCodes.Status200OK)]
@@ -42,7 +42,7 @@ public class TablesController : ControllerBase
     /// <remarks>
     /// Kui mõne kellaaja FreeTables on 0, on see aeg täis. Kui päeva kõik ajad on täis, on päev täis.
     ///
-    /// Näide: GET /api/tables/slots?restaurantId=1&amp;from=2026-11-20&amp;days=30&amp;guests=2
+    /// Näide: GET /api/tables/slots?restaurantId=1&amp;from=2027-01-15&amp;days=30&amp;guests=2
     /// </remarks>
     [HttpGet("slots")]
     [ProducesResponseType(typeof(List<DaySlotsDto>), StatusCodes.Status200OK)]
@@ -56,7 +56,7 @@ public class TablesController : ControllerBase
     /// <remarks>
     /// restaurantId on valikuline: kui see puudub, kasutatakse esimest restorani.
     ///
-    /// Näide: GET /api/tables/plan?date=2026-11-20 või GET /api/tables/plan?restaurantId=2&amp;date=2026-11-20
+    /// Näide: GET /api/tables/plan?date=2027-01-15 või GET /api/tables/plan?restaurantId=2&amp;date=2027-01-15
     /// </remarks>
     [Authorize(Roles = "Admin,Waiter")]
     [HttpGet("plan")]

@@ -70,6 +70,82 @@ public static class SwaggerMain
         }
     }
 
+    /// <summary>
+    /// Valmis näited päringu parameetritele: Swaggeris piisab toimingu avamisest ja nupust Execute, midagi pole vaja sisestada.
+    /// Kuupäev on alati nädala pärast (et see oleks tulevikus ja broneerimise vahemikus).
+    /// Kustutamise ja muutmise id jäetakse tühjaks, et päris andmeid kogemata ei muudetaks.
+    /// </summary>
+    public class ExamplesFilter : IOperationFilter
+    {
+        public void Apply(OpenApiOperation operation, OperationFilterContext context)
+        {
+            if (operation.Parameters is null) return;
+            var method = context.ApiDescription.HttpMethod;
+            var date = DateOnly.FromDateTime(DateTime.Today.AddDays(7)).ToString("yyyy-MM-dd");
+            foreach (var p in operation.Parameters.OfType<OpenApiParameter>())
+            {
+                JsonNode? example = p.Name.ToLowerInvariant() switch
+                {
+                    "restaurantid" => 1,
+                    "date" when p.In == ParameterLocation.Query && method == "GET" && context.ApiDescription.RelativePath!.StartsWith("api/tables") => date,
+                    "from" when context.ApiDescription.RelativePath!.StartsWith("api/tables") => date,
+                    "time" => "19:00",
+                    "guests" => 2,
+                    "days" => 7,
+                    "page" => 1,
+                    "pagesize" => 5,
+                    "id" when method == "GET" => 1,
+                    _ => null,
+                };
+                if (example is not null) p.Example = example;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Päringu keha näidetes on kuupäev alati nädala pärast (mitte kirjutatud kindel kuupäev, mis võib olla möödas),
+    /// et nt broneeringu näidet saaks kohe Execute-nupuga proovida.
+    /// </summary>
+    public class DatesFilter : ISchemaFilter
+    {
+        public void Apply(IOpenApiSchema schema, SchemaFilterContext context)
+        {
+            if (schema is not OpenApiSchema s || s.Properties is null) return;
+            var date = DateOnly.FromDateTime(DateTime.Today.AddDays(7)).ToString("yyyy-MM-dd");
+            // Registreerimise näide: iga kord uus e-post ja telefon, et Execute ei annaks "juba olemas"
+            if (context.Type == typeof(Restoran.Application.DTOs.RegisterDto))
+            {
+                var n = DateTime.Now.ToString("MMddHHmmss");
+                s.Example = new JsonObject
+                {
+                    ["name"] = "Mari Maasikas",
+                    ["email"] = $"mari.{n}@example.com",
+                    ["phone"] = $"+372 5{n.Substring(3, 3)} {n.Substring(6, 4)}",
+                    ["password"] = "Parool123!",
+                };
+                return;
+            }
+            // Uue broneeringu valmis näide: laua valib süsteem ise, makse testkaardiga
+            if (context.Type == typeof(Restoran.Application.DTOs.CreateReservationDto))
+            {
+                s.Example = new JsonObject
+                {
+                    ["restaurantId"] = 1,
+                    ["date"] = date,
+                    ["time"] = "19:00",
+                    ["guests"] = 2,
+                    ["specialRequest"] = "Aknaalune laud, kui võimalik",
+                    ["items"] = new JsonArray(new JsonObject { ["menuItemId"] = 3, ["quantity"] = 2 }),
+                    ["serviceLanguage"] = "et",
+                    ["card"] = new JsonObject { ["cardHolder"] = "Kati Klient", ["cardNumber"] = "4242 4242 4242 4242", ["expiry"] = "12/28", ["cvc"] = "123" },
+                };
+                return;
+            }
+            foreach (var prop in s.Properties.Values.OfType<OpenApiSchema>())
+                if (prop.Format == "date" && prop.Example is not null) prop.Example = date;
+        }
+    }
+
     /// <summary>Gruppide järjekord ja lühikirjeldused (loogilises järjekorras, mitte tähestiku järgi).</summary>
     private static readonly (string Name, string Description)[] Groups =
     {

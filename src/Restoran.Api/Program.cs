@@ -111,6 +111,8 @@ builder.Services.AddSwaggerGen(o =>
     o.SwaggerDoc("v1", new OpenApiInfo { Title = "Restorani lauabroneerimine API", Version = "v1", Description = "Vajuta grupi nimele, et näha selle toiminguid. Sisselogimiseks vajuta „Logi sisse“." });
     o.DocInclusionPredicate(SwaggerMain.Visible);
     o.OperationFilter<SwaggerMain.RolesFilter>();
+    o.OperationFilter<SwaggerMain.ExamplesFilter>();
+    o.SchemaFilter<SwaggerMain.DatesFilter>();
     o.DocumentFilter<SwaggerMain.GroupsFilter>();
     o.OrderActionsBy(SwaggerMain.Order);
     var xml = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
@@ -158,6 +160,8 @@ app.UseSwaggerUI(o =>
     // Lihtsam vaade: grupid on alguses kokku pandud, andmeskeemide (Schemas) plokki ei näidata
     o.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
     o.DefaultModelsExpandDepth(-1);
+    // Väljad on kohe muudetavad ja täidetud näidetega – piisab nupust Execute
+    o.EnableTryItOutByDefault();
     // Sisselogimise aken ainult e-posti ja parooliga, nupul kasutaja nimi, loendis rolli toimingud
     o.HeadContent = SwaggerMain.HeadContent;
     // Sisselogimine jääb meelde ka lehe uuendamisel
