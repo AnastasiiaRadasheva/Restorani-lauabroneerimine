@@ -121,7 +121,7 @@ public class ReservationsController : ControllerBase
     public ActionResult<IReadOnlyList<Restoran.Application.Services.ExtraInfo>> Extras() =>
         Ok(Restoran.Application.Services.ExtrasCatalog.All);
 
-    /// <summary>Kõik broneeringud koos filtri, otsingu, sortimise ja lehekülgedega (personal).</summary>
+    /// <summary>Kõik broneeringud (administraator ja teenindaja) koos filtri, otsingu, sortimise ja lehekülgedega.</summary>
     /// <remarks>Näide: GET /api/reservations?restaurantId=1&amp;date=2027-01-15&amp;status=Active&amp;search=kati&amp;sort=date&amp;page=1&amp;pageSize=10</remarks>
     [Authorize(Roles = "Admin,Waiter")]
     [HttpGet]
@@ -164,7 +164,7 @@ public class ReservationsController : ControllerBase
         return Ok(result);
     }
 
-    /// <summary>Minu broneeringud.</summary>
+    /// <summary>Minu broneeringud (klient).</summary>
     [HttpGet("my")]
     [ProducesResponseType(typeof(List<ReservationDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<ReservationDto>>> GetMy() => Ok(await _reservations.GetMyAsync());

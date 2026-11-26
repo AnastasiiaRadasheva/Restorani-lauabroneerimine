@@ -53,6 +53,8 @@ public static class SwaggerMain
     {
         // Registreerimine ja sisselogimine on ainult sisse logimata külalisele (nagu veebilehel)
         if (api.RelativePath is "api/auth/register" or "api/auth/login") return ["guest"];
+        // "Minu broneeringud" on ainult kliendil – personalil endal broneeringuid pole, ta näeb kõiki (GET /api/reservations)
+        if (api.RelativePath is "api/reservations/my" or "api/events/registrations/my") return ["Customer"];
         var meta = api.ActionDescriptor.EndpointMetadata;
         var rules = meta.OfType<IAuthorizeData>().ToList();
         if (meta.OfType<IAllowAnonymous>().Any() || rules.Count == 0) return ["guest", .. AllRoles];
