@@ -178,6 +178,27 @@ public static class SwaggerMain
     }
 
     /// <summary>
+    /// Swagger UI päringu vahelüli: kui registreerimise kehas on näite e-post (mari.NUMBER@example.com),
+    /// asendatakse number ja telefon saatmise hetkel uutega. Kasutaja enda sisestatud andmeid ei muudeta.
+    /// </summary>
+    public const string RegisterInterceptor = """
+        (req) => {
+          try {
+            if (req.method === 'POST' && /\/api\/auth\/register$/.test(req.url) && typeof req.body === 'string') {
+              const b = JSON.parse(req.body);
+              if (/^mari\.\d+@example\.com$/.test(b.email || '')) {
+                const n = String(Date.now()).slice(-10);
+                b.email = 'mari.' + n + '@example.com';
+                b.phone = '+372 5' + n.slice(3, 6) + ' ' + n.slice(6, 10);
+                req.body = JSON.stringify(b);
+              }
+            }
+          } catch (e) { }
+          return req;
+        }
+        """;
+
+    /// <summary>
     /// Swagger UI lisad:
     /// – sisselogimise aknas on ainult e-post ja parool (client_id, client_secret, "basic" ja scope'i tekstid peidetakse) ja eestikeelsed tekstid;
     /// – nupp näitab, kes on sisse logitud ("Logi sisse" / "Nimi (roll) · Logi välja");

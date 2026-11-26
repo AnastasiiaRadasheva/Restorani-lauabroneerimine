@@ -166,6 +166,8 @@ app.UseSwaggerUI(o =>
     o.HeadContent = SwaggerMain.HeadContent;
     // Sisselogimine jääb meelde ka lehe uuendamisel
     o.EnablePersistAuthorization();
+    // Registreerimise näites tehakse e-post ja telefon igal saatmisel uueks, et korduv Execute ei annaks "juba olemas"
+    o.UseRequestInterceptor(SwaggerMain.RegisterInterceptor);
 });
 
 app.UseCors("web");
