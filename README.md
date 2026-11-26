@@ -39,6 +39,7 @@ The database is created automatically on first start (migrations + seed data).
 
 On Windows `START.cmd` does all of this at once: on the first start it installs the website packages (`npm ci`),
 then opens the API, worker and website in separate windows and opens the website and Swagger in the browser.
+`STOP.cmd` stops everything again (API, worker and website) and closes their windows.
 
 1. API (creates the database on first start):
 
