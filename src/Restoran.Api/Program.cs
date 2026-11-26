@@ -108,9 +108,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(o =>
 {
     // Üks loend ainult põhitoimingutega (vt SwaggerMain); ülejäänud toimingud töötavad API-s edasi
-    o.SwaggerDoc("v1", new OpenApiInfo { Title = "Restorani lauabroneerimine API", Version = "v1", Description = "Põhitoimingud: lauad, broneeringud, menüü, eeltellimus, sisselogimine, õhtud, statistika ja taustateenus." });
+    o.SwaggerDoc("v1", new OpenApiInfo { Title = "Restorani lauabroneerimine API", Version = "v1", Description = "Vajuta grupi nimele, et näha selle toiminguid. Sisselogimiseks vajuta „Logi sisse“." });
     o.DocInclusionPredicate(SwaggerMain.Visible);
     o.OperationFilter<SwaggerMain.RolesFilter>();
+    o.DocumentFilter<SwaggerMain.GroupsFilter>();
+    o.OrderActionsBy(SwaggerMain.Order);
     var xml = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
     o.IncludeXmlComments(xml);
     var appXml = Path.Combine(AppContext.BaseDirectory, "Restoran.Application.xml");
@@ -153,6 +155,9 @@ app.UseSwaggerUI(o =>
 {
     o.DocumentTitle = "Argent API";
     o.SwaggerEndpoint("/swagger/v1/swagger.json", "Restorani lauabroneerimine API");
+    // Lihtsam vaade: grupid on alguses kokku pandud, andmeskeemide (Schemas) plokki ei näidata
+    o.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
+    o.DefaultModelsExpandDepth(-1);
     // Sisselogimise aken ainult e-posti ja parooliga, nupul kasutaja nimi, loendis rolli toimingud
     o.HeadContent = SwaggerMain.HeadContent;
     // Sisselogimine jääb meelde ka lehe uuendamisel
@@ -166,6 +171,8 @@ app.UseAuthorization();
 app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(30) });
 
 app.MapControllers();
+// API juuraadress avab Swaggeri (muidu oleks seal tühi 404-leht)
+app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
 
 // WebSocketi otspunkt: ühendus nõuab JWT-d (ws://localhost:5000/ws/tables?access_token=...)
 app.Map("/ws/tables", async (HttpContext context, TableSocketHub hub) =>

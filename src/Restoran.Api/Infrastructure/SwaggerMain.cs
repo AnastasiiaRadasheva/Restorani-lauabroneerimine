@@ -70,6 +70,37 @@ public static class SwaggerMain
         }
     }
 
+    /// <summary>Gruppide järjekord ja lühikirjeldused (loogilises järjekorras, mitte tähestiku järgi).</summary>
+    private static readonly (string Name, string Description)[] Groups =
+    {
+        ("Auth", "Registreerimine ja sisselogimine"),
+        ("Restaurants", "Restoranid"),
+        ("Tables", "Vabad lauad ja laudade haldus"),
+        ("Reservations", "Broneeringud, eeltellimus ja taustateenus"),
+        ("Menu", "Menüü"),
+        ("Events", "Gastronoomilised õhtud"),
+        ("Stats", "Statistika (admin)"),
+        ("Notifications", "Teavitused (taustateenus)"),
+    };
+
+    /// <summary>Järjestus Swaggeris: grupp loogilises järjekorras, grupi sees aadressi ja meetodi (GET, POST, PUT, PATCH, DELETE) järgi.</summary>
+    public static string Order(ApiDescription api)
+    {
+        var group = api.ActionDescriptor.RouteValues.TryGetValue("controller", out var c) ? c : "";
+        var i = Array.FindIndex(Groups, g => g.Name == group);
+        var method = Array.IndexOf(new[] { "GET", "POST", "PUT", "PATCH", "DELETE" }, api.HttpMethod);
+        return $"{(i < 0 ? 99 : i):00} {api.RelativePath} {method}";
+    }
+
+    /// <summary>Lisab gruppidele eestikeelsed kirjeldused samas järjekorras.</summary>
+    public class GroupsFilter : IDocumentFilter
+    {
+        public void Apply(OpenApiDocument doc, DocumentFilterContext context)
+        {
+            doc.Tags = new HashSet<OpenApiTag>(Groups.Select(g => new OpenApiTag { Name = g.Name, Description = g.Description }));
+        }
+    }
+
     /// <summary>
     /// Swagger UI lisad:
     /// – sisselogimise aknas on ainult e-post ja parool (client_id, client_secret, "basic" ja scope'i tekstid peidetakse) ja eestikeelsed tekstid;
@@ -84,7 +115,7 @@ public static class SwaggerMain
           .auth-container label[for=password_type], .auth-container #password_type,
           .auth-container label[for^=client_], .auth-container input[id^=client_],
           .auth-container .wrapper:has(> label[for^=client_]), .auth-container .wrapper:has(> label[for=password_type]),
-          .argent-off { display: none !important; }
+          .argent-off, .swagger-ui .topbar { display: none !important; }
           .modal-ux-header h3 { font-size: 0 !important; }
           .modal-ux-header h3::after { content: 'Sisselogimine'; font-size: 20px; }
           .auth-container label[for=oauth_username], .auth-container label[for=oauth_password] { font-size: 0 !important; }
@@ -104,11 +135,15 @@ public static class SwaggerMain
             var ROLE = 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role';
             var NAME = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name';
             var RN = { Customer: 'klient', Waiter: 'teenindaja', Admin: 'administraator', Service: 'taustateenus' };
-            var map = null;
+            var map = null, tags = null;
             fetch('/swagger/v1/swagger.json').then(function (r) { return r.json(); }).then(function (d) {
               map = {};
               Object.keys(d.paths).forEach(function (p) {
-                Object.keys(d.paths[p]).forEach(function (m) { map[m.toUpperCase() + ' ' + p] = d.paths[p][m]['x-roles'] || []; });
+                Object.keys(d.paths[p]).forEach(function (m) {
+                  var o = d.paths[p][m], roles = o['x-roles'] || [];
+                  map[m.toUpperCase() + ' ' + p] = roles;
+                  (o.tags || []).forEach(function (t) { tags = tags || {}; tags[t] = (tags[t] || []).concat(roles); });
+                });
               });
             });
             function user() {
@@ -138,9 +173,10 @@ public static class SwaggerMain
                 op.classList.toggle('argent-off', !!roles && roles.indexOf(role) < 0);
               });
               document.querySelectorAll('.opblock-tag-section').forEach(function (s) {
-                var ops = s.querySelectorAll('.opblock');
-                if (!ops.length) return;
-                s.classList.toggle('argent-off', !Array.prototype.some.call(ops, function (o) { return !o.classList.contains('argent-off'); }));
+                // Grupp peidetakse, kui selles pole ühtegi selle rolli toimingut (töötab ka kokku pandud grupi puhul)
+                var h = s.querySelector('.opblock-tag');
+                var t = h && h.getAttribute('data-tag');
+                if (t && tags && tags[t]) s.classList.toggle('argent-off', tags[t].indexOf(role) < 0);
               });
             }
             setInterval(tick, 300);
