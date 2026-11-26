@@ -37,6 +37,9 @@ The database is created automatically on first start (migrations + seed data).
 
 ## Run
 
+On Windows `START.cmd` does all of this at once: on the first start it installs the website packages (`npm ci`),
+then opens the API, worker and website in separate windows and opens the website and Swagger in the browser.
+
 1. API (creates the database on first start):
 
 ```bash
@@ -44,7 +47,7 @@ cd src/Restoran.Api
 dotnet run
 ```
 
-Swagger: http://localhost:5000/swagger
+Swagger: http://localhost:5000/swagger (http://localhost:5000 opens it too)
 
 2. Website (React + Vite), in a second terminal:
 

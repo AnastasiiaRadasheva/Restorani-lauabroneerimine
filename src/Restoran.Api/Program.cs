@@ -166,6 +166,8 @@ app.UseAuthorization();
 app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(30) });
 
 app.MapControllers();
+// API juuraadress avab Swaggeri (muidu oleks seal tühi 404-leht)
+app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
 
 // WebSocketi otspunkt: ühendus nõuab JWT-d (ws://localhost:5000/ws/tables?access_token=...)
 app.Map("/ws/tables", async (HttpContext context, TableSocketHub hub) =>
