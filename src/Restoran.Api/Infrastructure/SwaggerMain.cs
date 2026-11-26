@@ -53,6 +53,8 @@ public static class SwaggerMain
     {
         // Registreerimine ja sisselogimine on ainult sisse logimata külalisele (nagu veebilehel)
         if (api.RelativePath is "api/auth/register" or "api/auth/login") return ["guest"];
+        // "Minu broneeringud" on ainult kliendil – personalil endal broneeringuid pole, ta näeb kõiki (GET /api/reservations)
+        if (api.RelativePath is "api/reservations/my" or "api/events/registrations/my") return ["Customer"];
         var meta = api.ActionDescriptor.EndpointMetadata;
         var rules = meta.OfType<IAuthorizeData>().ToList();
         if (meta.OfType<IAllowAnonymous>().Any() || rules.Count == 0) return ["guest", .. AllRoles];
@@ -67,6 +69,82 @@ public static class SwaggerMain
         {
             operation.Extensions ??= new Dictionary<string, IOpenApiExtension>();
             operation.Extensions["x-roles"] = new JsonNodeExtension(new JsonArray(Roles(context.ApiDescription).Select(r => (JsonNode?)r).ToArray()));
+        }
+    }
+
+    /// <summary>
+    /// Valmis näited päringu parameetritele: Swaggeris piisab toimingu avamisest ja nupust Execute, midagi pole vaja sisestada.
+    /// Kuupäev on alati nädala pärast (et see oleks tulevikus ja broneerimise vahemikus).
+    /// Kustutamise ja muutmise id jäetakse tühjaks, et päris andmeid kogemata ei muudetaks.
+    /// </summary>
+    public class ExamplesFilter : IOperationFilter
+    {
+        public void Apply(OpenApiOperation operation, OperationFilterContext context)
+        {
+            if (operation.Parameters is null) return;
+            var method = context.ApiDescription.HttpMethod;
+            var date = DateOnly.FromDateTime(DateTime.Today.AddDays(7)).ToString("yyyy-MM-dd");
+            foreach (var p in operation.Parameters.OfType<OpenApiParameter>())
+            {
+                JsonNode? example = p.Name.ToLowerInvariant() switch
+                {
+                    "restaurantid" => 1,
+                    "date" when p.In == ParameterLocation.Query && method == "GET" && context.ApiDescription.RelativePath!.StartsWith("api/tables") => date,
+                    "from" when context.ApiDescription.RelativePath!.StartsWith("api/tables") => date,
+                    "time" => "19:00",
+                    "guests" => 2,
+                    "days" => 7,
+                    "page" => 1,
+                    "pagesize" => 5,
+                    "id" when method == "GET" => 1,
+                    _ => null,
+                };
+                if (example is not null) p.Example = example;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Päringu keha näidetes on kuupäev alati nädala pärast (mitte kirjutatud kindel kuupäev, mis võib olla möödas),
+    /// et nt broneeringu näidet saaks kohe Execute-nupuga proovida.
+    /// </summary>
+    public class DatesFilter : ISchemaFilter
+    {
+        public void Apply(IOpenApiSchema schema, SchemaFilterContext context)
+        {
+            if (schema is not OpenApiSchema s || s.Properties is null) return;
+            var date = DateOnly.FromDateTime(DateTime.Today.AddDays(7)).ToString("yyyy-MM-dd");
+            // Registreerimise näide: iga kord uus e-post ja telefon, et Execute ei annaks "juba olemas"
+            if (context.Type == typeof(Restoran.Application.DTOs.RegisterDto))
+            {
+                var n = DateTime.Now.ToString("MMddHHmmss");
+                s.Example = new JsonObject
+                {
+                    ["name"] = "Mari Maasikas",
+                    ["email"] = $"mari.{n}@example.com",
+                    ["phone"] = $"+372 5{n.Substring(3, 3)} {n.Substring(6, 4)}",
+                    ["password"] = "Parool123!",
+                };
+                return;
+            }
+            // Uue broneeringu valmis näide: laua valib süsteem ise, makse testkaardiga
+            if (context.Type == typeof(Restoran.Application.DTOs.CreateReservationDto))
+            {
+                s.Example = new JsonObject
+                {
+                    ["restaurantId"] = 1,
+                    ["date"] = date,
+                    ["time"] = "19:00",
+                    ["guests"] = 2,
+                    ["specialRequest"] = "Aknaalune laud, kui võimalik",
+                    ["items"] = new JsonArray(new JsonObject { ["menuItemId"] = 3, ["quantity"] = 2 }),
+                    ["serviceLanguage"] = "et",
+                    ["card"] = new JsonObject { ["cardHolder"] = "Kati Klient", ["cardNumber"] = "4242 4242 4242 4242", ["expiry"] = "12/28", ["cvc"] = "123" },
+                };
+                return;
+            }
+            foreach (var prop in s.Properties.Values.OfType<OpenApiSchema>())
+                if (prop.Format == "date" && prop.Example is not null) prop.Example = date;
         }
     }
 
@@ -102,11 +180,32 @@ public static class SwaggerMain
     }
 
     /// <summary>
+    /// Swagger UI päringu vahelüli: kui registreerimise kehas on näite e-post (mari.NUMBER@example.com),
+    /// asendatakse number ja telefon saatmise hetkel uutega. Kasutaja enda sisestatud andmeid ei muudeta.
+    /// </summary>
+    public const string RegisterInterceptor = """
+        (req) => {
+          try {
+            if (req.method === 'POST' && /\/api\/auth\/register$/.test(req.url) && typeof req.body === 'string') {
+              const b = JSON.parse(req.body);
+              if (/^mari\.\d+@example\.com$/.test(b.email || '')) {
+                const n = String(Date.now()).slice(-10);
+                b.email = 'mari.' + n + '@example.com';
+                b.phone = '+372 5' + n.slice(3, 6) + ' ' + n.slice(6, 10);
+                req.body = JSON.stringify(b);
+              }
+            }
+          } catch (e) { }
+          return req;
+        }
+        """;
+
+    /// <summary>
     /// Swagger UI lisad:
     /// – sisselogimise aknas on ainult e-post ja parool (client_id, client_secret, "basic" ja scope'i tekstid peidetakse) ja eestikeelsed tekstid;
     /// – nupp näitab, kes on sisse logitud ("Logi sisse" / "Nimi (roll) · Logi välja");
     /// – loendis on ainult sisseloginud rolli toimingud; sisse logimata külaline näeb avalikke toiminguid.
-    /// Swagger UI enda elemente ei muudeta, tekstid vahetatakse CSS-iga.
+    /// Swagger UI enda elemente ei muudeta, tekstid vahetatakse CSS-iga; toimingud on peidus, kuni roll on kontrollitud.
     /// </summary>
     public const string HeadContent = """
         <style>
@@ -115,7 +214,11 @@ public static class SwaggerMain
           .auth-container label[for=password_type], .auth-container #password_type,
           .auth-container label[for^=client_], .auth-container input[id^=client_],
           .auth-container .wrapper:has(> label[for^=client_]), .auth-container .wrapper:has(> label[for=password_type]),
-          .argent-off, .swagger-ui .topbar { display: none !important; }
+          .swagger-ui .topbar { display: none !important; }
+          /* Toimingud ja grupid on peidus, kuni skript on kontrollinud, et see roll tohib neid näha – võõraid toiminguid ei näe isegi hetkeks */
+          .swagger-ui .opblock:not(.argent-on), .swagger-ui .opblock-tag-section:not(.argent-on) { display: none !important; }
+          /* Lukuikoonid toimingute juures ära (sisselogimine käib ülemise nupuga) */
+          .swagger-ui .opblock .authorization__btn { display: none !important; }
           .modal-ux-header h3 { font-size: 0 !important; }
           .modal-ux-header h3::after { content: 'Sisselogimine'; font-size: 20px; }
           .auth-container label[for=oauth_username], .auth-container label[for=oauth_password] { font-size: 0 !important; }
@@ -127,8 +230,8 @@ public static class SwaggerMain
           .auth-btn-wrapper button.authorize[aria-label="Remove authorization"]::after { content: 'Logi välja'; }
           .auth-btn-wrapper button.btn-done::after { content: 'Sulge'; }
           /* Ülemine nupp: kes on sisse logitud */
-          .auth-wrapper .btn.authorize[data-argent] span { display: none; }
-          .auth-wrapper .btn.authorize[data-argent]::before { content: attr(data-argent); white-space: nowrap; }
+          .auth-wrapper .btn.authorize span { display: none; }
+          .auth-wrapper .btn.authorize::before { content: attr(data-argent); white-space: nowrap; }
         </style>
         <script>
           (function () {
@@ -145,6 +248,7 @@ public static class SwaggerMain
                   (o.tags || []).forEach(function (t) { tags = tags || {}; tags[t] = (tags[t] || []).concat(roles); });
                 });
               });
+              tick();
             });
             function user() {
               try {
@@ -170,15 +274,19 @@ public static class SwaggerMain
                 var p = op.querySelector('.opblock-summary-path');
                 if (!m || !p) return;
                 var roles = map[m.textContent.trim() + ' ' + (p.getAttribute('data-path') || p.textContent.trim())];
-                op.classList.toggle('argent-off', !!roles && roles.indexOf(role) < 0);
+                var on = !roles || roles.indexOf(role) >= 0;
+                if (op.classList.contains('argent-on') !== on) op.classList.toggle('argent-on', on);
               });
               document.querySelectorAll('.opblock-tag-section').forEach(function (s) {
                 // Grupp peidetakse, kui selles pole ühtegi selle rolli toimingut (töötab ka kokku pandud grupi puhul)
                 var h = s.querySelector('.opblock-tag');
                 var t = h && h.getAttribute('data-tag');
-                if (t && tags && tags[t]) s.classList.toggle('argent-off', tags[t].indexOf(role) < 0);
+                var on = !t || !tags || !tags[t] || tags[t].indexOf(role) >= 0;
+                if (s.classList.contains('argent-on') !== on) s.classList.toggle('argent-on', on);
               });
             }
+            // Kontroll kohe, kui Swagger midagi joonistab (enne ekraanile jõudmist), ja varuks iga 300 ms
+            new MutationObserver(tick).observe(document.documentElement, { childList: true, subtree: true });
             setInterval(tick, 300);
           })();
         </script>

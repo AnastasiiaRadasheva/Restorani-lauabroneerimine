@@ -22,7 +22,7 @@ public class SaveTableDto
     public int RestaurantId { get; set; }
 
     /// <summary>Laua number restoranis.</summary>
-    /// <example>11</example>
+    /// <example>99</example>
     [Range(1, 999)]
     public int Number { get; set; }
 
@@ -38,10 +38,20 @@ public class SaveTableDto
 
     public bool IsActive { get; set; } = true;
 
-    /// <summary>Asukoht plaanil protsentides.</summary>
+    /// <summary>Asukoht plaanil protsentides (vasakult).</summary>
+    /// <example>48</example>
     [Range(0, 100)] public int X { get; set; }
+
+    /// <summary>Asukoht plaanil protsentides (ülevalt).</summary>
+    /// <example>4</example>
     [Range(0, 100)] public int Y { get; set; }
+
+    /// <summary>Laius plaanil protsentides.</summary>
+    /// <example>8</example>
     [Range(1, 100)] public int Width { get; set; } = 12;
+
+    /// <summary>Kõrgus plaanil protsentides.</summary>
+    /// <example>8</example>
     [Range(1, 100)] public int Height { get; set; } = 12;
 
     /// <summary>Kirjeldus plaanil.</summary>

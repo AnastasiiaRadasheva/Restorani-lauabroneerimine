@@ -108,9 +108,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(o =>
 {
     // Üks loend ainult põhitoimingutega (vt SwaggerMain); ülejäänud toimingud töötavad API-s edasi
-    o.SwaggerDoc("v1", new OpenApiInfo { Title = "Restorani lauabroneerimine API", Version = "v1", Description = "Vajuta grupi nimele, et näha selle toiminguid. Sisselogimiseks vajuta „Logi sisse“." });
+    o.SwaggerDoc("v1", new OpenApiInfo { Title = "Restorani lauabroneerimine API", Version = "v1", Description = "Vajuta grupi nimele, et näha selle toiminguid, ja toimingu avamisel nuppu Execute – väljad on juba täidetud. Sisselogimiseks vajuta „Logi sisse“.\n\n**GET** – vaata andmeid · **POST** – lisa uus · **PUT** – muuda tervikuna · **PATCH** – muuda üht asja (nt tühista broneering või muuda olekut) · **DELETE** – kustuta" });
     o.DocInclusionPredicate(SwaggerMain.Visible);
     o.OperationFilter<SwaggerMain.RolesFilter>();
+    o.OperationFilter<SwaggerMain.ExamplesFilter>();
+    o.SchemaFilter<SwaggerMain.DatesFilter>();
     o.DocumentFilter<SwaggerMain.GroupsFilter>();
     o.OrderActionsBy(SwaggerMain.Order);
     var xml = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
@@ -158,10 +160,14 @@ app.UseSwaggerUI(o =>
     // Lihtsam vaade: grupid on alguses kokku pandud, andmeskeemide (Schemas) plokki ei näidata
     o.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
     o.DefaultModelsExpandDepth(-1);
+    // Väljad on kohe muudetavad ja täidetud näidetega – piisab nupust Execute
+    o.EnableTryItOutByDefault();
     // Sisselogimise aken ainult e-posti ja parooliga, nupul kasutaja nimi, loendis rolli toimingud
     o.HeadContent = SwaggerMain.HeadContent;
     // Sisselogimine jääb meelde ka lehe uuendamisel
     o.EnablePersistAuthorization();
+    // Registreerimise näites tehakse e-post ja telefon igal saatmisel uueks, et korduv Execute ei annaks "juba olemas"
+    o.UseRequestInterceptor(SwaggerMain.RegisterInterceptor);
 });
 
 app.UseCors("web");

@@ -1,6 +1,11 @@
 @echo off
 rem Kaivitab API, taustateenuse ja veebilehe eraldi akendes ning avab veebilehe ja Swaggeri.
 cd /d "%~dp0"
+rem Kui API, taustateenus voi veebileht juba tootavad (nt eelmisest kaivitamisest), suletakse need enne uut kaivitamist,
+rem muidu ei saa uus API porti 5000 ega uut versiooni ehitada
+taskkill /f /im Restoran.Api.exe >nul 2>&1
+taskkill /f /im Restoran.Worker.exe >nul 2>&1
+powershell -NoProfile -Command "Get-NetTCPConnection -LocalPort 5000,5173 -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }"
 rem Esimesel kaivitamisel (nt parast git clone) paigaldatakse veebilehe paketid
 if not exist "web\node_modules" (
   echo Paigaldan veebilehe pakette...
