@@ -106,7 +106,7 @@ public static class SwaggerMain
     /// – sisselogimise aknas on ainult e-post ja parool (client_id, client_secret, "basic" ja scope'i tekstid peidetakse) ja eestikeelsed tekstid;
     /// – nupp näitab, kes on sisse logitud ("Logi sisse" / "Nimi (roll) · Logi välja");
     /// – loendis on ainult sisseloginud rolli toimingud; sisse logimata külaline näeb avalikke toiminguid.
-    /// Swagger UI enda elemente ei muudeta, tekstid vahetatakse CSS-iga.
+    /// Swagger UI enda elemente ei muudeta, tekstid vahetatakse CSS-iga; toimingud on peidus, kuni roll on kontrollitud.
     /// </summary>
     public const string HeadContent = """
         <style>
@@ -115,7 +115,11 @@ public static class SwaggerMain
           .auth-container label[for=password_type], .auth-container #password_type,
           .auth-container label[for^=client_], .auth-container input[id^=client_],
           .auth-container .wrapper:has(> label[for^=client_]), .auth-container .wrapper:has(> label[for=password_type]),
-          .argent-off, .swagger-ui .topbar { display: none !important; }
+          .swagger-ui .topbar { display: none !important; }
+          /* Toimingud ja grupid on peidus, kuni skript on kontrollinud, et see roll tohib neid näha – võõraid toiminguid ei näe isegi hetkeks */
+          .swagger-ui .opblock:not(.argent-on), .swagger-ui .opblock-tag-section:not(.argent-on) { display: none !important; }
+          /* Lukuikoonid toimingute juures ära (sisselogimine käib ülemise nupuga) */
+          .swagger-ui .opblock .authorization__btn { display: none !important; }
           .modal-ux-header h3 { font-size: 0 !important; }
           .modal-ux-header h3::after { content: 'Sisselogimine'; font-size: 20px; }
           .auth-container label[for=oauth_username], .auth-container label[for=oauth_password] { font-size: 0 !important; }
@@ -127,8 +131,8 @@ public static class SwaggerMain
           .auth-btn-wrapper button.authorize[aria-label="Remove authorization"]::after { content: 'Logi välja'; }
           .auth-btn-wrapper button.btn-done::after { content: 'Sulge'; }
           /* Ülemine nupp: kes on sisse logitud */
-          .auth-wrapper .btn.authorize[data-argent] span { display: none; }
-          .auth-wrapper .btn.authorize[data-argent]::before { content: attr(data-argent); white-space: nowrap; }
+          .auth-wrapper .btn.authorize span { display: none; }
+          .auth-wrapper .btn.authorize::before { content: attr(data-argent); white-space: nowrap; }
         </style>
         <script>
           (function () {
@@ -145,6 +149,7 @@ public static class SwaggerMain
                   (o.tags || []).forEach(function (t) { tags = tags || {}; tags[t] = (tags[t] || []).concat(roles); });
                 });
               });
+              tick();
             });
             function user() {
               try {
@@ -170,15 +175,19 @@ public static class SwaggerMain
                 var p = op.querySelector('.opblock-summary-path');
                 if (!m || !p) return;
                 var roles = map[m.textContent.trim() + ' ' + (p.getAttribute('data-path') || p.textContent.trim())];
-                op.classList.toggle('argent-off', !!roles && roles.indexOf(role) < 0);
+                var on = !roles || roles.indexOf(role) >= 0;
+                if (op.classList.contains('argent-on') !== on) op.classList.toggle('argent-on', on);
               });
               document.querySelectorAll('.opblock-tag-section').forEach(function (s) {
                 // Grupp peidetakse, kui selles pole ühtegi selle rolli toimingut (töötab ka kokku pandud grupi puhul)
                 var h = s.querySelector('.opblock-tag');
                 var t = h && h.getAttribute('data-tag');
-                if (t && tags && tags[t]) s.classList.toggle('argent-off', tags[t].indexOf(role) < 0);
+                var on = !t || !tags || !tags[t] || tags[t].indexOf(role) >= 0;
+                if (s.classList.contains('argent-on') !== on) s.classList.toggle('argent-on', on);
               });
             }
+            // Kontroll kohe, kui Swagger midagi joonistab (enne ekraanile jõudmist), ja varuks iga 300 ms
+            new MutationObserver(tick).observe(document.documentElement, { childList: true, subtree: true });
             setInterval(tick, 300);
           })();
         </script>
