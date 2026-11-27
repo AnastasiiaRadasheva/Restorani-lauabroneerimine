@@ -324,7 +324,10 @@ public record PlanReservationDto(
     DateTime EndTime,
     int Guests,
     ReservationStatus Status,
+    int UserId,
     string CustomerName,
+    string CustomerEmail,
+    string? CustomerPhone,
     bool HasPreOrder);
 
 public record PlanTableDto(TableDto Table, List<PlanReservationDto> Reservations);

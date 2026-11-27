@@ -139,7 +139,9 @@ public static class SwaggerMain
                     p.Description = "Külalise nimi, e-post või telefon.";
                 return; // väljad jäävad tühjaks – tühi = kõik
             }
-            var date = context.ApiDescription.RelativePath!.StartsWith("api/tables") ? FreeDate(scopes) : "";
+            // Plaani näide: lähim päev, kus on broneeringuid (et vastuses oleks midagi näha); muu: vaba päev broneerimiseks
+            var date = context.ApiDescription.RelativePath == "api/tables/plan" ? BusyDate(scopes)
+                     : context.ApiDescription.RelativePath!.StartsWith("api/tables") ? FreeDate(scopes) : "";
             foreach (var p in operation.Parameters.OfType<OpenApiParameter>())
             {
                 JsonNode? example = p.Name.ToLowerInvariant() switch
@@ -196,6 +198,22 @@ public static class SwaggerMain
         var text = found.ToString("yyyy-MM-dd");
         _free = (DateTime.Now, text);
         return text;
+    }
+
+    /// <summary>Lähim päev alates tänasest, kus Vanalinnas on aktiivseid broneeringuid (plaani näiteks).</summary>
+    public static string BusyDate(IServiceScopeFactory scopes)
+    {
+        try
+        {
+            using var scope = scopes.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var from = DateTime.Today;
+            var first = db.Reservations
+                .Where(r => r.Table!.RestaurantId == 1 && r.StartTime >= from && r.Status != ReservationStatus.Cancelled)
+                .OrderBy(r => r.StartTime).Select(r => (DateTime?)r.StartTime).FirstOrDefault();
+            return DateOnly.FromDateTime(first ?? DateTime.Today).ToString("yyyy-MM-dd");
+        }
+        catch { return DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd"); }
     }
 
     /// <summary>Testkliendi (klient@restoran.ee) kasutaja id Swaggeri näiteks.</summary>

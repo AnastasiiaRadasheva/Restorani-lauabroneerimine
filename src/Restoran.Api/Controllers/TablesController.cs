@@ -59,7 +59,8 @@ public class TablesController : ControllerBase
 
     /// <summary>Päeva laudade plaan: lauad ja nende broneeringud (personal).</summary>
     /// <remarks>
-    /// restaurantId on valikuline: kui see puudub, kasutatakse esimest restorani.
+    /// Iga laua juures on selle päeva broneeringud: kes broneeris (userId, nimi, e-post, telefon), aeg, külalised ja olek.
+    /// Tühi "reservations": [] tähendab, et laud on terve päeva vaba. restaurantId tühi = esimene restoran.
     ///
     /// Näide: GET /api/tables/plan?date=2027-01-15 või GET /api/tables/plan?restaurantId=2&amp;date=2027-01-15
     /// </remarks>

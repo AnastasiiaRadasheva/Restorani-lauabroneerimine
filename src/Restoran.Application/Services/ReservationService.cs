@@ -389,7 +389,7 @@ public class ReservationService : IReservationService
                 .OrderBy(r => r.StartTime)
                 .Select(r => new PlanReservationDto(
                     r.Id, r.StartTime, r.EndTime, r.Guests, r.Status,
-                    r.User?.Name ?? "", r.PreOrderItems.Count > 0))
+                    r.UserId, r.User?.Name ?? "", r.User?.Email ?? "", r.User?.Phone, r.PreOrderItems.Count > 0))
                 .ToList())).ToList();
 
         return new TablePlanDto(restaurant.ToDto(tables.Count), date, planTables);
