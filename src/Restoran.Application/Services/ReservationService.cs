@@ -494,6 +494,21 @@ public class ReservationService : IReservationService
     }
 
     /// <summary>Kui klient pole 30 minuti jooksul saabunud, märgitakse NoShow ja laud vabaneb.</summary>
+    /// <summary>Üks broneering "ei tulnud" (administraator): alles 30 minutit pärast algust, laud vabaneb.</summary>
+    public async Task<NoShowResultDto> MarkNoShowAsync(int id)
+    {
+        var r = await _reservations.GetWithDetailsAsync(id) ?? throw NotFound(id);
+        if (r.Status != ReservationStatus.Active)
+            throw new BusinessRuleException($"\"Ei tulnud\" saab märkida ainult aktiivsele broneeringule (praegu: {r.Status}).");
+        if (_clock.Now < r.StartTime + BookingRules.NoShowAfter)
+            throw new BusinessRuleException($"\"Ei tulnud\" saab märkida alles 30 minutit pärast algust (alates {(r.StartTime + BookingRules.NoShowAfter):dd.MM HH:mm}).");
+        r.Status = ReservationStatus.NoShow;
+        await _reservations.SaveChangesAsync();
+        _logger.LogInformation("Broneering {Id} märgiti NoShow, laud {Table} vabanes", r.Id, r.Table?.Number);
+        await _realtime.TableStatusChangedAsync(ToDto(r));
+        return new NoShowResultDto(1, new List<int> { r.Id }, new List<UnpaidCancelledDto>());
+    }
+
     public async Task<NoShowResultDto> MarkNoShowsAsync()
     {
         var cutoff = _clock.Now - BookingRules.NoShowAfter;
