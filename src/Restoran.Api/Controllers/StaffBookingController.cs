@@ -48,7 +48,10 @@ public class StaffBookingController : ControllerBase
     }
 
     /// <summary>Broneering kliendi nimel (admin/teenindaja): customerId = kes (GET /api/users), ülejäänu nagu tavalisel broneeringul.</summary>
-    /// <remarks>Kaarti pole vaja: kui on midagi maksta, saab klient makselingi, muidu kohe kinnituse.</remarks>
+    /// <remarks>
+    /// Kes: customerId ja/või customerName (mõlema korral peavad klappima). Millal: date + time. Kui palju: guests. Soovid: specialRequest.
+    /// Laua valib süsteem ise. Kaarti pole vaja: kui on midagi maksta, saab klient makselingi, muidu kohe kinnituse.
+    /// </remarks>
     [Authorize(Roles = "Admin,Waiter")]
     [HttpPost("api/reservations/for-customer")]
     [Tags("Reservations")] // Swaggeris broneeringute grupis
@@ -57,7 +60,7 @@ public class StaffBookingController : ControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<ReservationDto>> CreateForCustomer(StaffBookingDto dto)
     {
-        var customer = await _customers.GetOrCreateAsync(dto.CustomerId, dto.NewCustomer);
+        var customer = await _customers.GetOrCreateAsync(dto.CustomerId, dto.CustomerName, dto.NewCustomer);
         var r = await _reservations.CreatePendingForUserAsync(customer.Id, dto);
         // Midagi maksta pole -> klient saab kohe kinnituse; muidu makselingi
         if (r.Status == ReservationStatus.PendingPayment) await _messenger.SendPaymentRequestAsync(r);

@@ -32,6 +32,7 @@ public static class SwaggerMain
         // Broneeringud ja eeltellimus
         "POST api/reservations", "GET api/reservations/my", "GET api/reservations", "GET api/reservations/{id}",
         "PATCH api/reservations/{id}/cancel", "PATCH api/reservations/{id}/status", "POST api/reservations/{id}/preorder",
+        "POST api/reservations/for-customer",
         // Broneeringu muutmine (klient või personal), sõnumid ja kasutaja teated
         "PUT api/reservations/{id}", "GET api/messages", "GET api/reservations/{id}/messages", "POST api/reservations/{id}/messages",
         "GET api/notifications/my",
@@ -68,6 +69,8 @@ public static class SwaggerMain
         ["GET api/auth/me"] = ["Customer", "Waiter", "Admin"],
         ["PUT api/auth/me"] = ["Customer", "Waiter"],
         ["GET api/messages"] = ["Customer", "Waiter", "Admin"],
+        // Broneering kliendi nimel (nt helistas) – admin ja teenindaja
+        ["POST api/reservations/for-customer"] = ["Waiter", "Admin"],
         // Taustateenuse (Worker) toimingud – Service ja administraator (ülesande nõue)
         ["GET api/reservations/remind-due"] = ["Service", "Admin"],
         ["PATCH api/reservations/{id}/reminded"] = ["Service", "Admin"],
@@ -329,12 +332,12 @@ public static class SwaggerMain
                 s.Example = new JsonObject
                 {
                     ["customerId"] = KatiId(scopes),
+                    ["customerName"] = "Kati Klient",
                     ["restaurantId"] = 1,
                     ["date"] = FreeDate(scopes),
                     ["time"] = "19:00",
                     ["guests"] = 2,
-                    ["specialRequest"] = "Helistas: aknaalune laud",
-                    ["items"] = new JsonArray(new JsonObject { ["name"] = "Seenesupp", ["quantity"] = 2 }),
+                    ["specialRequest"] = "Sünnipäev, aknaalune laud",
                 };
                 return;
             }

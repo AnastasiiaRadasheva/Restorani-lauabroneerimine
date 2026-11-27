@@ -79,7 +79,7 @@ public class EventsController : ControllerBase
     [HttpPost("{id:int}/join-for-customer")]
     public async Task<ActionResult<EventRegistrationDto>> JoinForCustomer(int id, StaffEventJoinDto dto)
     {
-        var customer = await _customers.GetOrCreateAsync(dto.CustomerId, dto.NewCustomer);
+        var customer = await _customers.GetOrCreateAsync(dto.CustomerId, null, dto.NewCustomer);
         var r = await _events.JoinForCustomerAsync(id, customer.Id, dto);
         if (r.Status == "PendingPayment") await _messenger.SendEventPaymentRequestAsync(r);
         else await _messenger.SendEventConfirmationAsync(r);
