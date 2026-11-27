@@ -32,9 +32,8 @@ public static class SwaggerMain
         // Broneeringud ja eeltellimus
         "POST api/reservations", "GET api/reservations/my", "GET api/reservations", "GET api/reservations/{id}",
         "PATCH api/reservations/{id}/cancel", "PATCH api/reservations/{id}/status", "POST api/reservations/{id}/preorder",
-        "POST api/reservations/for-customer",
         // Broneeringu muutmine (klient või personal), sõnumid ja kasutaja teated
-        "PUT api/reservations/{id}", "GET api/reservations/{id}/messages", "POST api/reservations/{id}/messages",
+        "PUT api/reservations/{id}", "GET api/messages", "GET api/reservations/{id}/messages", "POST api/reservations/{id}/messages",
         "GET api/notifications/my",
         // Gastronoomilised õhtud
         "GET api/events", "POST api/events/{id}/join", "GET api/events/registrations/my",
@@ -67,7 +66,7 @@ public static class SwaggerMain
         ["GET api/notifications/my"] = ["Customer", "Waiter", "Admin"],
         ["GET api/auth/me"] = ["Customer", "Waiter", "Admin"],
         ["PUT api/auth/me"] = ["Customer", "Waiter"],
-        ["POST api/reservations/for-customer"] = ["Waiter", "Admin"],
+        ["GET api/messages"] = ["Customer", "Waiter", "Admin"],
         // Taustateenuse (Worker) toimingud – Service ja administraator (ülesande nõue)
         ["GET api/reservations/remind-due"] = ["Service", "Admin"],
         ["PATCH api/reservations/{id}/reminded"] = ["Service", "Admin"],
@@ -383,6 +382,7 @@ public static class SwaggerMain
         ("Restaurants", "Restoranid"),
         ("Tables", "Vabad lauad ja laudade haldus"),
         ("Reservations", "Broneeringud, eeltellimus ja taustateenus"),
+        ("Messages", "Sõnumid: vestlused, ühe broneeringu sõnumid ja vastamine (admin näeb kõiki ja vastamata)"),
         ("Menu", "Menüü"),
         ("Events", "Gastronoomilised õhtud"),
         ("Stats", "Statistika (admin)"),

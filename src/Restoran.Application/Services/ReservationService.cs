@@ -417,6 +417,22 @@ public class ReservationService : IReservationService
         return r.Messages.OrderBy(m => m.CreatedAt).Select(ToMessageDto).ToList();
     }
 
+    public async Task<List<MessageThreadDto>> GetMessageThreadsAsync(bool unanswered)
+    {
+        var userId = RequireUser();
+        var list = await _reservations.GetWithMessagesAsync(_current.IsStaff ? null : userId);
+        return list
+            .Select(r =>
+            {
+                var last = r.Messages.OrderBy(m => m.CreatedAt).Last();
+                return new MessageThreadDto(r.Id, r.User?.Name ?? "", r.User?.Email ?? "", r.Table?.Restaurant?.Name ?? "", r.StartTime,
+                    r.Messages.Count, last.Text, last.FromStaff, last.CreatedAt, Unanswered: !last.FromStaff);
+            })
+            .Where(t => !unanswered || t.Unanswered)
+            .OrderByDescending(t => t.LastAt)
+            .ToList();
+    }
+
     /// <summary>Klient kirjutab restoranile või personal vastab.</summary>
     public async Task<MessageDto> AddMessageAsync(int id, NewMessageDto dto)
     {
