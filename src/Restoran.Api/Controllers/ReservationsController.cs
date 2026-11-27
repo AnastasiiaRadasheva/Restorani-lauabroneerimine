@@ -112,7 +112,12 @@ public class ReservationsController : ControllerBase
     [HttpPut("{id:int}/extras")]
     [ProducesResponseType(typeof(ReservationDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ReservationDto>> SetExtras(int id, SetExtrasDto dto) => Ok(await _reservations.SetExtrasAsync(id, dto));
+    public async Task<ActionResult<ReservationDto>> SetExtras(int id, SetExtrasDto dto)
+    {
+        var r = await _reservations.SetExtrasAsync(id, dto);
+        await NotifyGuestOfStaffChange(r, "staffChange.extras", r.StartTime.ToString("dd.MM.yyyy HH:mm"));
+        return Ok(r);
+    }
 
     /// <summary>Lisateenuste kataloog (lilled, šampanja, viiuldaja …) koos hindadega.</summary>
     [AllowAnonymous]
@@ -205,8 +210,23 @@ public class ReservationsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<ReservationDto>> Update(int id, UpdateReservationDto dto) =>
-        Ok(await _reservations.UpdateAsync(id, dto));
+    public async Task<ActionResult<ReservationDto>> Update(int id, UpdateReservationDto dto)
+    {
+        var r = await _reservations.UpdateAsync(id, dto);
+        await NotifyGuestOfStaffChange(r, "staffChange.time", r.StartTime.ToString("dd.MM.yyyy HH:mm"), r.Guests);
+        return Ok(r);
+    }
+
+    /// <summary>
+    /// Kui personal muutis kliendi broneeringut, saab klient teate (oma keeles, link „Minu broneeringud“),
+    /// et ta näeks muudatust kohe ka kellukeses.
+    /// </summary>
+    private async Task NotifyGuestOfStaffChange(ReservationDto r, string key, params object[] args)
+    {
+        if (!_current.IsStaff || r.UserId == _current.UserId) return;
+        var lang = (await _users.GetByIdAsync(r.UserId))?.Language;
+        await _notifications.CreateAsync(new CreateNotificationDto { UserId = r.UserId, ReservationId = r.Id, Link = "/minu", Message = L.T(lang, key, args) });
+    }
 
     /// <summary>Personal: muuda külalise soove (allergiad, märkus köögile, soovid, tähtpäev).</summary>
     [Authorize(Roles = "Admin,Waiter")]
@@ -215,8 +235,12 @@ public class ReservationsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ReservationDto>> SetDetails(int id, StaffDetailsDto dto) =>
-        Ok(await _reservations.SetStaffDetailsAsync(id, dto));
+    public async Task<ActionResult<ReservationDto>> SetDetails(int id, StaffDetailsDto dto)
+    {
+        var r = await _reservations.SetStaffDetailsAsync(id, dto);
+        await NotifyGuestOfStaffChange(r, "staffChange.details", r.StartTime.ToString("dd.MM.yyyy HH:mm"));
+        return Ok(r);
+    }
 
     /// <summary>Tühista broneering.</summary>
     /// <remarks>
@@ -243,8 +267,12 @@ public class ReservationsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ReservationDto>> PreOrder(int id, PreOrderDto dto) =>
-        Ok(await _reservations.SetPreOrderAsync(id, dto));
+    public async Task<ActionResult<ReservationDto>> PreOrder(int id, PreOrderDto dto)
+    {
+        var r = await _reservations.SetPreOrderAsync(id, dto);
+        await NotifyGuestOfStaffChange(r, "staffChange.preorder", r.StartTime.ToString("dd.MM.yyyy HH:mm"));
+        return Ok(r);
+    }
 
     /// <summary>Võltsmakse eeltellimuse eest (testkaart 4242 4242 4242 4242).</summary>
     [HttpPost("{id:int}/pay")]

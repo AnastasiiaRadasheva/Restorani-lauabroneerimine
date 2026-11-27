@@ -157,9 +157,9 @@ web/                        React website (Vite)
 
 In Swagger press **Authorize** and log in with e-mail and password (the same accounts as on the website) –
 Swagger gets the JWT token from `POST /api/auth/token` and adds it to every request.
-Swagger shows one short list with the main operations of the assignment (login, tables, reservations, preorder,
+Swagger shows one short list with the main operations of the assignment (login, tables, reservations, preorder, changing a booking, messages, own notifications,
 menu, events, statistics and the worker's operations). The other operations (messages, notes, notifications etc.)
-still work in the API and are listed below. Before login the list shows only public operations; after login the button
+still work in the API and are listed below. When staff changes a customer's booking, the customer gets a notification. Before login the list shows only public operations; after login the button
 shows who is logged in ("Logi välja" to log out) and the list shows only the operations of that role, like on the website.
 The server always checks the role itself (403 for another role's action).
 The fields are already filled with working examples (date one week ahead, 19:00, 2 guests, restaurant 1, test card),

@@ -321,3 +321,19 @@ h1, h2, h3, .card-title, .big, .name { font-weight: 600; }
 @media (min-width: 1001px) {
   .booking > .section { min-height: calc(100vh / var(--zoom) - var(--header-h, 88px) - var(--steps-h, 56px)); }
 }
+
+/* ===== Broneerimine, I. Teie õhtu: sisu täidab kogu ekraani kõrguse (kaart ja nupud venivad, all pole tühja ala) ===== */
+@media (min-width: 1001px) {
+  #book > .container { min-height: calc(100vh / var(--zoom) - var(--header-h, 88px) - var(--steps-h, 56px) - 88px - 104px); }
+  #book .evening { flex: 1; align-items: stretch; }
+  #book .evening-left { justify-content: space-between; }
+  #book .evening-right { display: flex; flex-direction: column; }
+  #book .evening-right .map-box { flex: 1; height: auto; min-height: 360px; }
+  #book .day { height: 132px; }
+  #book .day .num { font-size: 40px; }
+  #book .time { height: 76px; font-size: 22px; }
+  #book .time-grid { gap: 12px; }
+  #book .evening-left .block { gap: 22px; }
+  #book .guests-row { padding: 28px 0 0; }
+  #book .guests-row .value { font-size: 40px; }
+}

@@ -27,6 +27,9 @@ public static class SwaggerMain
         // Broneeringud ja eeltellimus
         "POST api/reservations", "GET api/reservations/my", "GET api/reservations", "GET api/reservations/{id}",
         "PATCH api/reservations/{id}/cancel", "PATCH api/reservations/{id}/status", "POST api/reservations/{id}/preorder",
+        // Broneeringu muutmine (klient või personal), sõnumid ja kasutaja teated
+        "PUT api/reservations/{id}", "GET api/reservations/{id}/messages", "POST api/reservations/{id}/messages",
+        "GET api/notifications/my",
         // Gastronoomilised õhtud
         "GET api/events", "POST api/events/{id}/join", "GET api/events/registrations/my",
         // Statistika
@@ -141,6 +144,23 @@ public static class SwaggerMain
                 };
                 return;
             }
+            // Broneeringu muutmine: uus aeg ja külaliste arv (sama laud, kui see on vaba)
+            if (context.Type == typeof(Restoran.Application.DTOs.UpdateReservationDto))
+            {
+                s.Example = new JsonObject
+                {
+                    ["date"] = date,
+                    ["time"] = "20:00",
+                    ["guests"] = 3,
+                    ["specialRequest"] = "Muudetud: tuleme kolmekesi",
+                };
+                return;
+            }
+            if (context.Type == typeof(Restoran.Application.DTOs.NewMessageDto))
+            {
+                s.Example = new JsonObject { ["text"] = "Kas lauale saab lastetooli?" };
+                return;
+            }
             // Õhtule registreerimine: 2 külalist, reeglitega nõus, makse testkaardiga
             if (context.Type == typeof(Restoran.Application.DTOs.JoinEventDto))
             {
@@ -183,7 +203,7 @@ public static class SwaggerMain
         ("Menu", "Menüü"),
         ("Events", "Gastronoomilised õhtud"),
         ("Stats", "Statistika (admin)"),
-        ("Notifications", "Teavitused (taustateenus)"),
+        ("Notifications", "Teated: minu teated ja teate saatmine (taustateenus)"),
     };
 
     /// <summary>Järjestus Swaggeris: grupp loogilises järjekorras, grupi sees aadressi ja meetodi (GET, POST, PUT, PATCH, DELETE) järgi.</summary>
