@@ -561,6 +561,7 @@ public class ReservationService : IReservationService
     /// <summary>Kontrollib menüüpunktid ja asendab broneeringu eeltellimuse.</summary>
     private async Task ApplyPreOrderAsync(Reservation r, int restaurantId, List<PreOrderLineDto> items)
     {
+        await ResolveNamesAsync(restaurantId, items);
         var lines = items.Where(i => i.Quantity > 0)
             .GroupBy(i => i.MenuItemId)
             .Select(g => new { MenuItemId = g.Key, Quantity = g.Sum(x => x.Quantity) })
@@ -588,6 +589,25 @@ public class ReservationService : IReservationService
                 Quantity = line.Quantity,
                 UnitPrice = item.Price
             });
+        }
+    }
+
+    /// <summary>Read, kus roog on antud nimega (mitte id-ga): leiab selle restorani menüüst roa id.</summary>
+    private async Task ResolveNamesAsync(int restaurantId, List<PreOrderLineDto> items)
+    {
+        foreach (var line in items.Where(i => i.MenuItemId <= 0))
+        {
+            var name = line.Name?.Trim();
+            if (string.IsNullOrEmpty(name))
+                throw new BusinessRuleException("Igal eeltellimuse real peab olema menuItemId või roa nimi (name).");
+            var found = (await _menu.GetPagedAsync(new MenuQuery { RestaurantId = restaurantId, Search = name, PageSize = 100 })).Items;
+            var exact = found.Where(m => string.Equals(m.Name, name, StringComparison.OrdinalIgnoreCase)).ToList();
+            var pick = exact.Count == 1 ? exact[0] : found.Count == 1 ? found[0] : null;
+            if (pick is null)
+                throw found.Count == 0
+                    ? new NotFoundException($"Rooga \"{name}\" selle restorani menüüs ei ole.")
+                    : new BusinessRuleException($"\"{name}\" sobib mitmele roale: {string.Join(", ", found.Select(m => m.Name))}. Kirjutage täpsem nimi.");
+            line.MenuItemId = pick.Id;
         }
     }
 

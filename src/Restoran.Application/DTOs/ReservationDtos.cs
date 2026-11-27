@@ -187,11 +187,17 @@ public class UpdateReservationDto
     [StringLength(500)] public string? SpecialRequest { get; set; }
 }
 
+/// <summary>Eeltellimuse rida: roog id või nime järgi (nt "Kõrvitsasupp") ja kogus.</summary>
 public class PreOrderLineDto
 {
-    /// <example>3</example>
-    [Range(1, int.MaxValue)]
+    /// <summary>Roa id. Võib jätta tühjaks (0), kui roog on antud nimega.</summary>
+    [Range(0, int.MaxValue)]
     public int MenuItemId { get; set; }
+
+    /// <summary>Roa nimi või selle osa, nt "Kõrvitsasupp" (kasutatakse, kui menuItemId puudub).</summary>
+    /// <example>Kõrvitsasupp</example>
+    [StringLength(100)]
+    public string? Name { get; set; }
 
     /// <example>2</example>
     [Range(1, 50)]

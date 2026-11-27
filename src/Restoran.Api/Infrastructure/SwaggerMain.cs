@@ -215,6 +215,19 @@ public static class SwaggerMain
                 };
                 return;
             }
+            // Eeltellimus: road nime järgi (id-d pole vaja otsida); kaardiga makstakse juurde tulev summa
+            if (context.Type == typeof(Restoran.Application.DTOs.PreOrderDto))
+            {
+                s.Example = new JsonObject
+                {
+                    ["items"] = new JsonArray(
+                        new JsonObject { ["name"] = "Kõrvitsasupp", ["quantity"] = 2 },
+                        new JsonObject { ["name"] = "Crème brûlée", ["quantity"] = 2 }),
+                    ["specialRequest"] = "Ilma sibulata",
+                    ["card"] = new JsonObject { ["cardHolder"] = "Kati Klient", ["cardNumber"] = "4242 4242 4242 4242", ["expiry"] = "12/28", ["cvc"] = "123" },
+                };
+                return;
+            }
             if (context.Type == typeof(Restoran.Application.DTOs.NewMessageDto))
             {
                 s.Example = new JsonObject { ["text"] = "Kas lauale saab lastetooli?" };
@@ -241,7 +254,7 @@ public static class SwaggerMain
                     ["time"] = "19:00",
                     ["guests"] = 2,
                     ["specialRequest"] = "Aknaalune laud, kui võimalik",
-                    ["items"] = new JsonArray(new JsonObject { ["menuItemId"] = 3, ["quantity"] = 2 }),
+                    ["items"] = new JsonArray(new JsonObject { ["name"] = "Kõrvitsasupp", ["quantity"] = 2 }),
                     ["serviceLanguage"] = "et",
                     ["card"] = new JsonObject { ["cardHolder"] = "Kati Klient", ["cardNumber"] = "4242 4242 4242 4242", ["expiry"] = "12/28", ["cvc"] = "123" },
                 };

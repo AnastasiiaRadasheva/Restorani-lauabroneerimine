@@ -255,12 +255,12 @@ public class ReservationsController : ControllerBase
     public async Task<ActionResult<ReservationDto>> Cancel(int id, [FromBody(EmptyBodyBehavior = Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Allow)] CancelReservationDto? dto) =>
         Ok(await _reservations.CancelAsync(id, dto));
 
-    /// <summary>Eeltellimus (asendab varasema eeltellimuse).</summary>
+    /// <summary>Eeltellimus: toidud oma broneeringule (asendab varasema eeltellimuse).</summary>
     /// <remarks>
-    /// Näide:
+    /// Roa võib anda nime järgi (name) või id järgi (menuItemId). Nimed: GET /api/menu.
     ///
     ///     POST /api/reservations/5/preorder
-    ///     { "items": [ { "menuItemId": 3, "quantity": 2 }, { "menuItemId": 7, "quantity": 2 } ], "specialRequest": "Ilma sibulata" }
+    ///     { "items": [ { "name": "Kõrvitsasupp", "quantity": 2 }, { "name": "Crème brûlée", "quantity": 2 } ], "specialRequest": "Ilma sibulata" }
     /// </remarks>
     [HttpPost("{id:int}/preorder")]
     [ProducesResponseType(typeof(ReservationDto), StatusCodes.Status200OK)]
