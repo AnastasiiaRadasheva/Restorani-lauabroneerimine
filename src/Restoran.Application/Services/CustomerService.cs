@@ -29,14 +29,19 @@ public class NewCustomerDto
 /// <summary>Personali poolt tehtud broneering: klient on kas olemasolev (CustomerId) või uus (NewCustomer).</summary>
 public class StaffBookingDto : CreateReservationDto
 {
+    /// <summary>Kliendi kasutaja id (GET /api/users). Võib jätta tühjaks, kui on antud nimi.</summary>
     public int? CustomerId { get; set; }
+
+    /// <summary>Kliendi nimi. Kui on antud ka id, peavad need klappima; ainult nimega leitakse klient nime järgi.</summary>
+    public string? CustomerName { get; set; }
+
     public NewCustomerDto? NewCustomer { get; set; }
 }
 
 public interface ICustomerService
 {
     Task<List<UserDto>> SearchAsync(string? search);
-    Task<UserDto> GetOrCreateAsync(int? customerId, NewCustomerDto? dto);
+    Task<UserDto> GetOrCreateAsync(int? customerId, string? customerName, NewCustomerDto? dto);
     Task<UserDto> RenewPasswordLinkAsync(int customerId);
 }
 
@@ -55,12 +60,25 @@ public class CustomerService : ICustomerService
     public async Task<List<UserDto>> SearchAsync(string? search) =>
         (await _users.SearchCustomersAsync(search ?? "", 20)).Select(ToDto).ToList();
 
-    public async Task<UserDto> GetOrCreateAsync(int? customerId, NewCustomerDto? dto)
+    public async Task<UserDto> GetOrCreateAsync(int? customerId, string? customerName, NewCustomerDto? dto)
     {
+        var name = customerName?.Trim();
         if (customerId is not null)
         {
-            var existing = await _users.GetByIdAsync(customerId.Value) ?? throw new NotFoundException("Klienti ei leitud.");
+            var existing = await _users.GetByIdAsync(customerId.Value) ?? throw new NotFoundException($"Kasutajat id-ga {customerId} ei leitud.");
+            if (!string.IsNullOrEmpty(name) && !existing.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                throw new BusinessRuleException($"Kasutaja {customerId} on \"{existing.Name}\", mitte \"{name}\". Kontrollige id-d või nime.");
             return ToDto(existing);
+        }
+        if (!string.IsNullOrEmpty(name))
+        {
+            var found = await _users.SearchCustomersAsync(name, 20);
+            var exact = found.Where(u => u.Name.Equals(name, StringComparison.OrdinalIgnoreCase)).ToList();
+            var pick = exact.Count == 1 ? exact[0] : found.Count == 1 ? found[0] : null;
+            if (pick is not null) return ToDto(pick);
+            throw found.Count == 0
+                ? new NotFoundException($"Klienti nimega \"{name}\" ei leitud.")
+                : new BusinessRuleException($"Nimi \"{name}\" sobib mitmele kliendile: {string.Join(", ", found.Select(u => $"{u.Name} (id {u.Id})"))}. Lisage customerId.");
         }
         if (dto is null) throw new BusinessRuleException("Valige klient või sisestage uue kliendi andmed.");
 

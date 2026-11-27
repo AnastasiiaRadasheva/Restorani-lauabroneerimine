@@ -332,12 +332,12 @@ public static class SwaggerMain
                 s.Example = new JsonObject
                 {
                     ["customerId"] = KatiId(scopes),
+                    ["customerName"] = "Kati Klient",
                     ["restaurantId"] = 1,
                     ["date"] = FreeDate(scopes),
                     ["time"] = "19:00",
                     ["guests"] = 2,
-                    ["specialRequest"] = "Helistas: aknaalune laud",
-                    ["items"] = new JsonArray(new JsonObject { ["name"] = "Seenesupp", ["quantity"] = 2 }),
+                    ["specialRequest"] = "Sünnipäev, aknaalune laud",
                 };
                 return;
             }
