@@ -148,25 +148,25 @@ public static class DbSeeder
         }
 
         // Lisaroad: iga restorani menüüsse (lisatakse ka olemasolevasse andmebaasi, kui sellise nimega rooga veel pole)
-        var extraDishes = new (string Name, string Desc, string Cat, decimal Price, string? Tags)[]
+        var extraDishes = new (string Name, string Desc, string Cat, decimal Price, string? Tags, string Img)[]
         {
-            ("Peedicarpaccio, kitsejuust", "röstitud kreeka pähkel, mesi, tüümian", "Külmad road", 16m, "milk,nuts,vegetarian"),
-            ("Suitsulõhe, rukkikrõps", "kapparikreem, punane sibul, till", "Külmad road", 19m, "fish,milk,gluten"),
-            ("Burrata ja tomatid", "basiilikuõli, balsamico", "Külmad road", 17m, "milk,vegetarian"),
-            ("Seenesupp", "metsaseened, koor, tatrakrõps", "Supid", 12m, "milk,vegetarian"),
-            ("Bouillabaisse", "kala ja mereannid, safran, rouille", "Supid", 22m, "fish,shellfish,egg"),
-            ("Kõrvitsasupp", "röstitud kõrvitsaseemned, kookos", "Supid", 11m, "vegan"),
-            ("Lambakarree, rosmariin", "röstitud juurviljad, punase veini kaste", "Pearoad", 44m, null),
-            ("Tursk ja pruunistatud või", "herned, kartulipüree, kaaviar", "Pearoad", 36m, "fish,milk"),
-            ("Seenerisotto", "puravikud, parmesan, trühliõli", "Pearoad", 29m, "milk,vegetarian"),
-            ("Köögiviljad söel", "hummus, granaatõun, ürdid", "Pearoad", 26m, "vegan"),
-            ("Crème brûlée", "Madagaskari vanill", "Magustoidud", 14m, "milk,egg,vegetarian"),
-            ("Juustuvalik", "kolm Prantsuse juustu, viigimarjamoos, kreeka pähkel", "Magustoidud", 21m, "milk,nuts,gluten,vegetarian"),
-            ("Marjasorbett", "metsamarjad, piparmünt", "Magustoidud", 10m, "vegan"),
-            ("Chablis, klaas", "Burgundia valge, Prantsusmaa", "Veinid", 15m, null),
-            ("Pinot Noir, klaas", "punane, Burgundia", "Veinid", 16m, null),
-            ("Sauternes, klaas", "magus magustoiduvein", "Veinid", 17m, null),
-            ("Alkoholivaba kaaslane", "kodused limonaadid ja teed igale käigule", "Veinid", 35m, "vegan"),
+            ("Peedicarpaccio, kitsejuust", "röstitud kreeka pähkel, mesi, tüümian", "Külmad road", 16m, "milk,nuts,vegetarian", "peedicarpaccio"),
+            ("Suitsulõhe, rukkikrõps", "kapparikreem, punane sibul, till", "Külmad road", 19m, "fish,milk,gluten", "suitsulohe"),
+            ("Burrata ja tomatid", "basiilikuõli, balsamico", "Külmad road", 17m, "milk,vegetarian", "burrata"),
+            ("Seenesupp", "metsaseened, koor, tatrakrõps", "Supid", 12m, "milk,vegetarian", "seenesupp"),
+            ("Bouillabaisse", "kala ja mereannid, safran, rouille", "Supid", 22m, "fish,shellfish,egg", "bouillabaisse"),
+            ("Kõrvitsasupp", "röstitud kõrvitsaseemned, kookos", "Supid", 11m, "vegan", "korvitsasupp"),
+            ("Lambakarree, rosmariin", "röstitud juurviljad, punase veini kaste", "Pearoad", 44m, null, "lambakarree"),
+            ("Tursk ja pruunistatud või", "herned, kartulipüree, kaaviar", "Pearoad", 36m, "fish,milk", "tursk"),
+            ("Seenerisotto", "puravikud, parmesan, trühliõli", "Pearoad", 29m, "milk,vegetarian", "risotto"),
+            ("Köögiviljad söel", "hummus, granaatõun, ürdid", "Pearoad", 26m, "vegan", "koogiviljad"),
+            ("Crème brûlée", "Madagaskari vanill", "Magustoidud", 14m, "milk,egg,vegetarian", "creme-brulee"),
+            ("Juustuvalik", "kolm Prantsuse juustu, viigimarjamoos, kreeka pähkel", "Magustoidud", 21m, "milk,nuts,gluten,vegetarian", "juustuvalik"),
+            ("Marjasorbett", "metsamarjad, piparmünt", "Magustoidud", 10m, "vegan", "sorbett"),
+            ("Chablis, klaas", "Burgundia valge, Prantsusmaa", "Veinid", 15m, null, "chablis"),
+            ("Pinot Noir, klaas", "punane, Burgundia", "Veinid", 16m, null, "pinot-noir"),
+            ("Sauternes, klaas", "magus magustoiduvein", "Veinid", 17m, null, "sauternes"),
+            ("Alkoholivaba kaaslane", "kodused limonaadid ja teed igale käigule", "Veinid", 35m, "vegan", "limonaad"),
         };
         foreach (var rid in await db.Restaurants.Select(r => r.Id).ToListAsync())
         {
@@ -174,8 +174,14 @@ public static class DbSeeder
             // Lisatud juba varem (admin võis mõne hiljem kustutada) – ei lisa uuesti
             if (extraDishes.Count(d => have.Contains(d.Name)) >= 2) continue;
             foreach (var d in extraDishes.Where(d => !have.Contains(d.Name)))
-                db.MenuItems.Add(new MenuItem { RestaurantId = rid, Name = d.Name, Description = d.Desc, Category = d.Cat, Price = d.Price, Tags = d.Tags, IsAvailable = true });
+                db.MenuItems.Add(new MenuItem { RestaurantId = rid, Name = d.Name, Description = d.Desc, Category = d.Cat, Price = d.Price, Tags = d.Tags, ImageUrl = $"/img/menu/{d.Img}.jpg", IsAvailable = true });
         }
+        await db.SaveChangesAsync();
+        // Varem ilma fotota lisatud lisaroogadele foto (admini enda pandud fotot ei muudeta)
+        var photos = extraDishes.ToDictionary(d => d.Name, d => $"/img/menu/{d.Img}.jpg");
+        var names = photos.Keys.ToList();
+        foreach (var m in await db.MenuItems.Where(m => names.Contains(m.Name) && m.ImageUrl == null).ToListAsync())
+            m.ImageUrl = photos[m.Name];
         await db.SaveChangesAsync();
 
         if (!await db.Reservations.AnyAsync())
