@@ -19,8 +19,8 @@ public class MenuController : ControllerBase
         _menu = menu;
     }
 
-    /// <summary>Menüü: otsing nime järgi, kategooria ja ilma allergeenita.</summary>
-    /// <remarks>Näited: search=lõhe · category=Pearoad · without=nuts (pähkliteta) · without=nuts,milk</remarks>
+    /// <summary>Menüü: otsing nime järgi, kategooria, vegan/taimetoit ja ilma allergeenita.</summary>
+    /// <remarks>Näited: search=lõhe · category=Supid · diet=vegan · diet=vegetarian · without=nuts (pähkliteta) · without=nuts,milk</remarks>
     [HttpGet]
     [ProducesResponseType(typeof(PagedResult<MenuItemDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResult<MenuItemDto>>> GetAll([FromQuery] MenuQuery query) =>

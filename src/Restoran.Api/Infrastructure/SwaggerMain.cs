@@ -36,14 +36,42 @@ public static class SwaggerMain
         "GET api/notifications/my",
         // Gastronoomilised õhtud
         "GET api/events", "POST api/events/{id}/join", "GET api/events/registrations/my",
-        // Statistika
-        "GET api/stats",
+        // Statistika ja kasutajad (admin)
+        "GET api/stats", "GET api/users",
         // Taustateenus (Worker)
         "GET api/reservations/remind-due", "PATCH api/reservations/{id}/reminded",
         "POST api/reservations/mark-no-show", "POST api/notifications",
     };
 
     private static readonly string[] AllRoles = { "Customer", "Waiter", "Admin", "Service" };
+
+    /// <summary>Kes mida Swaggeris näeb (kui toimingut siin pole, otsustavad [Authorize] atribuudid).</summary>
+    private static readonly Dictionary<string, string[]> Shown = new(StringComparer.OrdinalIgnoreCase)
+    {
+        // Sisselogimine – külalisele; registreerida saab ka administraator (ka teenindaja konto)
+        ["POST api/auth/login"] = ["guest"],
+        ["POST api/auth/register"] = ["guest", "Admin"],
+        // Kliendi enda toimingud
+        ["GET api/reservations/my"] = ["Customer"],
+        ["GET api/events/registrations/my"] = ["Customer"],
+        ["POST api/reservations"] = ["Customer"],
+        ["POST api/reservations/{id}/preorder"] = ["Customer"],
+        ["POST api/events/{id}/join"] = ["Customer"],
+        // Ühe broneeringu vaatamine, muutmine, tühistamine ja sõnumid – klient ja personal
+        ["GET api/reservations/{id}"] = ["Customer", "Waiter", "Admin"],
+        ["PUT api/reservations/{id}"] = ["Customer", "Waiter", "Admin"],
+        ["PATCH api/reservations/{id}/cancel"] = ["Customer", "Waiter", "Admin"],
+        ["GET api/reservations/{id}/messages"] = ["Customer", "Waiter", "Admin"],
+        ["POST api/reservations/{id}/messages"] = ["Customer", "Waiter", "Admin"],
+        ["GET api/notifications/my"] = ["Customer", "Waiter", "Admin"],
+        ["GET api/auth/me"] = ["Customer", "Waiter", "Admin"],
+        ["PUT api/auth/me"] = ["Customer", "Waiter", "Admin"],
+        // Taustateenuse (Worker) toimingud – ainult Service
+        ["GET api/reservations/remind-due"] = ["Service"],
+        ["PATCH api/reservations/{id}/reminded"] = ["Service"],
+        ["POST api/reservations/mark-no-show"] = ["Service"],
+        ["POST api/notifications"] = ["Service"],
+    };
 
     public static bool Visible(string docName, ApiDescription api)
     {
@@ -58,10 +86,9 @@ public static class SwaggerMain
     /// </summary>
     public static List<string> Roles(ApiDescription api)
     {
-        // Registreerimine ja sisselogimine on ainult sisse logimata külalisele (nagu veebilehel)
-        if (api.RelativePath is "api/auth/register" or "api/auth/login") return ["guest"];
-        // "Minu broneeringud" on ainult kliendil – personalil endal broneeringuid pole, ta näeb kõiki (GET /api/reservations)
-        if (api.RelativePath is "api/reservations/my" or "api/events/registrations/my") return ["Customer"];
+        // Iga roll näeb ainult oma töö jaoks olulist (server lubab ka rohkem, nt personal võib broneerida veebis)
+        var path = System.Text.RegularExpressions.Regex.Replace(api.RelativePath ?? "", @"\{(\w+)(:[^}]*)?\}", "{$1}");
+        if (Shown.TryGetValue($"{api.HttpMethod} {path}", out var shown)) return [.. shown];
         var meta = api.ActionDescriptor.EndpointMetadata;
         var rules = meta.OfType<IAuthorizeData>().ToList();
         if (meta.OfType<IAllowAnonymous>().Any() || rules.Count == 0) return ["guest", .. AllRoles];
@@ -93,9 +120,19 @@ public static class SwaggerMain
             // Menüü: Swaggeris ainult nimi, kategooria ja "ilma allergeenita" (sait saadab ülejäänud ise)
             if (method == "GET" && context.ApiDescription.RelativePath == "api/menu")
             {
-                var keep = new[] { "search", "category", "without" };
+                var keep = new[] { "search", "category", "without", "diet" };
                 foreach (var p in operation.Parameters.Where(p => !keep.Contains(p.Name?.ToLowerInvariant())).ToList())
                     operation.Parameters.Remove(p);
+            }
+            // Broneeringute otsing (personal): nimi, restoran, kuupäev, olek, laud – lehekülgi ja sortimist pole vaja
+            if (method == "GET" && context.ApiDescription.RelativePath == "api/reservations")
+            {
+                var keep = new[] { "search", "restaurantid", "date", "status", "tableid" };
+                foreach (var p in operation.Parameters.Where(p => !keep.Contains(p.Name?.ToLowerInvariant())).ToList())
+                    operation.Parameters.Remove(p);
+                foreach (var p in operation.Parameters.OfType<OpenApiParameter>().Where(p => p.Name?.ToLowerInvariant() == "search"))
+                    p.Description = "Külalise nimi, e-post või telefon.";
+                return; // väljad jäävad tühjaks – tühi = kõik
             }
             var date = context.ApiDescription.RelativePath!.StartsWith("api/tables") ? FreeDate(scopes) : "";
             foreach (var p in operation.Parameters.OfType<OpenApiParameter>())
@@ -110,6 +147,8 @@ public static class SwaggerMain
                     "days" => 7,
                     "page" => 1,
                     "pagesize" => 5,
+                    // Broneeringu näide: testkliendi (klient@restoran.ee) viimane broneering, mitte kellegi teise oma
+                    "id" when method == "GET" && context.ApiDescription.RelativePath!.StartsWith("api/reservations/") => LastKatiReservation(scopes),
                     "id" when method == "GET" => 1,
                     _ => null,
                 };
@@ -154,6 +193,19 @@ public static class SwaggerMain
         return text;
     }
 
+    /// <summary>Testkliendi viimase broneeringu id (Swaggeri näiteks), puudumisel 1.</summary>
+    public static int LastKatiReservation(IServiceScopeFactory scopes)
+    {
+        try
+        {
+            using var scope = scopes.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var id = db.Reservations.Where(r => r.User!.Email == "klient@restoran.ee").OrderByDescending(r => r.Id).Select(r => r.Id).FirstOrDefault();
+            return id > 0 ? id : 1;
+        }
+        catch { return 1; }
+    }
+
     /// <summary>
     /// Päringu keha näidetes on kuupäev alati nädala pärast (mitte kirjutatud kindel kuupäev, mis võib olla möödas),
     /// et nt broneeringu näidet saaks kohe Execute-nupuga proovida.
@@ -174,6 +226,7 @@ public static class SwaggerMain
                     ["email"] = $"mari.{n}@example.com",
                     ["phone"] = $"+372 5{n.Substring(3, 3)} {n.Substring(6, 4)}",
                     ["password"] = "Parool123!",
+                    ["role"] = "Customer",
                 };
                 return;
             }
@@ -275,7 +328,8 @@ public static class SwaggerMain
         ("Menu", "Menüü"),
         ("Events", "Gastronoomilised õhtud"),
         ("Stats", "Statistika (admin)"),
-        ("Notifications", "Teated: minu teated ja teate saatmine (taustateenus)"),
+        ("Users", "Kasutajad (admin)"),
+        ("Notifications", "Minu teated: broneeringu muudatused, vastused ja meeldetuletused"),
     };
 
     /// <summary>Järjestus Swaggeris: grupp loogilises järjekorras, grupi sees aadressi ja meetodi (GET, POST, PUT, PATCH, DELETE) järgi.</summary>

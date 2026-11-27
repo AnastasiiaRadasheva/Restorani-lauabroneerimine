@@ -21,7 +21,13 @@ public class RegisterDto
     /// <example>Parool123!</example>
     [Required, StringLength(100, MinimumLength = 6)]
     public string Password { get; set; } = "";
+
+    /// <summary>Roll: Customer, Waiter või Admin. Muuta saab ainult sisseloginud administraator, muidu alati Customer.</summary>
+    public UserRole? Role { get; set; }
 }
+
+/// <summary>Kasutaja administraatori nimekirjas.</summary>
+public record UserListItemDto(int Id, string Name, string Email, string? Phone, UserRole Role, int Reservations);
 
 /// <summary>Sisselogimine.</summary>
 public class LoginDto

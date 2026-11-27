@@ -53,7 +53,10 @@ export default function AdminStats({ restaurantId, restaurants }) {
           <div className="stats-tiles">
             <Tile label={tr('Broneeringuid', 'Броней', 'Bookings')} value={data.totalReservations} />
             <Tile label={tr('Külalisi', 'Гостей', 'Guests')} value={data.totalGuests} />
-            <Tile label={tr('Ei tulnud', 'Не пришли', 'No-shows')} value={`${data.noShowPercent} %`} />
+            <Tile label={tr('Tuli', 'Пришли', 'Arrived')} value={data.arrived} />
+            <Tile label={tr('Ei tulnud', 'Не пришли', 'No-shows')} value={`${data.noShow} · ${data.noShowPercent} %`} />
+            <Tile label={tr('Tulemas', 'Ещё придут', 'Upcoming')} value={data.upcoming} />
+            <Tile label={tr('Tühistatud', 'Отменены', 'Cancelled')} value={data.cancelled} />
           </div>
           <div className="stats-grid">
             <Bars title={tr('Nädalapäevad', 'Дни недели', 'Weekdays')} rows={data.byWeekday.map((r, i) => ({ ...r, label: weekday(i) }))} tr={tr} />

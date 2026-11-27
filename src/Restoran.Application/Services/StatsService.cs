@@ -12,6 +12,10 @@ public record StatsDto(
     int TotalReservations,
     int TotalGuests,
     double NoShowPercent,
+    int Arrived,
+    int NoShow,
+    int Upcoming,
+    int Cancelled,
     List<CountItem> ByWeekday,
     List<CountItem> ByHour,
     List<CountItem> BusiestDates);
@@ -40,10 +44,9 @@ public class StatsService : IStatsService
         var start = from ?? today.AddDays(-60);
         var end = to ?? today.AddDays(14);
 
-        // Tühistatud broneeringud ei lähe arvesse
-        var list = (await _reservations.GetForStatsAsync(restaurantId, start, end))
-            .Where(r => r.Status != ReservationStatus.Cancelled)
-            .ToList();
+        // Tühistatud broneeringud ei lähe arvesse (neid loetakse eraldi)
+        var all = await _reservations.GetForStatsAsync(restaurantId, start, end);
+        var list = all.Where(r => r.Status != ReservationStatus.Cancelled).ToList();
 
         // Nädalapäevad esmaspäevast pühapäevani (DayOfWeek algab pühapäevast)
         var byWeekday = Enumerable.Range(0, 7).Select(i =>
@@ -70,6 +73,11 @@ public class StatsService : IStatsService
         var finished = list.Where(r => r.Status is ReservationStatus.Arrived or ReservationStatus.NoShow).ToList();
         double noShow = finished.Count == 0 ? 0 : Math.Round(100.0 * finished.Count(r => r.Status == ReservationStatus.NoShow) / finished.Count, 1);
 
-        return new StatsDto(start, end, list.Count, list.Sum(r => r.Guests), noShow, byWeekday, byHour, busiestDates);
+        return new StatsDto(start, end, list.Count, list.Sum(r => r.Guests), noShow,
+            Arrived: list.Count(r => r.Status == ReservationStatus.Arrived),
+            NoShow: list.Count(r => r.Status == ReservationStatus.NoShow),
+            Upcoming: list.Count(r => r.Status is ReservationStatus.Active or ReservationStatus.PendingPayment),
+            Cancelled: all.Count(r => r.Status == ReservationStatus.Cancelled),
+            ByWeekday: byWeekday, ByHour: byHour, BusiestDates: busiestDates);
     }
 }

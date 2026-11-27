@@ -59,6 +59,7 @@ public class ReservationRepository : Repository<Reservation>, IReservationReposi
 
         if (query.RestaurantId.HasValue) q = q.Where(r => r.Table!.RestaurantId == query.RestaurantId);
         if (query.Status.HasValue) q = q.Where(r => r.Status == query.Status);
+        if (query.TableId.HasValue) q = q.Where(r => r.TableId == query.TableId);
         if (query.Date.HasValue)
         {
             var from = query.Date.Value.ToDateTime(TimeOnly.MinValue);
@@ -92,6 +93,8 @@ public class ReservationRepository : Repository<Reservation>, IReservationReposi
             ("table", false) => q.OrderBy(r => r.Table!.Number),
             ("table", true) => q.OrderByDescending(r => r.Table!.Number),
             (_, true) => q.OrderByDescending(r => r.StartTime),
+            // Sortimist määramata (nt Swaggeris): uuemad eespool
+            (null, false) => q.OrderByDescending(r => r.StartTime),
             _ => q.OrderBy(r => r.StartTime)
         };
 

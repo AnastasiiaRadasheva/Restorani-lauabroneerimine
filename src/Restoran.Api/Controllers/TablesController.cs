@@ -26,7 +26,7 @@ public class TablesController : ControllerBase
     /// message (lühike tekst) ja suggestedTableNumber (pakutud laud). Seejärel kõik restorani lauad:
     /// isFree = laud on sel ajal vaba, fitsGuests = laud on piisavalt suur. Broneering kestab 2 tundi.
     ///
-    /// restaurantId on valikuline: kui see puudub, kasutatakse esimest restorani (Argent · Vanalinn).
+    /// restaurantId on kohustuslik: 1 – Vanalinn, 2 – Kalamaja, 3 – Kadriorg.
     ///
     /// Näide: GET /api/tables/available?date=2027-01-15&amp;time=19:00&amp;guests=4
     /// või GET /api/tables/available?restaurantId=2&amp;date=2027-01-15&amp;time=19:00&amp;guests=4
@@ -37,7 +37,7 @@ public class TablesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AvailabilityDto>> Available(
         [FromQuery] int? restaurantId, [FromQuery] DateOnly date, [FromQuery] TimeOnly time, [FromQuery] int guests) =>
-        Ok(await _reservations.GetAvailabilityAsync(Rid(restaurantId), date, time, guests));
+        Ok(await _reservations.GetAvailabilityAsync(Rid(restaurantId, required: true), date, time, guests));
 
     /// <summary>Vabade laudade arv iga kellaaja kohta mitmeks päevaks (broneerimise kalender).</summary>
     /// <remarks>
@@ -51,7 +51,7 @@ public class TablesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<List<DaySlotsDto>>> Slots(
         [FromQuery] int? restaurantId, [FromQuery] DateOnly from, [FromQuery] int days, [FromQuery] int guests) =>
-        Ok(await _reservations.GetSlotsAsync(Rid(restaurantId), from, days, guests));
+        Ok(await _reservations.GetSlotsAsync(Rid(restaurantId, required: true), from, days, guests));
 
     /// <summary>Päeva laudade plaan: lauad ja nende broneeringud (personal).</summary>
     /// <remarks>
@@ -67,8 +67,9 @@ public class TablesController : ControllerBase
         Ok(await _reservations.GetPlanAsync(Rid(restaurantId), date));
 
     /// <summary>Tühi restaurantId = esimene restoran (0 tähendab "määramata"); 0 või negatiivne kirjutatud id = restorani pole.</summary>
-    private static int Rid(int? restaurantId) =>
-        restaurantId is null ? 0
+    private static int Rid(int? restaurantId, bool required = false) =>
+        restaurantId is null
+            ? (required ? throw new Restoran.Application.Common.BusinessRuleException("Valige restoran: restaurantId (1 – Vanalinn, 2 – Kalamaja, 3 – Kadriorg).") : 0)
         : restaurantId > 0 ? restaurantId.Value
         : throw new Restoran.Application.Common.NotFoundException($"Restorani id-ga {restaurantId} ei ole (id algab 1-st).");
 

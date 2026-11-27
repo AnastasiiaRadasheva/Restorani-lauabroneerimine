@@ -18,7 +18,8 @@ public class AuthController : ControllerBase
         _auth = auth;
     }
 
-    /// <summary>Uue kliendi registreerimine. Tagastab kohe JWT tokeni.</summary>
+    /// <summary>Uue kasutaja registreerimine. Administraator võib anda ka rolli (Waiter, Admin).</summary>
+    /// <remarks>Külaline registreerib alati kliendi (role jääb Customer). Sisseloginud administraator võib luua ka teenindaja (role: Waiter) või administraatori konto.</remarks>
     [HttpPost("register")]
     [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

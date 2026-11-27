@@ -47,7 +47,8 @@ public class AuthService : IAuthService
             Name = dto.Name.Trim(),
             Email = email,
             Phone = dto.Phone?.Trim(),
-            Role = UserRole.Customer,
+            // Administraator võib luua ka teenindaja või teise administraatori konto
+            Role = _current.Role == UserRole.Admin && dto.Role is UserRole.Waiter or UserRole.Admin ? dto.Role.Value : UserRole.Customer,
             Language = L.Norm(_current.Language)
         };
         user.PasswordHash = _passwords.Hash(user, dto.Password);
@@ -137,6 +138,11 @@ public class AuthService : IAuthService
         await _users.SaveChangesAsync();
         return ToDto(user);
     }
+
+    /// <summary>Administraatorile: kõik kasutajad, filter nime/e-posti/telefoni või broneeringu id järgi.</summary>
+    public async Task<List<UserListItemDto>> GetUsersAsync(string? search, int? reservationId) =>
+        (await _users.SearchAllAsync(search, reservationId))
+            .Select(x => new UserListItemDto(x.User.Id, x.User.Name, x.User.Email, x.User.Phone, x.User.Role, x.Reservations)).ToList();
 
     private AuthResponseDto CreateResponse(User user)
     {

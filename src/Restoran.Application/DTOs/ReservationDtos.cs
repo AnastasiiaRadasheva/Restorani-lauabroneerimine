@@ -258,7 +258,13 @@ public class ChangeStatusDto
 /// <summary>Broneeringute filter personalile.</summary>
 public class ReservationQuery : PageQuery
 {
+    public ReservationQuery() => PageSize = 50;
+
+    /// <summary>Restoran (tühi = kõik).</summary>
     public int? RestaurantId { get; set; }
+
+    /// <summary>Laua id.</summary>
+    public int? TableId { get; set; }
 
     /// <summary>Päev kujul yyyy-MM-dd.</summary>
     public DateOnly? Date { get; set; }
@@ -269,6 +275,7 @@ public class ReservationQuery : PageQuery
     /// <summary>Kuni (kaasa arvatud).</summary>
     public DateOnly? To { get; set; }
 
+    /// <summary>Olek: Active, Arrived, NoShow, Cancelled, PendingPayment.</summary>
     public ReservationStatus? Status { get; set; }
 }
 
