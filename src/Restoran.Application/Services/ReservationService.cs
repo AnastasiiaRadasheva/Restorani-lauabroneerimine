@@ -56,7 +56,12 @@ public class ReservationService : IReservationService
             IsFree: !busy.Contains(t.Id),
             FitsGuests: t.Seats >= guests)).ToList();
 
-        return new AvailabilityDto(restaurantId, start, end, guests, best?.Id, list);
+        // Kokkuvõte: mitu sobivat (piisavalt suurt) lauda on vaba
+        var free = list.Count(t => t.IsFree && t.FitsGuests);
+        var message = best is null
+            ? L.T(_current.Language, "avail.none", guests)
+            : L.T(_current.Language, "avail.free", free, guests, best.Number);
+        return new AvailabilityDto(restaurantId, start, end, guests, best is not null, free, message, best?.Number, best?.Id, list);
     }
 
     /// <summary>

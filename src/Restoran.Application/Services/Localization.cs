@@ -47,6 +47,12 @@ public static class L
                                 "Извините: «{0}» {1} недоступно. Предложим равноценную замену и подарок от шеф-повара — напишите нам в сообщениях брони, если хотите что-то другое.",
                                 "Sorry: “{0}” is not available on {1}. We will offer an equivalent replacement and a gift from the chef – write to us in the booking messages if you would like something else."),
         // Personal muutis kliendi broneeringut (klient näeb teadet kellukeses)
+        ["avail.free"] = ("Vaba: {0} lauda {1} külalisele. Pakume lauda nr {2}.",
+                          "Свободно столов на {1} гост.: {0}. Предлагаем стол № {2}.",
+                          "Free: {0} tables for {1} guests. We suggest table no. {2}."),
+        ["avail.none"] = ("Sel ajal pole {0} külalisele vaba lauda. Valige teine aeg või päev.",
+                          "На это время нет свободного стола на {0} гост. Выберите другое время или день.",
+                          "No free table for {0} guests at this time. Please choose another time or day."),
         ["staffChange.time"] = ("Argent muutis Teie broneeringut: nüüd {0}, {1} külalist. Vaadake üle „Minu broneeringutes“.",
                                 "Argent изменил Вашу бронь: теперь {0}, гостей: {1}. Посмотрите в «Мои брони».",
                                 "Argent changed your booking: now {0}, {1} guests. See “My bookings”."),

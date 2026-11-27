@@ -22,8 +22,9 @@ public class TablesController : ControllerBase
 
     /// <summary>Sobiva vaba laua pakkumine.</summary>
     /// <remarks>
-    /// Tagastab pakutud laua (väikseim sobiv vaba laud) ja kõik restorani lauad koos infoga,
-    /// kas need on valitud ajal vabad. Broneering kestab 2 tundi.
+    /// Vastuse alguses on kokkuvõte: hasFreeTable (kas on vaba laud), freeTables (mitu sobivat lauda on vaba),
+    /// message (lühike tekst) ja suggestedTableNumber (pakutud laud). Seejärel kõik restorani lauad:
+    /// isFree = laud on sel ajal vaba, fitsGuests = laud on piisavalt suur. Broneering kestab 2 tundi.
     ///
     /// restaurantId on valikuline: kui see puudub, kasutatakse esimest restorani (Argent · Vanalinn).
     ///

@@ -282,11 +282,16 @@ public record TableAvailabilityDto(
     bool FitsGuests);
 
 /// <summary>Vabade laudade vastus: pakutud laud ja kõik lauad plaani jaoks.</summary>
+/// <summary>Vabade laudade vastus: kõigepealt lühike kokkuvõte (kas on vaba laud), siis kõik lauad.</summary>
 public record AvailabilityDto(
     int RestaurantId,
     DateTime StartTime,
     DateTime EndTime,
     int Guests,
+    bool HasFreeTable,
+    int FreeTables,
+    string Message,
+    int? SuggestedTableNumber,
     int? SuggestedTableId,
     List<TableAvailabilityDto> Tables);
 
