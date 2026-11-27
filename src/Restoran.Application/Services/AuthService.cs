@@ -115,6 +115,8 @@ public class AuthService : IAuthService
     {
         var id = _current.UserId ?? throw new UnauthorizedException("Pole sisse logitud.");
         var user = await _users.GetByIdAsync(id) ?? throw new NotFoundException("Kasutajat ei leitud.");
+        if (user.Role == UserRole.Admin)
+            throw new ForbiddenException("Administraatori kontot ei saa muuta.");
         if (!string.IsNullOrWhiteSpace(dto.Phone) && !PhoneNumber.Same(dto.Phone, user.Phone)
             && await _users.GetByPhoneAsync(dto.Phone, user.Id) is not null)
             throw new ConflictException("See telefoninumber on juba teise konto juures.");

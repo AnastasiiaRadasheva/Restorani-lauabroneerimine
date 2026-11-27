@@ -24,9 +24,11 @@ public class NotificationService : INotificationService
     private readonly ICurrentUser _current;
     private readonly IClock _clock;
     private readonly IRealtimeNotifier _realtime;
+    private readonly IReservationRepository _reservations;
 
-    public NotificationService(INotificationRepository notifications, IUserRepository users, ICurrentUser current, IClock clock, IRealtimeNotifier realtime)
+    public NotificationService(INotificationRepository notifications, IUserRepository users, ICurrentUser current, IClock clock, IRealtimeNotifier realtime, IReservationRepository reservations)
     {
+        _reservations = reservations;
         _realtime = realtime;
         _notifications = notifications;
         _users = users;
@@ -36,6 +38,9 @@ public class NotificationService : INotificationService
 
     public async Task<NotificationDto> CreateAsync(CreateNotificationDto dto)
     {
+        // Kasutaja võib tulla broneeringu kaudu: teate saab broneeringu omanik
+        if (dto.UserId <= 0 && dto.ReservationId is int rid)
+            dto.UserId = (await _reservations.GetByIdAsync(rid) ?? throw new NotFoundException($"Broneeringut {rid} ei leitud.")).UserId;
         _ = await _users.GetByIdAsync(dto.UserId) ?? throw new NotFoundException($"Kasutajat {dto.UserId} ei leitud.");
         var n = new Notification
         {

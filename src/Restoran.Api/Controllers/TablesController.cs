@@ -24,7 +24,7 @@ public class TablesController : ControllerBase
     /// <remarks>
     /// Vastuse alguses on kokkuvõte: hasFreeTable (kas on vaba laud), freeTables (mitu sobivat lauda on vaba),
     /// message (lühike tekst) ja suggestedTableNumber (pakutud laud). Seejärel kõik restorani lauad:
-    /// isFree = laud on sel ajal vaba, fitsGuests = laud on piisavalt suur. Broneering kestab 2 tundi.
+    /// Loendis on ainult vabad ja piisavalt suured lauad. Broneering kestab 2 tundi.
     ///
     /// restaurantId on kohustuslik: 1 – Vanalinn, 2 – Kalamaja, 3 – Kadriorg.
     ///
@@ -36,8 +36,12 @@ public class TablesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AvailabilityDto>> Available(
-        [FromQuery] int? restaurantId, [FromQuery] DateOnly date, [FromQuery] TimeOnly time, [FromQuery] int guests) =>
-        Ok(await _reservations.GetAvailabilityAsync(Rid(restaurantId, required: true), date, time, guests));
+        [FromQuery] int? restaurantId, [FromQuery] DateOnly date, [FromQuery] TimeOnly time, [FromQuery] int guests, [FromQuery] bool showAll = false)
+    {
+        var a = await _reservations.GetAvailabilityAsync(Rid(restaurantId, required: true), date, time, guests);
+        // Vaikimisi ainult vabad ja piisavalt suured lauad; sait küsib saali plaani jaoks kõik (showAll=true)
+        return Ok(showAll ? a : a with { Tables = a.Tables.Where(t => t.IsFree && t.FitsGuests).ToList() });
+    }
 
     /// <summary>Vabade laudade arv iga kellaaja kohta mitmeks päevaks (broneerimise kalender).</summary>
     /// <remarks>

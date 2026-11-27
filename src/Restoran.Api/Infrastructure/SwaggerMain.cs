@@ -31,6 +31,7 @@ public static class SwaggerMain
         // Broneeringud ja eeltellimus
         "POST api/reservations", "GET api/reservations/my", "GET api/reservations", "GET api/reservations/{id}",
         "PATCH api/reservations/{id}/cancel", "PATCH api/reservations/{id}/status", "POST api/reservations/{id}/preorder",
+        "POST api/reservations/for-customer",
         // Broneeringu muutmine (klient või personal), sõnumid ja kasutaja teated
         "PUT api/reservations/{id}", "GET api/reservations/{id}/messages", "POST api/reservations/{id}/messages",
         "GET api/notifications/my",
@@ -65,12 +66,13 @@ public static class SwaggerMain
         ["POST api/reservations/{id}/messages"] = ["Customer", "Waiter", "Admin"],
         ["GET api/notifications/my"] = ["Customer", "Waiter", "Admin"],
         ["GET api/auth/me"] = ["Customer", "Waiter", "Admin"],
-        ["PUT api/auth/me"] = ["Customer", "Waiter", "Admin"],
-        // Taustateenuse (Worker) toimingud – ainult Service
-        ["GET api/reservations/remind-due"] = ["Service"],
-        ["PATCH api/reservations/{id}/reminded"] = ["Service"],
-        ["POST api/reservations/mark-no-show"] = ["Service"],
-        ["POST api/notifications"] = ["Service"],
+        ["PUT api/auth/me"] = ["Customer", "Waiter"],
+        ["POST api/reservations/for-customer"] = ["Waiter", "Admin"],
+        // Taustateenuse (Worker) toimingud – Service ja administraator (ülesande nõue)
+        ["GET api/reservations/remind-due"] = ["Service", "Admin"],
+        ["PATCH api/reservations/{id}/reminded"] = ["Service", "Admin"],
+        ["POST api/reservations/mark-no-show"] = ["Service", "Admin"],
+        ["POST api/notifications"] = ["Service", "Admin"],
     };
 
     public static bool Visible(string docName, ApiDescription api)
@@ -124,6 +126,9 @@ public static class SwaggerMain
                 foreach (var p in operation.Parameters.Where(p => !keep.Contains(p.Name?.ToLowerInvariant())).ToList())
                     operation.Parameters.Remove(p);
             }
+            if (method == "GET" && context.ApiDescription.RelativePath == "api/tables/available")
+                foreach (var p in operation.Parameters.Where(p => p.Name == "showAll").ToList())
+                    operation.Parameters.Remove(p);
             // Broneeringute otsing (personal): nimi, restoran, kuupäev, olek, laud – lehekülgi ja sortimist pole vaja
             if (method == "GET" && context.ApiDescription.RelativePath == "api/reservations")
             {
@@ -191,6 +196,17 @@ public static class SwaggerMain
         var text = found.ToString("yyyy-MM-dd");
         _free = (DateTime.Now, text);
         return text;
+    }
+
+    /// <summary>Testkliendi (klient@restoran.ee) kasutaja id Swaggeri näiteks.</summary>
+    public static int KatiId(IServiceScopeFactory scopes)
+    {
+        try
+        {
+            using var scope = scopes.CreateScope();
+            return scope.ServiceProvider.GetRequiredService<AppDbContext>().Users.Where(u => u.Email == "klient@restoran.ee").Select(u => u.Id).FirstOrDefault();
+        }
+        catch { return 3; }
     }
 
     /// <summary>Testkliendi viimase broneeringu id (Swaggeri näiteks), puudumisel 1.</summary>
@@ -265,6 +281,30 @@ public static class SwaggerMain
                     ["phone"] = "+372 5555 1234",
                     ["email"] = null,
                     ["smsOptIn"] = true,
+                };
+                return;
+            }
+            // Broneering kliendi nimel: testklient, vaba päev, roog nimega; kaarti pole vaja
+            if (context.Type == typeof(Restoran.Application.Services.StaffBookingDto))
+            {
+                s.Example = new JsonObject
+                {
+                    ["customerId"] = KatiId(scopes),
+                    ["restaurantId"] = 1,
+                    ["date"] = FreeDate(scopes),
+                    ["time"] = "19:00",
+                    ["guests"] = 2,
+                    ["specialRequest"] = "Helistas: aknaalune laud",
+                    ["items"] = new JsonArray(new JsonObject { ["name"] = "Seenesupp", ["quantity"] = 2 }),
+                };
+                return;
+            }
+            if (context.Type == typeof(Restoran.Application.DTOs.CreateNotificationDto))
+            {
+                s.Example = new JsonObject
+                {
+                    ["reservationId"] = LastKatiReservation(scopes),
+                    ["message"] = "Meeldetuletus: homme kell 19:00 ootame Teid Argentis.",
                 };
                 return;
             }

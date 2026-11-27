@@ -99,7 +99,7 @@ export function useBooking() {
   // Laudade seis valitud ajal
   function loadAvailability() {
     if (!restaurantId || !timeOk) return Promise.resolve()
-    return api('/api/tables/available' + qs({ restaurantId, date, time, guests }))
+    return api('/api/tables/available' + qs({ restaurantId, date, time, guests, showAll: true }))
       .then((a) => {
         setAvailability(a)
         setError('')

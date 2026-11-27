@@ -57,7 +57,7 @@ export default function PhoneBooking() {
 
   useEffect(() => {
     if (!b.restaurantId || !b.time) return setTables([])
-    api('/api/tables/available' + qs({ restaurantId: b.restaurantId, date: b.date, time: b.time, guests: b.guests }))
+    api('/api/tables/available' + qs({ restaurantId: b.restaurantId, date: b.date, time: b.time, guests: b.guests, showAll: true }))
       .then((a) => setTables(a.tables.filter((t) => t.isFree && t.fitsGuests)))
       .catch(() => setTables([]))
   }, [b.restaurantId, b.date, b.time, b.guests])

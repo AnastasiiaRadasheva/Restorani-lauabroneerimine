@@ -134,13 +134,13 @@ public class ReservationsController : ControllerBase
     public async Task<ActionResult<PagedResult<ReservationDto>>> GetAll([FromQuery] ReservationQuery query) =>
         Ok(await _reservations.GetPagedAsync(query));
 
-    /// <summary>Homsed broneeringud, millele pole meeldetuletust saadetud (taustateenus).</summary>
+    /// <summary>Taustateenus, samm 1: homsed broneeringud, millele pole veel meeldetuletust saadetud.</summary>
     [Authorize(Roles = "Service,Admin")]
     [HttpGet("remind-due")]
     [ProducesResponseType(typeof(List<RemindDueDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<RemindDueDto>>> RemindDue() => Ok(await _reservations.GetRemindDueAsync());
 
-    /// <summary>Märgi meeldetuletus saadetuks (taustateenus).</summary>
+    /// <summary>Taustateenus, samm 3: märgi broneeringu meeldetuletus saadetuks (id = remind-due vastusest).</summary>
     [Authorize(Roles = "Service,Admin")]
     [HttpPatch("{id:int}/reminded")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -151,7 +151,7 @@ public class ReservationsController : ControllerBase
         return NoContent();
     }
 
-    /// <summary>Vabasta lauad, kuhu klient 30 minuti jooksul ei ilmunud (taustateenus).</summary>
+    /// <summary>Taustateenus: kes 30 minuti jooksul ei tulnud, saab oleku "ei tulnud" ja laud vabaneb.</summary>
     [Authorize(Roles = "Service,Admin")]
     [HttpPost("mark-no-show")]
     [ProducesResponseType(typeof(NoShowResultDto), StatusCodes.Status200OK)]
@@ -282,7 +282,7 @@ public class ReservationsController : ControllerBase
     public async Task<ActionResult<ReservationDto>> Pay(int id, FakePaymentDto dto) =>
         Ok(await _reservations.PayAsync(id, dto));
 
-    /// <summary>Muuda olekut (nt klient saabus: Arrived). Ainult personal.</summary>
+    /// <summary>Muuda olekut: Arrived (tuli) alates tund enne algust, NoShow (ei tulnud) pärast algust. Ainult personal.</summary>
     [Authorize(Roles = "Admin,Waiter")]
     [HttpPatch("{id:int}/status")]
     [ProducesResponseType(typeof(ReservationDto), StatusCodes.Status200OK)]

@@ -363,8 +363,10 @@ public class ReservationService : IReservationService
         {
             if (r.Status is not (ReservationStatus.Active or ReservationStatus.Arrived or ReservationStatus.NoShow))
                 throw new BusinessRuleException("Saabumist saab märkida ainult aktiivsel broneeringul.");
-            if (DateOnly.FromDateTime(BookingRules.DayStart(r.StartTime)) > DateOnly.FromDateTime(BookingRules.DayStart(_clock.Now)))
-                throw new BusinessRuleException("Saabumist saab märkida alles külastuse päeval.");
+            if (status == ReservationStatus.Arrived && _clock.Now < r.StartTime.AddHours(-1))
+                throw new BusinessRuleException($"Saabumist saab märkida alles külastuse ajal (alates {r.StartTime.AddHours(-1):dd.MM HH:mm}).");
+            if (status == ReservationStatus.NoShow && _clock.Now < r.StartTime)
+                throw new BusinessRuleException($"\"Ei tulnud\" saab märkida alles pärast broneeringu algust ({r.StartTime:dd.MM HH:mm}).");
         }
         r.Status = status;
         await _reservations.SaveChangesAsync();
