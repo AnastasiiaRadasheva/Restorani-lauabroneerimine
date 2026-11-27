@@ -164,6 +164,8 @@ shows who is logged in ("Logi välja" to log out) and the list shows only the op
 The server always checks the role itself (403 for another role's action).
 The fields are already filled with working examples (date one week ahead, 19:00, 2 guests, restaurant 1, test card),
 so it is enough to open an operation and press **Execute**.
+A table added without number or position (`POST /api/tables`) gets the next free number and the first free spot
+on the floor plan, so tables never overlap.
 Creating, updating and deleting restaurants, tables and menu items requires the `Admin` role.
 
 ## API endpoints

@@ -127,6 +127,31 @@ public static class SwaggerMain
                 };
                 return;
             }
+            // Uus laud: numbrit ega kohta pole vaja – server annab järgmise vaba numbri ja leiab plaanil vaba koha
+            if (context.Type == typeof(Restoran.Application.DTOs.SaveTableDto))
+            {
+                s.Example = new JsonObject
+                {
+                    ["restaurantId"] = 1,
+                    ["seats"] = 4,
+                    ["location"] = "Hall",
+                    ["isActive"] = true,
+                    ["spot"] = "akna all",
+                    ["isRound"] = false,
+                };
+                return;
+            }
+            // Õhtule registreerimine: 2 külalist, reeglitega nõus, makse testkaardiga
+            if (context.Type == typeof(Restoran.Application.DTOs.JoinEventDto))
+            {
+                s.Example = new JsonObject
+                {
+                    ["guests"] = 2,
+                    ["acceptRules"] = true,
+                    ["card"] = new JsonObject { ["cardHolder"] = "Kati Klient", ["cardNumber"] = "4242 4242 4242 4242", ["expiry"] = "12/28", ["cvc"] = "123" },
+                };
+                return;
+            }
             // Uue broneeringu valmis näide: laua valib süsteem ise, makse testkaardiga
             if (context.Type == typeof(Restoran.Application.DTOs.CreateReservationDto))
             {

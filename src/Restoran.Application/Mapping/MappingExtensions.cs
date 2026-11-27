@@ -31,11 +31,11 @@ public static class MappingExtensions
     public static void Apply(this DiningTable t, SaveTableDto d)
     {
         t.RestaurantId = d.RestaurantId;
-        t.Number = d.Number;
+        t.Number = d.Number ?? t.Number;
         t.Seats = d.Seats;
         t.Location = d.Location;
         t.IsActive = d.IsActive;
-        t.X = d.X; t.Y = d.Y; t.Width = d.Width; t.Height = d.Height;
+        t.X = d.X ?? t.X; t.Y = d.Y ?? t.Y; t.Width = d.Width ?? t.Width; t.Height = d.Height ?? t.Height;
         t.Spot = string.IsNullOrWhiteSpace(d.Spot) ? null : d.Spot.Trim();
         t.IsRound = d.IsRound;
     }
