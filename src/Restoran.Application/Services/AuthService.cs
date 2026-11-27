@@ -47,7 +47,8 @@ public class AuthService : IAuthService
             Name = dto.Name.Trim(),
             Email = email,
             Phone = dto.Phone?.Trim(),
-            Role = UserRole.Customer,
+            // Administraator võib luua ka teenindaja või teise administraatori konto
+            Role = _current.Role == UserRole.Admin && dto.Role is UserRole.Waiter or UserRole.Admin ? dto.Role.Value : UserRole.Customer,
             Language = L.Norm(_current.Language)
         };
         user.PasswordHash = _passwords.Hash(user, dto.Password);
@@ -114,9 +115,18 @@ public class AuthService : IAuthService
     {
         var id = _current.UserId ?? throw new UnauthorizedException("Pole sisse logitud.");
         var user = await _users.GetByIdAsync(id) ?? throw new NotFoundException("Kasutajat ei leitud.");
+        if (user.Role == UserRole.Admin)
+            throw new ForbiddenException("Administraatori kontot ei saa muuta.");
         if (!string.IsNullOrWhiteSpace(dto.Phone) && !PhoneNumber.Same(dto.Phone, user.Phone)
             && await _users.GetByPhoneAsync(dto.Phone, user.Id) is not null)
             throw new ConflictException("See telefoninumber on juba teise konto juures.");
+        var email = dto.Email?.Trim().ToLower();
+        if (!string.IsNullOrEmpty(email) && email != user.Email)
+        {
+            if (await _users.EmailExistsAsync(email))
+                throw new ConflictException("See e-post on juba teise konto juures.");
+            user.Email = email;
+        }
         user.Name = dto.Name.Trim();
         user.Phone = string.IsNullOrWhiteSpace(dto.Phone) ? null : dto.Phone.Trim();
         user.SmsOptIn = dto.SmsOptIn;
@@ -130,6 +140,11 @@ public class AuthService : IAuthService
         await _users.SaveChangesAsync();
         return ToDto(user);
     }
+
+    /// <summary>Administraatorile: kõik kasutajad, filter nime/e-posti/telefoni või broneeringu id järgi.</summary>
+    public async Task<List<UserListItemDto>> GetUsersAsync(string? search, int? reservationId) =>
+        (await _users.SearchAllAsync(search, reservationId))
+            .Select(x => new UserListItemDto(x.User.Id, x.User.Name, x.User.Email, x.User.Phone, x.User.Role, x.Reservations)).ToList();
 
     private AuthResponseDto CreateResponse(User user)
     {

@@ -25,11 +25,11 @@ public record NotificationDto(int Id, int UserId, int? ReservationId, string Mes
 /// <summary>Uus teade kasutajale (saadab taustateenus).</summary>
 public class CreateNotificationDto
 {
-    /// <example>3</example>
-    [Range(1, int.MaxValue)]
+    /// <summary>Kellele (kasutaja id). Võib jätta tühjaks, kui on antud broneeringu id – siis saab teate broneeringu omanik.</summary>
+    [Range(0, int.MaxValue)]
     public int UserId { get; set; }
 
-    /// <example>2301</example>
+    /// <summary>Broneeringu id, mille kohta teade on.</summary>
     public int? ReservationId { get; set; }
 
     /// <summary>Kuhu teate klõps viib (valikuline).</summary>

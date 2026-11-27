@@ -47,7 +47,8 @@ public class StaffBookingController : ControllerBase
         return Ok(user);
     }
 
-    /// <summary>Uus broneering kliendi nimel (personal). Klient saab makselingi.</summary>
+    /// <summary>Broneering kliendi nimel (admin/teenindaja): customerId = kes (GET /api/users), ülejäänu nagu tavalisel broneeringul.</summary>
+    /// <remarks>Kaarti pole vaja: kui on midagi maksta, saab klient makselingi, muidu kohe kinnituse.</remarks>
     [Authorize(Roles = "Admin,Waiter")]
     [HttpPost("api/reservations/for-customer")]
     [ProducesResponseType(typeof(ReservationDto), StatusCodes.Status200OK)]

@@ -73,7 +73,7 @@ export default function Booking() {
       setEvState((e) => ({
         ...e,
         occasion: r.occasion,
-        gift: r.gift === 'None' ? 'Cake' : r.gift,
+        gift: r.occasion === 'None' ? 'Cake' : r.gift,
         hostType: r.hostType,
         hostName: r.hostName ?? '',
         addressForm: r.addressForm,
@@ -191,7 +191,7 @@ export default function Booking() {
           [t('gastro.preorder'), money(preorderTotal)],
           [t('fee.line'), fee ? `${b.mode === 'manual' && isPeak(b.time) ? '18:00–20:00 · ' : ''}${money(fee)}` : `${t('fee.maitre')} · 0 €`],
           [t('evening.extras'), money(extrasTotal)],
-          [t('evening.gift'), hasOccasion ? `${t(`gift.${ev.gift}`).toLowerCase()} · 0 €` : '—', 'ox'],
+          [t('evening.gift'), hasOccasion && ev.gift !== 'None' ? `${t(`gift.${ev.gift}`).toLowerCase()} · 0 €` : '—', 'ox'],
         ]}
         total={total}
         onConfirm={confirm}

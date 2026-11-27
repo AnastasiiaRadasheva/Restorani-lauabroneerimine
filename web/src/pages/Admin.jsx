@@ -76,7 +76,7 @@ export default function Admin() {
       {tab === 'stats' && <AdminStats restaurantId={restaurantId} restaurants={restaurants} />}
       {tab === 'tables' && restaurant && <TablesAdmin restaurant={restaurant} />}
       {tab === 'menu' && <MenuAdmin restaurantId={restaurantId} />}
-      {tab === 'events' && restaurants.length > 0 && <AdminEvents restaurants={restaurants} />}
+      {tab === 'events' && restaurants.length > 0 && <AdminEvents restaurants={restaurants} restaurantId={restaurantId} />}
     </div>
   )
 }

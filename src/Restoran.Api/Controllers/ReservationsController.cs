@@ -112,7 +112,12 @@ public class ReservationsController : ControllerBase
     [HttpPut("{id:int}/extras")]
     [ProducesResponseType(typeof(ReservationDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ReservationDto>> SetExtras(int id, SetExtrasDto dto) => Ok(await _reservations.SetExtrasAsync(id, dto));
+    public async Task<ActionResult<ReservationDto>> SetExtras(int id, SetExtrasDto dto)
+    {
+        var r = await _reservations.SetExtrasAsync(id, dto);
+        await NotifyGuestOfStaffChange(r, "staffChange.extras", r.StartTime.ToString("dd.MM.yyyy HH:mm"));
+        return Ok(r);
+    }
 
     /// <summary>Lisateenuste kataloog (lilled, šampanja, viiuldaja …) koos hindadega.</summary>
     [AllowAnonymous]
@@ -129,13 +134,13 @@ public class ReservationsController : ControllerBase
     public async Task<ActionResult<PagedResult<ReservationDto>>> GetAll([FromQuery] ReservationQuery query) =>
         Ok(await _reservations.GetPagedAsync(query));
 
-    /// <summary>Homsed broneeringud, millele pole meeldetuletust saadetud (taustateenus).</summary>
+    /// <summary>Taustateenus, samm 1: homsed broneeringud, millele pole veel meeldetuletust saadetud.</summary>
     [Authorize(Roles = "Service,Admin")]
     [HttpGet("remind-due")]
     [ProducesResponseType(typeof(List<RemindDueDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<RemindDueDto>>> RemindDue() => Ok(await _reservations.GetRemindDueAsync());
 
-    /// <summary>Märgi meeldetuletus saadetuks (taustateenus).</summary>
+    /// <summary>Taustateenus, samm 3: märgi broneeringu meeldetuletus saadetuks (id = remind-due vastusest).</summary>
     [Authorize(Roles = "Service,Admin")]
     [HttpPatch("{id:int}/reminded")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -146,7 +151,7 @@ public class ReservationsController : ControllerBase
         return NoContent();
     }
 
-    /// <summary>Vabasta lauad, kuhu klient 30 minuti jooksul ei ilmunud (taustateenus).</summary>
+    /// <summary>Taustateenus: kes 30 minuti jooksul ei tulnud, saab oleku "ei tulnud" ja laud vabaneb.</summary>
     [Authorize(Roles = "Service,Admin")]
     [HttpPost("mark-no-show")]
     [ProducesResponseType(typeof(NoShowResultDto), StatusCodes.Status200OK)]
@@ -205,8 +210,23 @@ public class ReservationsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<ReservationDto>> Update(int id, UpdateReservationDto dto) =>
-        Ok(await _reservations.UpdateAsync(id, dto));
+    public async Task<ActionResult<ReservationDto>> Update(int id, UpdateReservationDto dto)
+    {
+        var r = await _reservations.UpdateAsync(id, dto);
+        await NotifyGuestOfStaffChange(r, "staffChange.time", r.StartTime.ToString("dd.MM.yyyy HH:mm"), r.Guests);
+        return Ok(r);
+    }
+
+    /// <summary>
+    /// Kui personal muutis kliendi broneeringut, saab klient teate (oma keeles, link „Minu broneeringud“),
+    /// et ta näeks muudatust kohe ka kellukeses.
+    /// </summary>
+    private async Task NotifyGuestOfStaffChange(ReservationDto r, string key, params object[] args)
+    {
+        if (!_current.IsStaff || r.UserId == _current.UserId) return;
+        var lang = (await _users.GetByIdAsync(r.UserId))?.Language;
+        await _notifications.CreateAsync(new CreateNotificationDto { UserId = r.UserId, ReservationId = r.Id, Link = "/minu", Message = L.T(lang, key, args) });
+    }
 
     /// <summary>Personal: muuda külalise soove (allergiad, märkus köögile, soovid, tähtpäev).</summary>
     [Authorize(Roles = "Admin,Waiter")]
@@ -215,8 +235,12 @@ public class ReservationsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ReservationDto>> SetDetails(int id, StaffDetailsDto dto) =>
-        Ok(await _reservations.SetStaffDetailsAsync(id, dto));
+    public async Task<ActionResult<ReservationDto>> SetDetails(int id, StaffDetailsDto dto)
+    {
+        var r = await _reservations.SetStaffDetailsAsync(id, dto);
+        await NotifyGuestOfStaffChange(r, "staffChange.details", r.StartTime.ToString("dd.MM.yyyy HH:mm"));
+        return Ok(r);
+    }
 
     /// <summary>Tühista broneering.</summary>
     /// <remarks>
@@ -231,20 +255,24 @@ public class ReservationsController : ControllerBase
     public async Task<ActionResult<ReservationDto>> Cancel(int id, [FromBody(EmptyBodyBehavior = Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Allow)] CancelReservationDto? dto) =>
         Ok(await _reservations.CancelAsync(id, dto));
 
-    /// <summary>Eeltellimus (asendab varasema eeltellimuse).</summary>
+    /// <summary>Eeltellimus: toidud oma broneeringule (asendab varasema eeltellimuse).</summary>
     /// <remarks>
-    /// Näide:
+    /// Roa võib anda nime järgi (name) või id järgi (menuItemId). Nimed: GET /api/menu.
     ///
     ///     POST /api/reservations/5/preorder
-    ///     { "items": [ { "menuItemId": 3, "quantity": 2 }, { "menuItemId": 7, "quantity": 2 } ], "specialRequest": "Ilma sibulata" }
+    ///     { "items": [ { "name": "Kõrvitsasupp", "quantity": 2 }, { "name": "Crème brûlée", "quantity": 2 } ], "specialRequest": "Ilma sibulata" }
     /// </remarks>
     [HttpPost("{id:int}/preorder")]
     [ProducesResponseType(typeof(ReservationDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ReservationDto>> PreOrder(int id, PreOrderDto dto) =>
-        Ok(await _reservations.SetPreOrderAsync(id, dto));
+    public async Task<ActionResult<ReservationDto>> PreOrder(int id, PreOrderDto dto)
+    {
+        var r = await _reservations.SetPreOrderAsync(id, dto);
+        await NotifyGuestOfStaffChange(r, "staffChange.preorder", r.StartTime.ToString("dd.MM.yyyy HH:mm"));
+        return Ok(r);
+    }
 
     /// <summary>Võltsmakse eeltellimuse eest (testkaart 4242 4242 4242 4242).</summary>
     [HttpPost("{id:int}/pay")]
@@ -254,7 +282,7 @@ public class ReservationsController : ControllerBase
     public async Task<ActionResult<ReservationDto>> Pay(int id, FakePaymentDto dto) =>
         Ok(await _reservations.PayAsync(id, dto));
 
-    /// <summary>Muuda olekut (nt klient saabus: Arrived). Ainult personal.</summary>
+    /// <summary>Muuda olekut: Arrived (tuli) alates tund enne algust, NoShow (ei tulnud) pärast algust. Ainult personal.</summary>
     [Authorize(Roles = "Admin,Waiter")]
     [HttpPatch("{id:int}/status")]
     [ProducesResponseType(typeof(ReservationDto), StatusCodes.Status200OK)]

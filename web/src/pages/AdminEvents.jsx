@@ -15,7 +15,7 @@ const empty = (restaurantId) => ({
 })
 
 /** Admin: gastronoomiliste õhtute loomine ja muutmine, külaliste nimekiri ja kliendi registreerimine. */
-export default function AdminEvents({ restaurants }) {
+export default function AdminEvents({ restaurants, restaurantId }) {
   const tr = useTr()
   const [events, setEvents] = useState([])
   const [form, setForm] = useState(null)
@@ -58,7 +58,7 @@ export default function AdminEvents({ restaurants }) {
       {error && <p className="alert alert-error">{error}</p>}
       {ok && <p className="alert alert-ok">{ok}</p>}
       {!form && (
-        <button className="btn btn-dark" onClick={() => { setEditId(null); setForm(empty(restaurants[0]?.id ?? 1)); setOk('') }}>
+        <button className="btn btn-dark" onClick={() => { setEditId(null); setForm(empty(restaurantId ?? restaurants[0]?.id ?? 1)); setOk('') }}>
           + {tr('Uus õhtu', 'Новый вечер', 'New evening')}
         </button>
       )}

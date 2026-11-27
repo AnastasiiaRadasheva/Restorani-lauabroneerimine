@@ -19,7 +19,7 @@ public class NotificationsController : ControllerBase
         _notifications = notifications;
     }
 
-    /// <summary>Saada kasutajale teade (taustateenus või Admin).</summary>
+    /// <summary>Taustateenus, samm 2: saada kliendile teade (piisab broneeringu id-st).</summary>
     [Authorize(Roles = "Service,Admin")]
     [HttpPost]
     [ProducesResponseType(typeof(NotificationDto), StatusCodes.Status201Created)]

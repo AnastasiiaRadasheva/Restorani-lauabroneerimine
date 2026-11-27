@@ -56,16 +56,16 @@ public static class DbSeeder
                 new GastroEvent
                 {
                     RestaurantId = 1, Code = "steel", Title = "Terase õhtu", Kind = "Degustatsiooniõhtusöök",
-                    Description = "Seitsmekäiguline degustatsioonimenüü, valmistatud lahtisel tulel.",
-                    Program = "Lahtine köök: peakokk valmistab käike saali ees, taustaks akustiline kitarr.",
+                    Description = "Seitsmekäiguline degustatsioonimenüü lahtisel tulel, iga käigu juurde vein.",
+                    Program = "Akustiline kitarr · peakokk valmistab käike saali ees.",
                     StartTime = sunday.AddHours(20), PricePerGuest = 140m, DressCode = "smart elegant",
                     ImageUrl = "/img/metal.jpg", Capacity = 30
                 },
                 new GastroEvent
                 {
                     RestaurantId = 1, Code = "white", Title = "Valge õhtusöök", Kind = "Peakoka autorisett",
-                    Description = "Portselanist serveering, koorekastmed ja Burgundia valged veinid. Riietus – valge.",
-                    Program = "Klaver ja keelpillikvartett, iga käigu juurde oma Burgundia vein.",
+                    Description = "Valgel portselanil serveeritud õhtusöök koorekastmetega, Burgundia valged veinid.",
+                    Program = "Klaver ja keelpillikvartett · sommeljee tutvustab iga veini.",
                     StartTime = sunday.AddDays(7).AddHours(19.5), PricePerGuest = 160m, DressCode = "täielikult valge",
                     Rule = "Õhtu riietus on täielikult valge. Teist värvi riietes külalistel võidakse viisakalt paluda lahkuda; osalustasu sel juhul ei tagastata.",
                     ImageUrl = "/img/sculpture.jpg", Capacity = 24
@@ -73,8 +73,8 @@ public static class DbSeeder
                 new GastroEvent
                 {
                     RestaurantId = 1, Code = "black", Title = "Must ball", NoChildren = true, Kind = "Pidulik õhtu",
-                    Description = "Riietus black tie, džässitrio ja õhtusöök keskööni.",
-                    Program = "Džässitrio, tantsud ja õhtusöök keskööni.",
+                    Description = "Pidulik õhtusöök keskööni, šampanja ja klassikalised kokteilid.",
+                    Program = "Džässitrio · tantsud keskööni.",
                     StartTime = sunday.AddDays(14).AddHours(21), PricePerGuest = 180m, DressCode = "black tie",
                     Zone = TableLocation.Upstairs, // teisel korrusel, kus on lava
                     Rule = "Õhtu riietus on black tie: smoking või põrandani õhtukleit. Kui riietus ei vasta nõuetele, võib administratsioon osalemisest keelduda; osalustasu ei tagastata.",
@@ -84,40 +84,40 @@ public static class DbSeeder
                 new GastroEvent
                 {
                     RestaurantId = 2, Code = "truffle", Title = "Trühvliõhtu", Kind = "Hooaja degustatsioon",
-                    Description = "Valge ja must trühvel viies käigus, Piemonte veinid.",
-                    Program = "Klaveriõhtu, peakokk tutvustab iga käiku.",
+                    Description = "Viiekäiguline õhtusöök valge ja musta trühvliga, Piemonte veinid.",
+                    Program = "Klaver · peakokk tutvustab iga käiku.",
                     StartTime = sunday.AddDays(41).AddHours(19.5), PricePerGuest = 150m, DressCode = "smart elegant",
                     ImageUrl = "/img/events/truffle.jpg", Capacity = 30
                 },
                 new GastroEvent
                 {
                     RestaurantId = 3, Code = "oyster", Title = "Austrid ja džäss", Kind = "Mereannide õhtu", NoChildren = true,
-                    Description = "Austrid, Kamtšatka krabi ja šampanja.",
-                    Program = "Džässibänd elavas esituses ja šampanjabaar.",
+                    Description = "Mereannide õhtusöök: austrid ja Kamtšatka krabi, šampanja.",
+                    Program = "Džässibänd · šampanjabaar.",
                     StartTime = sunday.AddDays(76).AddHours(20), PricePerGuest = 130m, DressCode = "kokteil",
                     ImageUrl = "/img/events/oyster.jpg", Capacity = 20
                 },
                 new GastroEvent
                 {
                     RestaurantId = 1, Code = "vinyl", Title = "Vein ja vinüül", Kind = "Veiniõhtu",
-                    Description = "Väikeveinimajade veinid; sommeljee valib iga plaadi juurde veini.",
-                    Program = "DJ mängib vinüülplaate, väikesed suupisted.",
-                    StartTime = sunday.AddDays(111).AddHours(19), PricePerGuest = 90m, DressCode = "",
+                    Description = "Väikesed suupisted, väikeveinimajade veinid.",
+                    Program = "DJ vinüülplaatidega · sommeljee valib iga plaadi juurde veini.",
+                    StartTime = sunday.AddDays(111).AddHours(19), PricePerGuest = 90m, DressCode = "smart casual",
                     Zone = TableLocation.Hall, ImageUrl = "/img/events/vinyl.jpg", Capacity = 30
                 },
                 new GastroEvent
                 {
                     RestaurantId = 2, Code = "spring", Title = "Kevadine aiaõhtu", Kind = "Peakoka autorisett",
-                    Description = "Esimesed kevadised köögiviljad ja ürdid, kerged veinid.",
-                    Program = "Keelpillitrio terrassil päikeseloojangul.",
+                    Description = "Õhtusöök kevadistest köögiviljadest ja ürtidest, kerged veinid.",
+                    Program = "Keelpillitrio · terrassil päikeseloojangul.",
                     StartTime = sunday.AddDays(146).AddHours(19), PricePerGuest = 120m, DressCode = "smart casual",
                     Zone = TableLocation.Terrace, ImageUrl = "/img/events/spring.jpg", Capacity = 30
                 },
                 new GastroEvent
                 {
                     RestaurantId = 3, Code = "midnight", Title = "Kesköö õhtusöök", Kind = "Pidulik õhtu", NoChildren = true,
-                    Description = "Pikk lauaõhtu valge öö valguses kuni kella kaheni.",
-                    Program = "Keelpillikvartett, pärast keskööd DJ.",
+                    Description = "Pikk lauaõhtu valge öö valguses kuni kella kaheni, šampanja.",
+                    Program = "Keelpillikvartett · pärast keskööd DJ.",
                     StartTime = sunday.AddDays(174).AddHours(21), PricePerGuest = 170m, DressCode = "black tie",
                     Rule = "Õhtu riietus on black tie: smoking või põrandani õhtukleit. Kui riietus ei vasta nõuetele, võib administratsioon osalemisest keelduda; osalustasu ei tagastata.",
                     ImageUrl = "/img/events/midnight.jpg", Capacity = 20
@@ -146,6 +146,43 @@ public static class DbSeeder
             }
             await db.SaveChangesAsync();
         }
+
+        // Lisaroad: iga restorani menüüsse (lisatakse ka olemasolevasse andmebaasi, kui sellise nimega rooga veel pole)
+        var extraDishes = new (string Name, string Desc, string Cat, decimal Price, string? Tags, string Img)[]
+        {
+            ("Peedicarpaccio, kitsejuust", "röstitud kreeka pähkel, mesi, tüümian", "Külmad road", 16m, "milk,nuts,vegetarian", "peedicarpaccio"),
+            ("Suitsulõhe, rukkikrõps", "kapparikreem, punane sibul, till", "Külmad road", 19m, "fish,milk,gluten", "suitsulohe"),
+            ("Burrata ja tomatid", "basiilikuõli, balsamico", "Külmad road", 17m, "milk,vegetarian", "burrata"),
+            ("Seenesupp", "metsaseened, koor, tatrakrõps", "Supid", 12m, "milk,vegetarian", "seenesupp"),
+            ("Bouillabaisse", "kala ja mereannid, safran, rouille", "Supid", 22m, "fish,shellfish,egg", "bouillabaisse"),
+            ("Kõrvitsasupp", "röstitud kõrvitsaseemned, kookos", "Supid", 11m, "vegan", "korvitsasupp"),
+            ("Lambakarree, rosmariin", "röstitud juurviljad, punase veini kaste", "Pearoad", 44m, null, "lambakarree"),
+            ("Tursk ja pruunistatud või", "herned, kartulipüree, kaaviar", "Pearoad", 36m, "fish,milk", "tursk"),
+            ("Seenerisotto", "puravikud, parmesan, trühliõli", "Pearoad", 29m, "milk,vegetarian", "risotto"),
+            ("Köögiviljad söel", "hummus, granaatõun, ürdid", "Pearoad", 26m, "vegan", "koogiviljad"),
+            ("Crème brûlée", "Madagaskari vanill", "Magustoidud", 14m, "milk,egg,vegetarian", "creme-brulee"),
+            ("Juustuvalik", "kolm Prantsuse juustu, viigimarjamoos, kreeka pähkel", "Magustoidud", 21m, "milk,nuts,gluten,vegetarian", "juustuvalik"),
+            ("Marjasorbett", "metsamarjad, piparmünt", "Magustoidud", 10m, "vegan", "sorbett"),
+            ("Chablis, klaas", "Burgundia valge, Prantsusmaa", "Veinid", 15m, null, "chablis"),
+            ("Pinot Noir, klaas", "punane, Burgundia", "Veinid", 16m, null, "pinot-noir"),
+            ("Sauternes, klaas", "magus magustoiduvein", "Veinid", 17m, null, "sauternes"),
+            ("Alkoholivaba kaaslane", "kodused limonaadid ja teed igale käigule", "Veinid", 35m, "vegan", "limonaad"),
+        };
+        foreach (var rid in await db.Restaurants.Select(r => r.Id).ToListAsync())
+        {
+            var have = await db.MenuItems.Where(m => m.RestaurantId == rid).Select(m => m.Name).ToListAsync();
+            // Lisatud juba varem (admin võis mõne hiljem kustutada) – ei lisa uuesti
+            if (extraDishes.Count(d => have.Contains(d.Name)) >= 2) continue;
+            foreach (var d in extraDishes.Where(d => !have.Contains(d.Name)))
+                db.MenuItems.Add(new MenuItem { RestaurantId = rid, Name = d.Name, Description = d.Desc, Category = d.Cat, Price = d.Price, Tags = d.Tags, ImageUrl = $"/img/menu/{d.Img}.jpg", IsAvailable = true });
+        }
+        await db.SaveChangesAsync();
+        // Varem ilma fotota lisatud lisaroogadele foto (admini enda pandud fotot ei muudeta)
+        var photos = extraDishes.ToDictionary(d => d.Name, d => $"/img/menu/{d.Img}.jpg");
+        var names = photos.Keys.ToList();
+        foreach (var m in await db.MenuItems.Where(m => names.Contains(m.Name) && m.ImageUrl == null).ToListAsync())
+            m.ImageUrl = photos[m.Name];
+        await db.SaveChangesAsync();
 
         if (!await db.Reservations.AnyAsync())
         {

@@ -22,10 +22,11 @@ public class TablesController : ControllerBase
 
     /// <summary>Sobiva vaba laua pakkumine.</summary>
     /// <remarks>
-    /// Tagastab pakutud laua (väikseim sobiv vaba laud) ja kõik restorani lauad koos infoga,
-    /// kas need on valitud ajal vabad. Broneering kestab 2 tundi.
+    /// Vastuse alguses on kokkuvõte: hasFreeTable (kas on vaba laud), freeTables (mitu sobivat lauda on vaba),
+    /// message (lühike tekst) ja suggestedTableNumber (pakutud laud). Seejärel kõik restorani lauad:
+    /// Loendis on ainult vabad ja piisavalt suured lauad. Broneering kestab 2 tundi.
     ///
-    /// restaurantId on valikuline: kui see puudub, kasutatakse esimest restorani (Argent · Vanalinn).
+    /// restaurantId on kohustuslik: 1 – Vanalinn, 2 – Kalamaja, 3 – Kadriorg.
     ///
     /// Näide: GET /api/tables/available?date=2027-01-15&amp;time=19:00&amp;guests=4
     /// või GET /api/tables/available?restaurantId=2&amp;date=2027-01-15&amp;time=19:00&amp;guests=4
@@ -35,8 +36,12 @@ public class TablesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AvailabilityDto>> Available(
-        [FromQuery] int restaurantId, [FromQuery] DateOnly date, [FromQuery] TimeOnly time, [FromQuery] int guests) =>
-        Ok(await _reservations.GetAvailabilityAsync(restaurantId, date, time, guests));
+        [FromQuery] int? restaurantId, [FromQuery] DateOnly date, [FromQuery] TimeOnly time, [FromQuery] int guests, [FromQuery] bool showAll = false)
+    {
+        var a = await _reservations.GetAvailabilityAsync(Rid(restaurantId, required: true), date, time, guests);
+        // Vaikimisi ainult vabad ja piisavalt suured lauad; sait küsib saali plaani jaoks kõik (showAll=true)
+        return Ok(showAll ? a : a with { Tables = a.Tables.Where(t => t.IsFree && t.FitsGuests).ToList() });
+    }
 
     /// <summary>Vabade laudade arv iga kellaaja kohta mitmeks päevaks (broneerimise kalender).</summary>
     /// <remarks>
@@ -49,8 +54,8 @@ public class TablesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<List<DaySlotsDto>>> Slots(
-        [FromQuery] int restaurantId, [FromQuery] DateOnly from, [FromQuery] int days, [FromQuery] int guests) =>
-        Ok(await _reservations.GetSlotsAsync(restaurantId, from, days, guests));
+        [FromQuery] int? restaurantId, [FromQuery] DateOnly from, [FromQuery] int days, [FromQuery] int guests) =>
+        Ok(await _reservations.GetSlotsAsync(Rid(restaurantId, required: true), from, days, guests));
 
     /// <summary>Päeva laudade plaan: lauad ja nende broneeringud (personal).</summary>
     /// <remarks>
@@ -62,8 +67,15 @@ public class TablesController : ControllerBase
     [HttpGet("plan")]
     [ProducesResponseType(typeof(TablePlanDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<TablePlanDto>> Plan([FromQuery] int restaurantId, [FromQuery] DateOnly date) =>
-        Ok(await _reservations.GetPlanAsync(restaurantId, date));
+    public async Task<ActionResult<TablePlanDto>> Plan([FromQuery] int? restaurantId, [FromQuery] DateOnly date) =>
+        Ok(await _reservations.GetPlanAsync(Rid(restaurantId), date));
+
+    /// <summary>Tühi restaurantId = esimene restoran (0 tähendab "määramata"); 0 või negatiivne kirjutatud id = restorani pole.</summary>
+    private static int Rid(int? restaurantId, bool required = false) =>
+        restaurantId is null
+            ? (required ? throw new Restoran.Application.Common.BusinessRuleException("Valige restoran: restaurantId (1 – Vanalinn, 2 – Kalamaja, 3 – Kadriorg).") : 0)
+        : restaurantId > 0 ? restaurantId.Value
+        : throw new Restoran.Application.Common.NotFoundException($"Restorani id-ga {restaurantId} ei ole (id algab 1-st).");
 
     /// <summary>Üks laud.</summary>
     [HttpGet("{id:int}")]

@@ -56,7 +56,12 @@ public class ReservationService : IReservationService
             IsFree: !busy.Contains(t.Id),
             FitsGuests: t.Seats >= guests)).ToList();
 
-        return new AvailabilityDto(restaurantId, start, end, guests, best?.Id, list);
+        // Kokkuvõte: mitu sobivat (piisavalt suurt) lauda on vaba
+        var free = list.Count(t => t.IsFree && t.FitsGuests);
+        var message = best is null
+            ? L.T(_current.Language, "avail.none", guests)
+            : L.T(_current.Language, "avail.free", free, guests, best.Number);
+        return new AvailabilityDto(restaurantId, start, end, guests, best is not null, free, message, best?.Number, best?.Id, list);
     }
 
     /// <summary>
@@ -358,8 +363,10 @@ public class ReservationService : IReservationService
         {
             if (r.Status is not (ReservationStatus.Active or ReservationStatus.Arrived or ReservationStatus.NoShow))
                 throw new BusinessRuleException("Saabumist saab märkida ainult aktiivsel broneeringul.");
-            if (DateOnly.FromDateTime(BookingRules.DayStart(r.StartTime)) > DateOnly.FromDateTime(BookingRules.DayStart(_clock.Now)))
-                throw new BusinessRuleException("Saabumist saab märkida alles külastuse päeval.");
+            if (status == ReservationStatus.Arrived && _clock.Now < r.StartTime.AddHours(-1))
+                throw new BusinessRuleException($"Saabumist saab märkida alles külastuse ajal (alates {r.StartTime.AddHours(-1):dd.MM HH:mm}).");
+            if (status == ReservationStatus.NoShow && _clock.Now < r.StartTime)
+                throw new BusinessRuleException($"\"Ei tulnud\" saab märkida alles pärast broneeringu algust ({r.StartTime:dd.MM HH:mm}).");
         }
         r.Status = status;
         await _reservations.SaveChangesAsync();
@@ -556,6 +563,7 @@ public class ReservationService : IReservationService
     /// <summary>Kontrollib menüüpunktid ja asendab broneeringu eeltellimuse.</summary>
     private async Task ApplyPreOrderAsync(Reservation r, int restaurantId, List<PreOrderLineDto> items)
     {
+        await ResolveNamesAsync(restaurantId, items);
         var lines = items.Where(i => i.Quantity > 0)
             .GroupBy(i => i.MenuItemId)
             .Select(g => new { MenuItemId = g.Key, Quantity = g.Sum(x => x.Quantity) })
@@ -583,6 +591,25 @@ public class ReservationService : IReservationService
                 Quantity = line.Quantity,
                 UnitPrice = item.Price
             });
+        }
+    }
+
+    /// <summary>Read, kus roog on antud nimega (mitte id-ga): leiab selle restorani menüüst roa id.</summary>
+    private async Task ResolveNamesAsync(int restaurantId, List<PreOrderLineDto> items)
+    {
+        foreach (var line in items.Where(i => i.MenuItemId <= 0))
+        {
+            var name = line.Name?.Trim();
+            if (string.IsNullOrEmpty(name))
+                throw new BusinessRuleException("Igal eeltellimuse real peab olema menuItemId või roa nimi (name).");
+            var found = (await _menu.GetPagedAsync(new MenuQuery { RestaurantId = restaurantId, Search = name, PageSize = 100 })).Items;
+            var exact = found.Where(m => string.Equals(m.Name, name, StringComparison.OrdinalIgnoreCase)).ToList();
+            var pick = exact.Count == 1 ? exact[0] : found.Count == 1 ? found[0] : null;
+            if (pick is null)
+                throw found.Count == 0
+                    ? new NotFoundException($"Rooga \"{name}\" selle restorani menüüs ei ole.")
+                    : new BusinessRuleException($"\"{name}\" sobib mitmele roale: {string.Join(", ", found.Select(m => m.Name))}. Kirjutage täpsem nimi.");
+            line.MenuItemId = pick.Id;
         }
     }
 

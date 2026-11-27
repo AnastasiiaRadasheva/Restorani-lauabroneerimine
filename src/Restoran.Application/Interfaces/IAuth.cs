@@ -11,6 +11,8 @@ public interface IUserRepository : IRepository<User>
     /// <summary>Kasutaja sama telefoninumbriga (võrreldakse ainult numbreid), välja arvatud exceptUserId.</summary>
     Task<User?> GetByPhoneAsync(string phone, int? exceptUserId = null);
     Task<List<User>> SearchCustomersAsync(string search, int take);
+    /// <summary>Kõik kasutajad koos broneeringute arvuga (otsing nime/e-posti/telefoni või broneeringu id järgi).</summary>
+    Task<List<(User User, int Reservations)>> SearchAllAsync(string? search, int? reservationId);
     Task<List<User>> GetStaffAsync();
 }
 
@@ -36,6 +38,7 @@ public interface IAuthService
     Task<AuthResponseDto> LoginAsync(LoginDto dto);
     Task<UserDto> GetMeAsync();
     Task<UserDto> UpdateMeAsync(UpdateProfileDto dto);
+    Task<List<UserListItemDto>> GetUsersAsync(string? search, int? reservationId);
     Task<PasswordLinkDto> GetPasswordLinkAsync(string token);
     Task<AuthResponseDto> SetPasswordAsync(SetPasswordDto dto);
 }

@@ -187,11 +187,17 @@ public class UpdateReservationDto
     [StringLength(500)] public string? SpecialRequest { get; set; }
 }
 
+/// <summary>Eeltellimuse rida: roog id või nime järgi (nt "Kõrvitsasupp") ja kogus.</summary>
 public class PreOrderLineDto
 {
-    /// <example>3</example>
-    [Range(1, int.MaxValue)]
+    /// <summary>Roa id. Võib jätta tühjaks (0), kui roog on antud nimega.</summary>
+    [Range(0, int.MaxValue)]
     public int MenuItemId { get; set; }
+
+    /// <summary>Roa nimi või selle osa, nt "Kõrvitsasupp" (kasutatakse, kui menuItemId puudub).</summary>
+    /// <example>Kõrvitsasupp</example>
+    [StringLength(100)]
+    public string? Name { get; set; }
 
     /// <example>2</example>
     [Range(1, 50)]
@@ -252,7 +258,13 @@ public class ChangeStatusDto
 /// <summary>Broneeringute filter personalile.</summary>
 public class ReservationQuery : PageQuery
 {
+    public ReservationQuery() => PageSize = 50;
+
+    /// <summary>Restoran (tühi = kõik).</summary>
     public int? RestaurantId { get; set; }
+
+    /// <summary>Laua id.</summary>
+    public int? TableId { get; set; }
 
     /// <summary>Päev kujul yyyy-MM-dd.</summary>
     public DateOnly? Date { get; set; }
@@ -263,6 +275,7 @@ public class ReservationQuery : PageQuery
     /// <summary>Kuni (kaasa arvatud).</summary>
     public DateOnly? To { get; set; }
 
+    /// <summary>Olek: Active, Arrived, NoShow, Cancelled, PendingPayment.</summary>
     public ReservationStatus? Status { get; set; }
 }
 
@@ -282,11 +295,16 @@ public record TableAvailabilityDto(
     bool FitsGuests);
 
 /// <summary>Vabade laudade vastus: pakutud laud ja kõik lauad plaani jaoks.</summary>
+/// <summary>Vabade laudade vastus: kõigepealt lühike kokkuvõte (kas on vaba laud), siis kõik lauad.</summary>
 public record AvailabilityDto(
     int RestaurantId,
     DateTime StartTime,
     DateTime EndTime,
     int Guests,
+    bool HasFreeTable,
+    int FreeTables,
+    string Message,
+    int? SuggestedTableNumber,
     int? SuggestedTableId,
     List<TableAvailabilityDto> Tables);
 

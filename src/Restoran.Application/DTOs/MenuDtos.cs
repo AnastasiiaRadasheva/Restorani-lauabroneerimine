@@ -58,6 +58,12 @@ public class MenuQuery : PageQuery
     /// <summary>Kategooria (nt Supid, Pearoad).</summary>
     public string? Category { get; set; }
 
+    /// <summary>Ilma selle allergeenita, nt nuts (pähklid), milk, gluten, egg, fish, shellfish. Mitu: nuts,milk</summary>
+    public string? Without { get; set; }
+
+    /// <summary>Ainult need road: vegan (vegantoit) või vegetarian (taimetoit, sisaldab ka vegantoite).</summary>
+    public string? Diet { get; set; }
+
     /// <summary>Kas näidata ainult saadaval olevaid.</summary>
     public bool? OnlyAvailable { get; set; }
 

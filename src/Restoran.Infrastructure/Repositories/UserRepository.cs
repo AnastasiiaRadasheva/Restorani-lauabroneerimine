@@ -27,6 +27,22 @@ public class UserRepository : Repository<User>, IUserRepository
         return withPhone.FirstOrDefault(u => PhoneNumber.Same(u.Phone, phone));
     }
 
+    public async Task<List<(User User, int Reservations)>> SearchAllAsync(string? search, int? reservationId)
+    {
+        var q = Db.Users.AsQueryable();
+        if (reservationId.HasValue)
+            q = q.Where(u => Db.Reservations.Any(r => r.Id == reservationId && r.UserId == u.Id));
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var s = search.Trim().ToLower();
+            q = q.Where(u => u.Name.ToLower().Contains(s) || u.Email.ToLower().Contains(s) || (u.Phone != null && u.Phone.Contains(s)));
+        }
+        var rows = await q.OrderBy(u => u.Role).ThenBy(u => u.Name)
+            .Select(u => new { User = u, Count = Db.Reservations.Count(r => r.UserId == u.Id) })
+            .ToListAsync();
+        return rows.Select(r => (r.User, r.Count)).ToList();
+    }
+
     public Task<List<User>> SearchCustomersAsync(string search, int take)
     {
         var s = search.Trim().ToLower();

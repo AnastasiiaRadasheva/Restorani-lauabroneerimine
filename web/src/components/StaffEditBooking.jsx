@@ -72,7 +72,7 @@ function TimeTab({ r, busy, save }) {
       .catch(() => setSlots([]))
   }, [r.restaurantId, date, guests])
   useEffect(() => {
-    api('/api/tables/available' + qs({ restaurantId: r.restaurantId, date, time, guests }))
+    api('/api/tables/available' + qs({ restaurantId: r.restaurantId, date, time, guests, showAll: true }))
       .then((a) => setTables(a.tables.filter((t) => t.fitsGuests && (t.isFree || t.id === r.tableId))))
       .catch(() => setTables([]))
   }, [r.restaurantId, r.tableId, date, time, guests])

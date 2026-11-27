@@ -20,6 +20,19 @@ public class MenuRepository : Repository<MenuItem>, IMenuRepository
         if (!string.IsNullOrWhiteSpace(query.Category)) q = q.Where(m => m.Category == query.Category);
         if (query.OnlyAvailable == true) q = q.Where(m => m.IsAvailable);
 
+        // Ainult vegan- või taimetoidud (vegantoit on ka taimetoit)
+        var diet = query.Diet?.Trim().ToLower();
+        if (diet == "vegan") q = q.Where(m => m.Tags != null && ("," + m.Tags + ",").Contains(",vegan,"));
+        else if (diet is "vegetarian" or "taimetoit")
+            q = q.Where(m => m.Tags != null && (("," + m.Tags + ",").Contains(",vegetarian,") || ("," + m.Tags + ",").Contains(",vegan,")));
+
+        // Ilma allergeenita (sildid on kujul "milk,nuts")
+        foreach (var w in (query.Without ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var tag = "," + w.ToLower() + ",";
+            q = q.Where(m => m.Tags == null || !("," + m.Tags + ",").Contains(tag));
+        }
+
         // Otsing
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
@@ -35,7 +48,11 @@ public class MenuRepository : Repository<MenuItem>, IMenuRepository
             ("name", true) => q.OrderByDescending(m => m.Name),
             ("category", false) => q.OrderBy(m => m.Category).ThenBy(m => m.Name),
             ("category", true) => q.OrderByDescending(m => m.Category).ThenBy(m => m.Name),
-            _ => q.OrderBy(m => m.Name)
+            ("name", false) => q.OrderBy(m => m.Name),
+            // Vaikimisi menüü järjekord: külmad road, supid, pearoad, mereannid, setid, magustoidud, veinid
+            _ => q.OrderBy(m => m.Category == "Külmad road" ? 0 : m.Category == "Supid" ? 1 : m.Category == "Pearoad" ? 2
+                              : m.Category == "Mereannid" ? 3 : m.Category == "Setid" ? 4 : m.Category == "Magustoidud" ? 5
+                              : m.Category == "Veinid" ? 6 : 7).ThenBy(m => (double)m.Price)
         };
 
         var total = await q.CountAsync();
