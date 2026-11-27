@@ -299,3 +299,25 @@ h1, h2, h3, .card-title, .big, .name { font-weight: 600; }
 @media (max-width: 1000px) {
   .hero.hero-fit .hero-inner { height: auto; }
 }
+
+/* ===== Broneerimine, IV. Õhtu detailid: lisateenused vasakul, avatav õhtu detailide kaart paremal ===== */
+.evening-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: start; }
+.eg-left { display: flex; flex-direction: column; gap: 32px; min-width: 0; }
+.eg-right { min-width: 0; border: 1px solid var(--ink); background: var(--paper); box-shadow: 0 30px 60px -30px rgba(12, 13, 14, 0.45); }
+.eg-right .details-toggle { border: 0; box-shadow: none; }
+/* avatult jääb tume päis, sisu tuleb valgele alale sama kaardi sisse */
+.eg-right.open .details-toggle { background: var(--ink); color: var(--bg); }
+.eg-right.open .details-toggle .plus { background: transparent; border: 1px solid var(--bg); color: var(--bg); }
+.eg-right .evening-details { padding: 32px; gap: 32px; animation: eg-open 0.35s ease; }
+.eg-right .evening-details .paper { box-shadow: none; }
+@keyframes eg-open { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
+@media (max-width: 1100px) {
+  .evening-grid { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .eg-right .evening-details { padding: 20px; }
+}
+@media (prefers-reduced-motion: reduce) { .eg-right .evening-details { animation: none; } }
+
+/* ===== Broneerimise sammud: iga osa on eraldi plokk vähemalt ekraani kõrguses (järgmine osa paistab alles kerides) ===== */
+@media (min-width: 1001px) {
+  .booking > .section { min-height: calc(100vh / var(--zoom) - var(--header-h, 88px) - var(--steps-h, 56px)); }
+}

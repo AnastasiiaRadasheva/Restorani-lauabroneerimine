@@ -23,7 +23,7 @@ export function useExtrasCatalog() {
 }
 
 /**
- * Õhtu detailid: põhjus, peakülaline, peakoka kingitus ja lisateenused.
+ * Õhtu detailid: vasakul lisateenused, paremal avatav plokk (põhjus, peakülaline, peakoka kingitus).
  * ev – olek { occasion, gift, hostType, hostName, addressForm, serviceLanguage, extras: [] }
  */
 export default function EveningDetails({ ev, setEv, catalog, userName }) {
@@ -51,7 +51,9 @@ export default function EveningDetails({ ev, setEv, catalog, userName }) {
         : t('evening.exFormal', { name: last || first })
 
   return (
-    <>
+    <div className="evening-grid">
+      {/* Vasakul lisateenused */}
+      <div className="eg-left">
       <div className="block">
         <div className="extras-head">
           <p className="eyebrow">{t('evening.extras')}</p>
@@ -89,7 +91,10 @@ export default function EveningDetails({ ev, setEv, catalog, userName }) {
           />
         </div>
       )}
+      </div>
 
+      {/* Paremal õhtu detailid: avaneb samas kaardis */}
+      <div className={open ? 'eg-right open' : 'eg-right'}>
       <button type="button" className={open ? 'details-toggle open' : 'details-toggle'} onClick={() => setOpen(!open)} aria-expanded={open}>
         <span className="plus" aria-hidden="true">{open ? '−' : '+'}</span>
         <span className="text">
@@ -189,6 +194,7 @@ export default function EveningDetails({ ev, setEv, catalog, userName }) {
 
         </div>
       )}
-    </>
+      </div>
+    </div>
   )
 }
