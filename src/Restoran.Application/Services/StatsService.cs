@@ -56,10 +56,11 @@ public class StatsService : IStatsService
             return new CountItem(WeekdayNames[i], items.Count, items.Sum(r => r.Guests));
         }).ToList();
 
+        // Täpne algusaeg (nt 19:30 eraldi 19:00-st); öised ajad (pärast keskööd, Kalamaja on avatud kuni 03:00) lähevad lõppu
         var byHour = list
-            .GroupBy(r => r.StartTime.Hour)
-            .OrderBy(g => g.Key)
-            .Select(g => new CountItem($"{g.Key:00}:00", g.Count(), g.Sum(r => r.Guests)))
+            .GroupBy(r => r.StartTime.TimeOfDay)
+            .OrderBy(g => g.Key < TimeSpan.FromHours(6) ? g.Key + TimeSpan.FromDays(1) : g.Key)
+            .Select(g => new CountItem($"{g.Key.Hours:00}:{g.Key.Minutes:00}", g.Count(), g.Sum(r => r.Guests)))
             .ToList();
 
         var busiestDates = list

@@ -65,4 +65,5 @@ public interface IReservationService
     Task<List<RemindDueDto>> GetRemindDueAsync();
     Task MarkRemindedAsync(int id);
     Task<NoShowResultDto> MarkNoShowsAsync();
+    Task<NoShowResultDto> MarkNoShowAsync(int id);
 }

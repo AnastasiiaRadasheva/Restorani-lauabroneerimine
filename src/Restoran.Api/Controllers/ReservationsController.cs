@@ -151,12 +151,22 @@ public class ReservationsController : ControllerBase
         return NoContent();
     }
 
-    /// <summary>Taustateenus: kes 30 minuti jooksul ei tulnud, saab oleku "ei tulnud" ja laud vabaneb.</summary>
+    /// <summary>Märgi "ei tulnud": üks broneering (reservationId) või taustateenusena kõik, kes 30 min jooksul ei tulnud.</summary>
+    /// <remarks>
+    /// reservationId antud – ainult see broneering (alles 30 minutit pärast algust), laud vabaneb.
+    /// reservationId tühi – kõik aktiivsed broneeringud, mille algusest on möödas üle 30 minuti (nii teeb taustateenus).
+    /// </remarks>
+    /// <param name="reservationId">Broneeringu id (tühi = kõik hilinejad).</param>
     [Authorize(Roles = "Service,Admin")]
     [HttpPost("mark-no-show")]
     [ProducesResponseType(typeof(NoShowResultDto), StatusCodes.Status200OK)]
-    public async Task<ActionResult<NoShowResultDto>> MarkNoShow()
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<NoShowResultDto>> MarkNoShow([FromQuery] int? reservationId = null)
     {
+        if (reservationId is int one)
+            return Ok(await _reservations.MarkNoShowAsync(one));
+
         // Samal ajal: gastronoomiliste õhtute maksmata registreerimised tühistatakse 24 h enne õhtut
         var unpaid = await _events.CancelUnpaidAsync();
         var result = await _reservations.MarkNoShowsAsync();

@@ -21,7 +21,8 @@ public static class SwaggerMain
     private static readonly HashSet<string> Main = new(StringComparer.OrdinalIgnoreCase)
     {
         // Registreerimine ja sisselogimine
-        "POST api/auth/register", "POST api/auth/login", "GET api/auth/me", "PUT api/auth/me",
+        // Sisselogimine käib Swaggeri nupuga "Logi sisse", seepärast eraldi login-toimingut loendis pole
+        "POST api/auth/register", "GET api/auth/me", "PUT api/auth/me",
         // Restoranid ja lauad
         "GET api/restaurants",
         "GET api/tables/available", "GET api/tables/plan",
@@ -49,8 +50,7 @@ public static class SwaggerMain
     /// <summary>Kes mida Swaggeris näeb (kui toimingut siin pole, otsustavad [Authorize] atribuudid).</summary>
     private static readonly Dictionary<string, string[]> Shown = new(StringComparer.OrdinalIgnoreCase)
     {
-        // Sisselogimine – külalisele; registreerida saab ka administraator (ka teenindaja konto)
-        ["POST api/auth/login"] = ["guest"],
+        // Konto loomine – külalisele; registreerida saab ka administraator (ka teenindaja konto)
         ["POST api/auth/register"] = ["guest", "Admin"],
         // Kliendi enda toimingud
         ["GET api/reservations/my"] = ["Customer"],
@@ -139,7 +139,9 @@ public static class SwaggerMain
                     p.Description = "Külalise nimi, e-post või telefon.";
                 return; // väljad jäävad tühjaks – tühi = kõik
             }
-            var date = context.ApiDescription.RelativePath!.StartsWith("api/tables") ? FreeDate(scopes) : "";
+            // Plaani näide: lähim päev, kus on broneeringuid (et vastuses oleks midagi näha); muu: vaba päev broneerimiseks
+            var date = context.ApiDescription.RelativePath == "api/tables/plan" ? BusyDate(scopes)
+                     : context.ApiDescription.RelativePath!.StartsWith("api/tables") ? FreeDate(scopes) : "";
             foreach (var p in operation.Parameters.OfType<OpenApiParameter>())
             {
                 JsonNode? example = p.Name.ToLowerInvariant() switch
@@ -196,6 +198,22 @@ public static class SwaggerMain
         var text = found.ToString("yyyy-MM-dd");
         _free = (DateTime.Now, text);
         return text;
+    }
+
+    /// <summary>Lähim päev alates tänasest, kus Vanalinnas on aktiivseid broneeringuid (plaani näiteks).</summary>
+    public static string BusyDate(IServiceScopeFactory scopes)
+    {
+        try
+        {
+            using var scope = scopes.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var from = DateTime.Today;
+            var first = db.Reservations
+                .Where(r => r.Table!.RestaurantId == 1 && r.StartTime >= from && r.Status != ReservationStatus.Cancelled)
+                .OrderBy(r => r.StartTime).Select(r => (DateTime?)r.StartTime).FirstOrDefault();
+            return DateOnly.FromDateTime(first ?? DateTime.Today).ToString("yyyy-MM-dd");
+        }
+        catch { return DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd"); }
     }
 
     /// <summary>Testkliendi (klient@restoran.ee) kasutaja id Swaggeri näiteks.</summary>
@@ -361,7 +379,7 @@ public static class SwaggerMain
     /// <summary>Gruppide järjekord ja lühikirjeldused (loogilises järjekorras, mitte tähestiku järgi).</summary>
     private static readonly (string Name, string Description)[] Groups =
     {
-        ("Auth", "Registreerimine ja sisselogimine"),
+        ("Auth", "Konto loomine ja minu andmed (sisselogimine – nupp „Logi sisse“)"),
         ("Restaurants", "Restoranid"),
         ("Tables", "Vabad lauad ja laudade haldus"),
         ("Reservations", "Broneeringud, eeltellimus ja taustateenus"),

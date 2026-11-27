@@ -193,6 +193,8 @@ public static class DbSeeder
             var tables = await db.Tables.ToListAsync();
             var rnd = new Random(42);
             var slots = new[] { 17.0, 18.0, 19.0, 19.5, 20.0, 21.0 };
+            // Restoran, mis on avatud pärast keskööd (Kalamaja kuni 03:00), saab ka hilisi broneeringuid (viimane saabumine 23:30)
+            var lateSlots = new[] { 17.0, 18.0, 19.0, 19.5, 20.0, 21.0, 22.0, 22.5, 23.0, 23.5 };
             // Restoranid täituvad erinevalt: Vanalinn kõige rohkem, Kadriorg kõige vähem
             var busy = new Dictionary<int, double> { [1] = 0.55, [2] = 0.4, [3] = 0.25 };
             var today = DateTime.Today;
@@ -221,7 +223,8 @@ public static class DbSeeder
                     if (rnd.NextDouble() > chance) continue;
 
                     var r0 = restaurants[table.RestaurantId];
-                    var start = day.AddHours(slots[rnd.Next(slots.Length)]);
+                    var times = r0.ClosesAt < r0.OpensAt ? lateSlots : slots;
+                    var start = day.AddHours(times[rnd.Next(times.Length)]);
                     var end = r0.ClosesAt > r0.OpensAt ? day.Add(r0.ClosesAt.ToTimeSpan()) : day.AddDays(1).Add(r0.ClosesAt.ToTimeSpan());
                     var status = start < DateTime.Now
                         ? (rnd.NextDouble() < 0.1 ? ReservationStatus.NoShow : ReservationStatus.Arrived)
