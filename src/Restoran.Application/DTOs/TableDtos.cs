@@ -21,10 +21,9 @@ public class SaveTableDto
     [Range(1, int.MaxValue)]
     public int RestaurantId { get; set; }
 
-    /// <summary>Laua number restoranis.</summary>
-    /// <example>99</example>
+    /// <summary>Laua number restoranis. Kui puudub, antakse järgmine vaba number.</summary>
     [Range(1, 999)]
-    public int Number { get; set; }
+    public int? Number { get; set; }
 
     /// <summary>Kohtade arv.</summary>
     /// <example>4</example>
@@ -38,21 +37,17 @@ public class SaveTableDto
 
     public bool IsActive { get; set; } = true;
 
-    /// <summary>Asukoht plaanil protsentides (vasakult).</summary>
-    /// <example>48</example>
-    [Range(0, 100)] public int X { get; set; }
+    /// <summary>Asukoht plaanil protsentides (vasakult). Kui X ja Y puuduvad, leitakse plaanil esimene vaba koht.</summary>
+    [Range(0, 100)] public int? X { get; set; }
 
     /// <summary>Asukoht plaanil protsentides (ülevalt).</summary>
-    /// <example>4</example>
-    [Range(0, 100)] public int Y { get; set; }
+    [Range(0, 100)] public int? Y { get; set; }
 
-    /// <summary>Laius plaanil protsentides.</summary>
-    /// <example>8</example>
-    [Range(1, 100)] public int Width { get; set; } = 12;
+    /// <summary>Laius plaanil protsentides. Kui puudub, arvutatakse kohtade arvu järgi.</summary>
+    [Range(1, 100)] public int? Width { get; set; }
 
-    /// <summary>Kõrgus plaanil protsentides.</summary>
-    /// <example>8</example>
-    [Range(1, 100)] public int Height { get; set; } = 12;
+    /// <summary>Kõrgus plaanil protsentides. Kui puudub, arvutatakse kohtade arvu järgi.</summary>
+    [Range(1, 100)] public int? Height { get; set; }
 
     /// <summary>Kirjeldus plaanil.</summary>
     /// <example>akna all</example>

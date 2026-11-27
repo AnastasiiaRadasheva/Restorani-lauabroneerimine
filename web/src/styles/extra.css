@@ -286,3 +286,16 @@ h1, h2, h3, .card-title, .big, .name { font-weight: 600; }
   .crest-anim, .crest-anim > div > div::after, .ticker-track { animation: none; }
   .reveal { opacity: 1; transform: none; transition: none; }
 }
+
+/* ===== Suurel ekraanil sisu ulatub peaaegu servani (5 % vahe kummalgi pool), mitte ei koondu keskele ===== */
+@media (min-width: 1001px) {
+  .container, .header-inner, .footer-inner { max-width: none; padding-left: calc(5vw / var(--zoom)); padding-right: calc(5vw / var(--zoom)); }
+  .container.narrow { max-width: 620px; padding-left: var(--gutter); padding-right: var(--gutter); }
+}
+
+/* ===== Avaplokk: hõbedane raam jääb, plokk on sama lai kui muu sisu ja veidi madalam kui ekraan ===== */
+.hero.hero-fit { padding: 16px 0 32px; }
+.hero.hero-fit .hero-inner { height: calc((100vh / var(--zoom) - var(--header-h, 88px)) * 0.84); }
+@media (max-width: 1000px) {
+  .hero.hero-fit .hero-inner { height: auto; }
+}
