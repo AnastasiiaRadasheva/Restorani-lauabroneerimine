@@ -28,19 +28,32 @@ public class EventsController : ControllerBase
         _users = users;
     }
 
-    /// <summary>Tulevased õhtud, soovi korral otsing nime või kuupäeva järgi.</summary>
-    /// <param name="search">Õhtu nimi või selle osa, nt jazz.</param>
+    /// <summary>Tulevased õhtud, soovi korral otsing sõna või kuupäeva järgi.</summary>
+    /// <remarks>
+    /// Otsitakse nimest, liigist, kirjeldusest, programmist, riietusest ja restorani nimest; täpitähed pole olulised
+    /// (nt "trühvel" ja "truhvel" leiavad sama). Kui midagi ei leita, on vastus 200 ja tühi loend [] – tühi otsingutulemus pole viga.
+    /// </remarks>
+    /// <param name="search">Sõna või selle osa, nt trühvel, džäss, kitarr, black tie, Kadriorg.</param>
     /// <param name="date">Kuupäev, nt 2026-12-06.</param>
     [HttpGet]
     public async Task<ActionResult<List<GastroEventDto>>> GetUpcoming([FromQuery] string? search = null, [FromQuery] DateOnly? date = null)
     {
         var list = await _events.GetUpcomingAsync();
         if (!string.IsNullOrWhiteSpace(search))
-            list = list.Where(e => e.Title.Contains(search.Trim(), StringComparison.OrdinalIgnoreCase)
-                                || e.Kind.Contains(search.Trim(), StringComparison.OrdinalIgnoreCase)).ToList();
+        {
+            var q = Plain(search);
+            list = list.Where(e => Plain(string.Join(" ", e.Title, e.Kind, e.Description, e.Program, e.DressCode, e.RestaurantName)).Contains(q)).ToList();
+        }
         if (date.HasValue)
             list = list.Where(e => DateOnly.FromDateTime(e.StartTime) == date.Value).ToList();
         return Ok(list);
+    }
+
+    /// <summary>Väiketähed ja täpitähtedeta (ä → a, š → s), et otsing leiaks ka ilma täppideta kirjutatud sõna.</summary>
+    private static string Plain(string text)
+    {
+        var d = text.Trim().ToLowerInvariant().Normalize(System.Text.NormalizationForm.FormD);
+        return new string(d.Where(c => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark).ToArray());
     }
 
     /// <summary>Personalile: tulevased ja viimase 30 päeva õhtud.</summary>
