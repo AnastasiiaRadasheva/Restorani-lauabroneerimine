@@ -28,24 +28,20 @@ public class EventsController : ControllerBase
         _users = users;
     }
 
-    /// <summary>Tulevased õhtud, soovi korral otsing sõna või kuupäeva järgi.</summary>
+    /// <summary>Tulevased õhtud; otsing õhtu nime järgi (tühi = kõik õhtud).</summary>
     /// <remarks>
-    /// Otsitakse nimest, liigist, kirjeldusest, programmist, riietusest ja restorani nimest; täpitähed pole olulised
-    /// (nt "trühvel" ja "truhvel" leiavad sama). Kui midagi ei leita, on vastus 200 ja tühi loend [] – tühi otsingutulemus pole viga.
+    /// Täpitähed pole olulised (nt "truhvli" leiab "Trühvliõhtu"). Kui midagi ei leita, on vastus 200 ja tühi loend [] – tühi otsingutulemus pole viga.
     /// </remarks>
-    /// <param name="search">Sõna või selle osa, nt trühvel, džäss, kitarr, black tie, Kadriorg.</param>
-    /// <param name="date">Kuupäev, nt 2026-12-06.</param>
+    /// <param name="search">Õhtu nimi või selle osa, nt Terase, trühvli, džäss. Tühi = kõik õhtud.</param>
     [HttpGet]
-    public async Task<ActionResult<List<GastroEventDto>>> GetUpcoming([FromQuery] string? search = null, [FromQuery] DateOnly? date = null)
+    public async Task<ActionResult<List<GastroEventDto>>> GetUpcoming([FromQuery] string? search = null)
     {
         var list = await _events.GetUpcomingAsync();
         if (!string.IsNullOrWhiteSpace(search))
         {
             var q = Plain(search);
-            list = list.Where(e => Plain(string.Join(" ", e.Title, e.Kind, e.Description, e.Program, e.DressCode, e.RestaurantName)).Contains(q)).ToList();
+            list = list.Where(e => Plain(e.Title).Contains(q)).ToList();
         }
-        if (date.HasValue)
-            list = list.Where(e => DateOnly.FromDateTime(e.StartTime) == date.Value).ToList();
         return Ok(list);
     }
 
