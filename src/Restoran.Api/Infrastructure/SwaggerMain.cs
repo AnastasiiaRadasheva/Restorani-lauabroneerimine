@@ -21,7 +21,8 @@ public static class SwaggerMain
     private static readonly HashSet<string> Main = new(StringComparer.OrdinalIgnoreCase)
     {
         // Registreerimine ja sisselogimine
-        "POST api/auth/register", "POST api/auth/login", "GET api/auth/me", "PUT api/auth/me",
+        // Sisselogimine käib Swaggeri nupuga "Logi sisse", seepärast eraldi login-toimingut loendis pole
+        "POST api/auth/register", "GET api/auth/me", "PUT api/auth/me",
         // Restoranid ja lauad
         "GET api/restaurants",
         "GET api/tables/available", "GET api/tables/plan",
@@ -49,8 +50,7 @@ public static class SwaggerMain
     /// <summary>Kes mida Swaggeris näeb (kui toimingut siin pole, otsustavad [Authorize] atribuudid).</summary>
     private static readonly Dictionary<string, string[]> Shown = new(StringComparer.OrdinalIgnoreCase)
     {
-        // Sisselogimine – külalisele; registreerida saab ka administraator (ka teenindaja konto)
-        ["POST api/auth/login"] = ["guest"],
+        // Konto loomine – külalisele; registreerida saab ka administraator (ka teenindaja konto)
         ["POST api/auth/register"] = ["guest", "Admin"],
         // Kliendi enda toimingud
         ["GET api/reservations/my"] = ["Customer"],
@@ -361,7 +361,7 @@ public static class SwaggerMain
     /// <summary>Gruppide järjekord ja lühikirjeldused (loogilises järjekorras, mitte tähestiku järgi).</summary>
     private static readonly (string Name, string Description)[] Groups =
     {
-        ("Auth", "Registreerimine ja sisselogimine"),
+        ("Auth", "Konto loomine ja minu andmed (sisselogimine – nupp „Logi sisse“)"),
         ("Restaurants", "Restoranid"),
         ("Tables", "Vabad lauad ja laudade haldus"),
         ("Reservations", "Broneeringud, eeltellimus ja taustateenus"),
