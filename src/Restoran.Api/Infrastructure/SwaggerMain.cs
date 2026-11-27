@@ -393,7 +393,9 @@ public static class SwaggerMain
     /// <summary>Järjestus Swaggeris: grupp loogilises järjekorras, grupi sees aadressi ja meetodi (GET, POST, PUT, PATCH, DELETE) järgi.</summary>
     public static string Order(ApiDescription api)
     {
-        var group = api.ActionDescriptor.RouteValues.TryGetValue("controller", out var c) ? c : "";
+        // Grupp: [Tags] atribuut (nt broneering kliendi nimel on Reservations grupis), muidu kontrolleri nimi
+        var group = api.ActionDescriptor.EndpointMetadata.OfType<Microsoft.AspNetCore.Http.Metadata.ITagsMetadata>().FirstOrDefault()?.Tags.FirstOrDefault()
+                    ?? (api.ActionDescriptor.RouteValues.TryGetValue("controller", out var c) ? c : "");
         var i = Array.FindIndex(Groups, g => g.Name == group);
         var method = Array.IndexOf(new[] { "GET", "POST", "PUT", "PATCH", "DELETE" }, api.HttpMethod);
         return $"{(i < 0 ? 99 : i):00} {api.RelativePath} {method}";
