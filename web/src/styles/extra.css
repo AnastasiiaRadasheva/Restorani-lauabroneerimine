@@ -287,12 +287,15 @@ h1, h2, h3, .card-title, .big, .name { font-weight: 600; }
   .reveal { opacity: 1; transform: none; transition: none; }
 }
 
-/* ===== Avaplokk: hõbedane raam jääb, kuid plokk täidab peaaegu kogu ekraani (väike vahe ääres) ===== */
-.hero.hero-fit { padding: 16px 0 24px; }
-.hero.hero-fit > .container { max-width: none; padding: 0 24px; }
-/* ekraani kõrgus (suumi arvestades) miinus päis, ülemine/alumine vahe ja raami paksus */
-.hero.hero-fit .hero-inner { height: calc(100vh / var(--zoom) - var(--header-h, 88px) - 16px - 24px - 22px); }
+/* ===== Suurel ekraanil sisu ulatub peaaegu servani (5 % vahe kummalgi pool), mitte ei koondu keskele ===== */
+@media (min-width: 1001px) {
+  .container, .header-inner, .footer-inner { max-width: none; padding-left: calc(5vw / var(--zoom)); padding-right: calc(5vw / var(--zoom)); }
+  .container.narrow { max-width: 620px; padding-left: var(--gutter); padding-right: var(--gutter); }
+}
+
+/* ===== Avaplokk: hõbedane raam jääb, plokk on sama lai kui muu sisu ja veidi madalam kui ekraan ===== */
+.hero.hero-fit { padding: 16px 0 32px; }
+.hero.hero-fit .hero-inner { height: calc((100vh / var(--zoom) - var(--header-h, 88px)) * 0.84); }
 @media (max-width: 1000px) {
-  .hero.hero-fit > .container { padding: 0 12px; }
   .hero.hero-fit .hero-inner { height: auto; }
 }
