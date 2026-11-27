@@ -308,6 +308,11 @@ public class EventService : IEventService
             .Count(r => BookingRules.Occupies(r.Status));
         if (booked > 0)
             throw new BusinessRuleException($"Sel päeval on selles saalis juba {booked} tavalist broneeringut. Valige teine päev või saal.");
+        // Ühes saalis üks õhtu päevas (kogu restorani õhtu hõivab kõik saalid)
+        var sameDay = (await _reservations.GetEventsAsync(restaurant.Id, dayStart, dayStart.AddDays(1)) ?? new List<GastroEvent>())
+            .FirstOrDefault(o => o.Id != e.Id && (o.Zone is null || dto.Zone is null || o.Zone == dto.Zone));
+        if (sameDay is not null)
+            throw new ConflictException($"Sel päeval on selles saalis juba õhtu \"{sameDay.Title}\". Valige teine päev või saal.");
         if (!isNew && dto.RestaurantId != e.RestaurantId && Active(e).Any())
             throw new BusinessRuleException("Õhtule on registreerunud külalisi – restorani ei saa muuta.");
 

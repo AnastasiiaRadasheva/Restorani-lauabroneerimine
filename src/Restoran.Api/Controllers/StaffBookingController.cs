@@ -51,6 +51,7 @@ public class StaffBookingController : ControllerBase
     /// <remarks>Kaarti pole vaja: kui on midagi maksta, saab klient makselingi, muidu kohe kinnituse.</remarks>
     [Authorize(Roles = "Admin,Waiter")]
     [HttpPost("api/reservations/for-customer")]
+    [Tags("Reservations")] // Swaggeris broneeringute grupis
     [ProducesResponseType(typeof(ReservationDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]

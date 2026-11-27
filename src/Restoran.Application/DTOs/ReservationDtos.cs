@@ -70,6 +70,19 @@ public class CancelReservationDto
 /// <summary>Sõnum broneeringu kohta.</summary>
 public record MessageDto(int Id, bool FromStaff, string AuthorName, string Text, DateTime CreatedAt);
 
+/// <summary>Vestlus ühe broneeringu kohta: viimane sõnum ja kas restoran on vastanud.</summary>
+public record MessageThreadDto(
+    int ReservationId,
+    string CustomerName,
+    string CustomerEmail,
+    string RestaurantName,
+    DateTime StartTime,
+    int Messages,
+    string LastText,
+    bool LastFromStaff,
+    DateTime LastAt,
+    bool Unanswered);
+
 /// <summary>Uus sõnum.</summary>
 /// <summary>Personal kirjutab korraga kõigile päeva külalistele (nt "restoran on suletud").</summary>
 public class BroadcastDto

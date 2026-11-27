@@ -128,6 +128,10 @@ public class EventsController : ControllerBase
     }
 
     /// <summary>Uus õhtu (admin). Kuupäev vähemalt 2 nädala pärast.</summary>
+    /// <remarks>
+    /// Näide on valmis: piisab nupust Execute. Kuupäev peab olema vähemalt 14 päeva pärast, lahtiolekuajal,
+    /// ja sel päeval ei tohi saalis olla tavalisi broneeringuid. capacity ≤ kohtade arv saalis; zone tühi = kogu restoran.
+    /// </remarks>
     [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<GastroEventDto>> Create(SaveEventDto dto) => Ok(await _events.CreateAsync(dto));

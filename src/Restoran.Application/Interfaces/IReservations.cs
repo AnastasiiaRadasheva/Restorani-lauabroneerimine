@@ -9,6 +9,9 @@ public interface IReservationRepository : IRepository<Reservation>
     /// <summary>Broneering koos laua, restorani, kasutaja ja eeltellimusega.</summary>
     Task<Reservation?> GetWithDetailsAsync(int id);
 
+    /// <summary>Broneeringud, millel on sõnumeid (userId = ainult selle kasutaja omad, null = kõik).</summary>
+    Task<List<Reservation>> GetWithMessagesAsync(int? userId);
+
     /// <summary>Broneeringud, mis hõivavad antud laudu antud ajavahemikus (Active või Arrived).</summary>
     Task<List<Reservation>> GetOccupyingAsync(IEnumerable<int> tableIds, DateTime start, DateTime end, int? excludeId = null);
 
@@ -55,6 +58,8 @@ public interface IReservationService
 
     // Sõnumid ja lisateenused (lubatud ka vähem kui 24 h enne)
     Task<List<MessageDto>> GetMessagesAsync(int id);
+    /// <summary>Vestlused: klient näeb oma, personal kõiki; unanswered = ainult need, kus viimane sõna on kliendil.</summary>
+    Task<List<MessageThreadDto>> GetMessageThreadsAsync(bool unanswered);
     Task<MessageDto> AddMessageAsync(int id, NewMessageDto dto);
     Task<ReservationDto> SetExtrasAsync(int id, SetExtrasDto dto);
     Task<ReservationDto> SetStaffDetailsAsync(int id, StaffDetailsDto dto);

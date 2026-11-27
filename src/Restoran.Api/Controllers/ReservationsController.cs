@@ -41,8 +41,9 @@ public class ReservationsController : ControllerBase
     public async Task<ActionResult<List<CalendarDayDto>>> Calendar([FromQuery] int? restaurantId, [FromQuery] DateOnly from, [FromQuery] int days = 42) =>
         Ok(await _reservations.GetCalendarAsync(restaurantId, from, days));
 
-    /// <summary>Broneeringu sõnumid (klient ja personal).</summary>
+    /// <summary>Ühe broneeringu vestlus (klient näeb oma, personal kõiki).</summary>
     [HttpGet("{id:int}/messages")]
+    [Tags("Messages")]
     [ProducesResponseType(typeof(List<MessageDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -54,6 +55,7 @@ public class ReservationsController : ControllerBase
     ///     { "text": "Kas tordi saaks serveerida magustoiduga?" }
     /// </remarks>
     [HttpPost("{id:int}/messages")]
+    [Tags("Messages")]
     [ProducesResponseType(typeof(MessageDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

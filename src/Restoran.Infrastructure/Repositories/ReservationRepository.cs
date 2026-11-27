@@ -21,6 +21,14 @@ public class ReservationRepository : Repository<Reservation>, IReservationReposi
     public Task<Reservation?> GetWithDetailsAsync(int id) =>
         WithDetails().FirstOrDefaultAsync(r => r.Id == id);
 
+    public Task<List<Reservation>> GetWithMessagesAsync(int? userId) =>
+        Db.Reservations
+            .Include(r => r.Table).ThenInclude(t => t!.Restaurant)
+            .Include(r => r.User)
+            .Include(r => r.Messages)
+            .Where(r => r.Messages.Any() && (userId == null || r.UserId == userId))
+            .ToListAsync();
+
     public Task<List<Reservation>> GetOccupyingAsync(IEnumerable<int> tableIds, DateTime start, DateTime end, int? excludeId = null)
     {
         var ids = tableIds.ToList();

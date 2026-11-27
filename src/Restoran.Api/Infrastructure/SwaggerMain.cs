@@ -32,12 +32,11 @@ public static class SwaggerMain
         // Broneeringud ja eeltellimus
         "POST api/reservations", "GET api/reservations/my", "GET api/reservations", "GET api/reservations/{id}",
         "PATCH api/reservations/{id}/cancel", "PATCH api/reservations/{id}/status", "POST api/reservations/{id}/preorder",
-        "POST api/reservations/for-customer",
         // Broneeringu muutmine (klient või personal), sõnumid ja kasutaja teated
-        "PUT api/reservations/{id}", "GET api/reservations/{id}/messages", "POST api/reservations/{id}/messages",
+        "PUT api/reservations/{id}", "GET api/messages", "GET api/reservations/{id}/messages", "POST api/reservations/{id}/messages",
         "GET api/notifications/my",
         // Gastronoomilised õhtud
-        "GET api/events", "POST api/events/{id}/join", "GET api/events/registrations/my",
+        "GET api/events", "POST api/events", "POST api/events/{id}/join", "GET api/events/registrations/my",
         // Statistika ja kasutajad (admin)
         "GET api/stats", "GET api/users",
         // Taustateenus (Worker)
@@ -58,6 +57,7 @@ public static class SwaggerMain
         ["POST api/reservations"] = ["Customer"],
         ["POST api/reservations/{id}/preorder"] = ["Customer"],
         ["POST api/events/{id}/join"] = ["Customer"],
+        ["POST api/events"] = ["Admin"],
         // Ühe broneeringu vaatamine, muutmine, tühistamine ja sõnumid – klient ja personal
         ["GET api/reservations/{id}"] = ["Customer", "Waiter", "Admin"],
         ["PUT api/reservations/{id}"] = ["Customer", "Waiter", "Admin"],
@@ -67,7 +67,7 @@ public static class SwaggerMain
         ["GET api/notifications/my"] = ["Customer", "Waiter", "Admin"],
         ["GET api/auth/me"] = ["Customer", "Waiter", "Admin"],
         ["PUT api/auth/me"] = ["Customer", "Waiter"],
-        ["POST api/reservations/for-customer"] = ["Waiter", "Admin"],
+        ["GET api/messages"] = ["Customer", "Waiter", "Admin"],
         // Taustateenuse (Worker) toimingud – Service ja administraator (ülesande nõue)
         ["GET api/reservations/remind-due"] = ["Service", "Admin"],
         ["PATCH api/reservations/{id}/reminded"] = ["Service", "Admin"],
@@ -200,6 +200,27 @@ public static class SwaggerMain
         return text;
     }
 
+    /// <summary>Uue õhtu näite päev: vähemalt 14 päeva pärast, Kadriorus pole sel päeval broneeringuid ega teist õhtut.</summary>
+    public static string EventDate(IServiceScopeFactory scopes)
+    {
+        var day = DateTime.Today.AddDays(14);
+        try
+        {
+            using var scope = scopes.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            for (int i = 0; i < 200; i++, day = day.AddDays(1))
+            {
+                var from = day.AddHours(6); var to = from.AddDays(1);
+                var busy = db.Reservations.Any(r => r.Table!.RestaurantId == 3 && r.StartTime >= from && r.StartTime < to
+                               && (r.Status == ReservationStatus.Active || r.Status == ReservationStatus.Arrived || r.Status == ReservationStatus.PendingPayment))
+                           || db.Events.Any(e => e.RestaurantId == 3 && e.StartTime >= from && e.StartTime < to);
+                if (!busy) break;
+            }
+        }
+        catch { }
+        return day.ToString("yyyy-MM-dd");
+    }
+
     /// <summary>Lähim päev alates tänasest, kus Vanalinnas on aktiivseid broneeringuid (plaani näiteks).</summary>
     public static string BusyDate(IServiceScopeFactory scopes)
     {
@@ -326,6 +347,24 @@ public static class SwaggerMain
                 };
                 return;
             }
+            // Uus õhtu: lihtne näide, kuupäev on lähim vaba päev Kadriorus (vähemalt 2 nädala pärast)
+            if (context.Type == typeof(Restoran.Application.DTOs.SaveEventDto))
+            {
+                s.Example = new JsonObject
+                {
+                    ["restaurantId"] = 3,
+                    ["title"] = "Jõuluõhtu",
+                    ["kind"] = "Pidulik õhtu",
+                    ["description"] = "Viiekäiguline jõulumenüü, glögi ja vahuvein.",
+                    ["program"] = "Klaver · jõululaulud.",
+                    ["startTime"] = EventDate(scopes) + "T19:00:00",
+                    ["pricePerGuest"] = 95,
+                    ["dressCode"] = "smart elegant",
+                    ["capacity"] = 20,
+                    ["imageUrl"] = "/img/sculpture.jpg",
+                };
+                return;
+            }
             // Eeltellimus: road nime järgi (id-d pole vaja otsida); kaardiga makstakse juurde tulev summa
             if (context.Type == typeof(Restoran.Application.DTOs.PreOrderDto))
             {
@@ -383,6 +422,7 @@ public static class SwaggerMain
         ("Restaurants", "Restoranid"),
         ("Tables", "Vabad lauad ja laudade haldus"),
         ("Reservations", "Broneeringud, eeltellimus ja taustateenus"),
+        ("Messages", "Sõnumid: vestlused, ühe broneeringu sõnumid ja vastamine (admin näeb kõiki ja vastamata)"),
         ("Menu", "Menüü"),
         ("Events", "Gastronoomilised õhtud"),
         ("Stats", "Statistika (admin)"),
@@ -393,7 +433,9 @@ public static class SwaggerMain
     /// <summary>Järjestus Swaggeris: grupp loogilises järjekorras, grupi sees aadressi ja meetodi (GET, POST, PUT, PATCH, DELETE) järgi.</summary>
     public static string Order(ApiDescription api)
     {
-        var group = api.ActionDescriptor.RouteValues.TryGetValue("controller", out var c) ? c : "";
+        // Grupp: [Tags] atribuut (nt broneering kliendi nimel on Reservations grupis), muidu kontrolleri nimi
+        var group = api.ActionDescriptor.EndpointMetadata.OfType<Microsoft.AspNetCore.Http.Metadata.ITagsMetadata>().FirstOrDefault()?.Tags.FirstOrDefault()
+                    ?? (api.ActionDescriptor.RouteValues.TryGetValue("controller", out var c) ? c : "");
         var i = Array.FindIndex(Groups, g => g.Name == group);
         var method = Array.IndexOf(new[] { "GET", "POST", "PUT", "PATCH", "DELETE" }, api.HttpMethod);
         return $"{(i < 0 ? 99 : i):00} {api.RelativePath} {method}";
