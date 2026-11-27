@@ -36,7 +36,7 @@ public static class SwaggerMain
         "PUT api/reservations/{id}", "GET api/messages", "GET api/reservations/{id}/messages", "POST api/reservations/{id}/messages",
         "GET api/notifications/my",
         // Gastronoomilised õhtud
-        "GET api/events", "POST api/events/{id}/join", "GET api/events/registrations/my",
+        "GET api/events", "POST api/events", "POST api/events/{id}/join", "GET api/events/registrations/my",
         // Statistika ja kasutajad (admin)
         "GET api/stats", "GET api/users",
         // Taustateenus (Worker)
@@ -57,6 +57,7 @@ public static class SwaggerMain
         ["POST api/reservations"] = ["Customer"],
         ["POST api/reservations/{id}/preorder"] = ["Customer"],
         ["POST api/events/{id}/join"] = ["Customer"],
+        ["POST api/events"] = ["Admin"],
         // Ühe broneeringu vaatamine, muutmine, tühistamine ja sõnumid – klient ja personal
         ["GET api/reservations/{id}"] = ["Customer", "Waiter", "Admin"],
         ["PUT api/reservations/{id}"] = ["Customer", "Waiter", "Admin"],
@@ -199,6 +200,27 @@ public static class SwaggerMain
         return text;
     }
 
+    /// <summary>Uue õhtu näite päev: vähemalt 14 päeva pärast, Kadriorus pole sel päeval broneeringuid ega teist õhtut.</summary>
+    public static string EventDate(IServiceScopeFactory scopes)
+    {
+        var day = DateTime.Today.AddDays(14);
+        try
+        {
+            using var scope = scopes.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            for (int i = 0; i < 200; i++, day = day.AddDays(1))
+            {
+                var from = day.AddHours(6); var to = from.AddDays(1);
+                var busy = db.Reservations.Any(r => r.Table!.RestaurantId == 3 && r.StartTime >= from && r.StartTime < to
+                               && (r.Status == ReservationStatus.Active || r.Status == ReservationStatus.Arrived || r.Status == ReservationStatus.PendingPayment))
+                           || db.Events.Any(e => e.RestaurantId == 3 && e.StartTime >= from && e.StartTime < to);
+                if (!busy) break;
+            }
+        }
+        catch { }
+        return day.ToString("yyyy-MM-dd");
+    }
+
     /// <summary>Lähim päev alates tänasest, kus Vanalinnas on aktiivseid broneeringuid (plaani näiteks).</summary>
     public static string BusyDate(IServiceScopeFactory scopes)
     {
@@ -322,6 +344,24 @@ public static class SwaggerMain
                 {
                     ["reservationId"] = LastKatiReservation(scopes),
                     ["message"] = "Meeldetuletus: homme kell 19:00 ootame Teid Argentis.",
+                };
+                return;
+            }
+            // Uus õhtu: lihtne näide, kuupäev on lähim vaba päev Kadriorus (vähemalt 2 nädala pärast)
+            if (context.Type == typeof(Restoran.Application.DTOs.SaveEventDto))
+            {
+                s.Example = new JsonObject
+                {
+                    ["restaurantId"] = 3,
+                    ["title"] = "Jõuluõhtu",
+                    ["kind"] = "Pidulik õhtu",
+                    ["description"] = "Viiekäiguline jõulumenüü, glögi ja vahuvein.",
+                    ["program"] = "Klaver · jõululaulud.",
+                    ["startTime"] = EventDate(scopes) + "T19:00:00",
+                    ["pricePerGuest"] = 95,
+                    ["dressCode"] = "smart elegant",
+                    ["capacity"] = 20,
+                    ["imageUrl"] = "/img/sculpture.jpg",
                 };
                 return;
             }
