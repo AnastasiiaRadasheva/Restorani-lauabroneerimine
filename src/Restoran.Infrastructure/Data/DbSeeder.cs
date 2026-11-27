@@ -147,6 +147,37 @@ public static class DbSeeder
             await db.SaveChangesAsync();
         }
 
+        // Lisaroad: iga restorani menüüsse (lisatakse ka olemasolevasse andmebaasi, kui sellise nimega rooga veel pole)
+        var extraDishes = new (string Name, string Desc, string Cat, decimal Price, string? Tags)[]
+        {
+            ("Peedicarpaccio, kitsejuust", "röstitud kreeka pähkel, mesi, tüümian", "Külmad road", 16m, "milk,nuts,vegetarian"),
+            ("Suitsulõhe, rukkikrõps", "kapparikreem, punane sibul, till", "Külmad road", 19m, "fish,milk,gluten"),
+            ("Burrata ja tomatid", "basiilikuõli, balsamico", "Külmad road", 17m, "milk,vegetarian"),
+            ("Seenesupp", "metsaseened, koor, tatrakrõps", "Supid", 12m, "milk,vegetarian"),
+            ("Bouillabaisse", "kala ja mereannid, safran, rouille", "Supid", 22m, "fish,shellfish,egg"),
+            ("Kõrvitsasupp", "röstitud kõrvitsaseemned, kookos", "Supid", 11m, "vegan"),
+            ("Lambakarree, rosmariin", "röstitud juurviljad, punase veini kaste", "Pearoad", 44m, null),
+            ("Tursk ja pruunistatud või", "herned, kartulipüree, kaaviar", "Pearoad", 36m, "fish,milk"),
+            ("Seenerisotto", "puravikud, parmesan, trühliõli", "Pearoad", 29m, "milk,vegetarian"),
+            ("Köögiviljad söel", "hummus, granaatõun, ürdid", "Pearoad", 26m, "vegan"),
+            ("Crème brûlée", "Madagaskari vanill", "Magustoidud", 14m, "milk,egg,vegetarian"),
+            ("Juustuvalik", "kolm Prantsuse juustu, viigimarjamoos, kreeka pähkel", "Magustoidud", 21m, "milk,nuts,gluten,vegetarian"),
+            ("Marjasorbett", "metsamarjad, piparmünt", "Magustoidud", 10m, "vegan"),
+            ("Chablis, klaas", "Burgundia valge, Prantsusmaa", "Veinid", 15m, null),
+            ("Pinot Noir, klaas", "punane, Burgundia", "Veinid", 16m, null),
+            ("Sauternes, klaas", "magus magustoiduvein", "Veinid", 17m, null),
+            ("Alkoholivaba kaaslane", "kodused limonaadid ja teed igale käigule", "Veinid", 35m, "vegan"),
+        };
+        foreach (var rid in await db.Restaurants.Select(r => r.Id).ToListAsync())
+        {
+            var have = await db.MenuItems.Where(m => m.RestaurantId == rid).Select(m => m.Name).ToListAsync();
+            // Lisatud juba varem (admin võis mõne hiljem kustutada) – ei lisa uuesti
+            if (extraDishes.Count(d => have.Contains(d.Name)) >= 2) continue;
+            foreach (var d in extraDishes.Where(d => !have.Contains(d.Name)))
+                db.MenuItems.Add(new MenuItem { RestaurantId = rid, Name = d.Name, Description = d.Desc, Category = d.Cat, Price = d.Price, Tags = d.Tags, IsAvailable = true });
+        }
+        await db.SaveChangesAsync();
+
         if (!await db.Reservations.AnyAsync())
         {
             // Näidisbroneeringud jagatakse näidisklientide vahel (mitte testkliendile klient@restoran.ee)

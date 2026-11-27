@@ -35,8 +35,8 @@ public class TablesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AvailabilityDto>> Available(
-        [FromQuery] int restaurantId, [FromQuery] DateOnly date, [FromQuery] TimeOnly time, [FromQuery] int guests) =>
-        Ok(await _reservations.GetAvailabilityAsync(restaurantId, date, time, guests));
+        [FromQuery] int? restaurantId, [FromQuery] DateOnly date, [FromQuery] TimeOnly time, [FromQuery] int guests) =>
+        Ok(await _reservations.GetAvailabilityAsync(Rid(restaurantId), date, time, guests));
 
     /// <summary>Vabade laudade arv iga kellaaja kohta mitmeks päevaks (broneerimise kalender).</summary>
     /// <remarks>
@@ -49,8 +49,8 @@ public class TablesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<List<DaySlotsDto>>> Slots(
-        [FromQuery] int restaurantId, [FromQuery] DateOnly from, [FromQuery] int days, [FromQuery] int guests) =>
-        Ok(await _reservations.GetSlotsAsync(restaurantId, from, days, guests));
+        [FromQuery] int? restaurantId, [FromQuery] DateOnly from, [FromQuery] int days, [FromQuery] int guests) =>
+        Ok(await _reservations.GetSlotsAsync(Rid(restaurantId), from, days, guests));
 
     /// <summary>Päeva laudade plaan: lauad ja nende broneeringud (personal).</summary>
     /// <remarks>
@@ -62,8 +62,14 @@ public class TablesController : ControllerBase
     [HttpGet("plan")]
     [ProducesResponseType(typeof(TablePlanDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<TablePlanDto>> Plan([FromQuery] int restaurantId, [FromQuery] DateOnly date) =>
-        Ok(await _reservations.GetPlanAsync(restaurantId, date));
+    public async Task<ActionResult<TablePlanDto>> Plan([FromQuery] int? restaurantId, [FromQuery] DateOnly date) =>
+        Ok(await _reservations.GetPlanAsync(Rid(restaurantId), date));
+
+    /// <summary>Tühi restaurantId = esimene restoran (0 tähendab "määramata"); 0 või negatiivne kirjutatud id = restorani pole.</summary>
+    private static int Rid(int? restaurantId) =>
+        restaurantId is null ? 0
+        : restaurantId > 0 ? restaurantId.Value
+        : throw new Restoran.Application.Common.NotFoundException($"Restorani id-ga {restaurantId} ei ole (id algab 1-st).");
 
     /// <summary>Üks laud.</summary>
     [HttpGet("{id:int}")]

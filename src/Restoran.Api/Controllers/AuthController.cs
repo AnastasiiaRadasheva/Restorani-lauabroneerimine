@@ -69,7 +69,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<UserDto>> Me() => Ok(await _auth.GetMeAsync());
 
-    /// <summary>Muuda oma profiili: nimi, telefon, SMS-ide nõusolek ja pilt.</summary>
+    /// <summary>Muuda oma profiili: nimi, e-post, telefon, SMS-ide nõusolek ja pilt.</summary>
     [Authorize]
     [HttpPut("me")]
     [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]

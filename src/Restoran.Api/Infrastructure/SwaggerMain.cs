@@ -1,6 +1,10 @@
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.EntityFrameworkCore;
+using Restoran.Application.Entities;
+using Restoran.Application.Interfaces;
+using Restoran.Infrastructure.Data;
 using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -17,7 +21,7 @@ public static class SwaggerMain
     private static readonly HashSet<string> Main = new(StringComparer.OrdinalIgnoreCase)
     {
         // Registreerimine ja sisselogimine
-        "POST api/auth/register", "POST api/auth/login", "GET api/auth/me",
+        "POST api/auth/register", "POST api/auth/login", "GET api/auth/me", "PUT api/auth/me",
         // Restoranid ja lauad
         "GET api/restaurants",
         "GET api/tables/available", "GET api/tables/plan",
@@ -80,13 +84,20 @@ public static class SwaggerMain
     /// Kuupäev on alati nädala pärast (et see oleks tulevikus ja broneerimise vahemikus).
     /// Kustutamise ja muutmise id jäetakse tühjaks, et päris andmeid kogemata ei muudetaks.
     /// </summary>
-    public class ExamplesFilter : IOperationFilter
+    public class ExamplesFilter(IServiceScopeFactory scopes) : IOperationFilter
     {
         public void Apply(OpenApiOperation operation, OperationFilterContext context)
         {
             if (operation.Parameters is null) return;
             var method = context.ApiDescription.HttpMethod;
-            var date = DateOnly.FromDateTime(DateTime.Today.AddDays(7)).ToString("yyyy-MM-dd");
+            // Menüü: Swaggeris ainult nimi, kategooria ja "ilma allergeenita" (sait saadab ülejäänud ise)
+            if (method == "GET" && context.ApiDescription.RelativePath == "api/menu")
+            {
+                var keep = new[] { "search", "category", "without" };
+                foreach (var p in operation.Parameters.Where(p => !keep.Contains(p.Name?.ToLowerInvariant())).ToList())
+                    operation.Parameters.Remove(p);
+            }
+            var date = context.ApiDescription.RelativePath!.StartsWith("api/tables") ? FreeDate(scopes) : "";
             foreach (var p in operation.Parameters.OfType<OpenApiParameter>())
             {
                 JsonNode? example = p.Name.ToLowerInvariant() switch
@@ -108,10 +119,46 @@ public static class SwaggerMain
     }
 
     /// <summary>
+    /// Näidete kuupäev: esimene päev alates nädala pärast, kus Vanalinnas kell 19:00 on kahele vaba laud
+    /// ja testkliendil (klient@restoran.ee) pole sel päeval veel broneeringut. Nii töötab "Execute" alati
+    /// (ka siis, kui päev on täis või klient on juba 3 lauda samaks õhtuks võtnud). Leht uuesti laadides leitakse uus päev.
+    /// </summary>
+    private static (DateTime At, string Date)? _free;
+    public static string FreeDate(IServiceScopeFactory scopes)
+    {
+        if (_free is { } f && DateTime.Now - f.At < TimeSpan.FromSeconds(5)) return f.Date;
+        var fallback = DateOnly.FromDateTime(DateTime.Today.AddDays(7));
+        var found = fallback;
+        try
+        {
+            using var scope = scopes.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var bookings = scope.ServiceProvider.GetRequiredService<IReservationService>();
+            var kati = db.Users.Where(u => u.Email == "klient@restoran.ee").Select(u => u.Id).FirstOrDefault();
+            for (int i = 7; i < 120; i++)
+            {
+                var day = DateOnly.FromDateTime(DateTime.Today.AddDays(i));
+                var from = day.ToDateTime(TimeOnly.MinValue);
+                var to = from.AddDays(1);
+                if (db.Reservations.Any(r => r.UserId == kati && r.Status == ReservationStatus.Active && r.StartTime >= from && r.StartTime < to)) continue;
+                try
+                {
+                    if (bookings.GetAvailabilityAsync(1, day, new TimeOnly(19, 0), 2).GetAwaiter().GetResult().SuggestedTableId is not null) { found = day; break; }
+                }
+                catch { /* suletud päev või õhtu – järgmine päev */ }
+            }
+        }
+        catch { found = fallback; }
+        var text = found.ToString("yyyy-MM-dd");
+        _free = (DateTime.Now, text);
+        return text;
+    }
+
+    /// <summary>
     /// Päringu keha näidetes on kuupäev alati nädala pärast (mitte kirjutatud kindel kuupäev, mis võib olla möödas),
     /// et nt broneeringu näidet saaks kohe Execute-nupuga proovida.
     /// </summary>
-    public class DatesFilter : ISchemaFilter
+    public class DatesFilter(IServiceScopeFactory scopes) : ISchemaFilter
     {
         public void Apply(IOpenApiSchema schema, SchemaFilterContext context)
         {
@@ -149,10 +196,22 @@ public static class SwaggerMain
             {
                 s.Example = new JsonObject
                 {
-                    ["date"] = date,
+                    ["date"] = FreeDate(scopes),
                     ["time"] = "20:00",
                     ["guests"] = 3,
                     ["specialRequest"] = "Muudetud: tuleme kolmekesi",
+                };
+                return;
+            }
+            // Profiili muutmine: nimi ja telefon; e-post null = jääb samaks (uue e-posti võib siia kirjutada)
+            if (context.Type == typeof(Restoran.Application.DTOs.UpdateProfileDto))
+            {
+                s.Example = new JsonObject
+                {
+                    ["name"] = "Kati Klient",
+                    ["phone"] = "+372 5555 1234",
+                    ["email"] = null,
+                    ["smsOptIn"] = true,
                 };
                 return;
             }
@@ -178,7 +237,7 @@ public static class SwaggerMain
                 s.Example = new JsonObject
                 {
                     ["restaurantId"] = 1,
-                    ["date"] = date,
+                    ["date"] = FreeDate(scopes),
                     ["time"] = "19:00",
                     ["guests"] = 2,
                     ["specialRequest"] = "Aknaalune laud, kui võimalik",

@@ -28,9 +28,20 @@ public class EventsController : ControllerBase
         _users = users;
     }
 
-    /// <summary>Tulevased õhtud.</summary>
+    /// <summary>Tulevased õhtud, soovi korral otsing nime või kuupäeva järgi.</summary>
+    /// <param name="search">Õhtu nimi või selle osa, nt jazz.</param>
+    /// <param name="date">Kuupäev, nt 2026-12-06.</param>
     [HttpGet]
-    public async Task<ActionResult<List<GastroEventDto>>> GetUpcoming() => Ok(await _events.GetUpcomingAsync());
+    public async Task<ActionResult<List<GastroEventDto>>> GetUpcoming([FromQuery] string? search = null, [FromQuery] DateOnly? date = null)
+    {
+        var list = await _events.GetUpcomingAsync();
+        if (!string.IsNullOrWhiteSpace(search))
+            list = list.Where(e => e.Title.Contains(search.Trim(), StringComparison.OrdinalIgnoreCase)
+                                || e.Kind.Contains(search.Trim(), StringComparison.OrdinalIgnoreCase)).ToList();
+        if (date.HasValue)
+            list = list.Where(e => DateOnly.FromDateTime(e.StartTime) == date.Value).ToList();
+        return Ok(list);
+    }
 
     /// <summary>Personalile: tulevased ja viimase 30 päeva õhtud.</summary>
     [Authorize(Roles = "Admin,Waiter")]

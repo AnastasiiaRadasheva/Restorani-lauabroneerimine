@@ -292,6 +292,8 @@ export default {
   'address.Name': 'По имени',
   'address.Patronymic': 'По имени и отчеству',
   'address.Formal': 'Господин / госпожа',
+  'gift.None': 'Ничего не нужно',
+  'gift.None.desc': 'без комплимента от шефа',
   'gift.Cake': 'Мини-торт со свечой',
   'gift.Cake.desc': 'шоколадный, на двоих',
   'gift.Champagne': 'Бокал шампанского, 150 мл',

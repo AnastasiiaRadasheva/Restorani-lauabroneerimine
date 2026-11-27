@@ -292,6 +292,8 @@ export default {
   'address.Name': 'By first name',
   'address.Patronymic': 'Name and patronymic',
   'address.Formal': 'Mr / Ms',
+  'gift.None': 'Nothing, thanks',
+  'gift.None.desc': 'no compliment from the chef',
   'gift.Cake': 'Mini cake with a candle',
   'gift.Cake.desc': 'chocolate, for two',
   'gift.Champagne': 'Glass of champagne, 150 ml',

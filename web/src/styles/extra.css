@@ -337,3 +337,17 @@ h1, h2, h3, .card-title, .big, .name { font-weight: 600; }
   #book .guests-row { padding: 28px 0 0; }
   #book .guests-row .value { font-size: 40px; }
 }
+
+/* IV: tordisoovide kaart nagu õhtu detailide kaart; kokkuvõte liigub ekraaniga kaasa */
+.eg-left .cake-card { padding: 0; gap: 0; border: 1px solid var(--ink); background: var(--paper); box-shadow: 0 30px 60px -30px rgba(12, 13, 14, 0.45); }
+.cake-card .cake-head { background: var(--ink); color: var(--bg); padding: 24px 32px; }
+.cake-card .cake-head .big { font-size: 32px; line-height: 1.1; }
+.cake-card .cake-body { padding: 28px 32px 32px; display: flex; flex-direction: column; gap: 14px; }
+@media (max-width: 700px) {
+  .cake-card .cake-head { padding: 18px 20px; }
+  .cake-card .cake-head .big { font-size: 24px; }
+  .cake-card .cake-body { padding: 20px; }
+}
+@media (min-width: 1001px) {
+  .details4-side .total-card { position: sticky; top: calc(var(--header-h, 88px) + var(--steps-h, 60px) + 24px); }
+}

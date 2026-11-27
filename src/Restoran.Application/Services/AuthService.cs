@@ -117,6 +117,13 @@ public class AuthService : IAuthService
         if (!string.IsNullOrWhiteSpace(dto.Phone) && !PhoneNumber.Same(dto.Phone, user.Phone)
             && await _users.GetByPhoneAsync(dto.Phone, user.Id) is not null)
             throw new ConflictException("See telefoninumber on juba teise konto juures.");
+        var email = dto.Email?.Trim().ToLower();
+        if (!string.IsNullOrEmpty(email) && email != user.Email)
+        {
+            if (await _users.EmailExistsAsync(email))
+                throw new ConflictException("See e-post on juba teise konto juures.");
+            user.Email = email;
+        }
         user.Name = dto.Name.Trim();
         user.Phone = string.IsNullOrWhiteSpace(dto.Phone) ? null : dto.Phone.Trim();
         user.SmsOptIn = dto.SmsOptIn;

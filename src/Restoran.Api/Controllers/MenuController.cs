@@ -19,8 +19,8 @@ public class MenuController : ControllerBase
         _menu = menu;
     }
 
-    /// <summary>Menüü koos otsingu, filtri, sortimise ja lehekülgedega.</summary>
-    /// <remarks>Näide: GET /api/menu?restaurantId=1&amp;category=Pearoad&amp;sort=price&amp;desc=true&amp;page=1&amp;pageSize=10</remarks>
+    /// <summary>Menüü: otsing nime järgi, kategooria ja ilma allergeenita.</summary>
+    /// <remarks>Näited: search=lõhe · category=Pearoad · without=nuts (pähkliteta) · without=nuts,milk</remarks>
     [HttpGet]
     [ProducesResponseType(typeof(PagedResult<MenuItemDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResult<MenuItemDto>>> GetAll([FromQuery] MenuQuery query) =>

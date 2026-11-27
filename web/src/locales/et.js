@@ -302,6 +302,8 @@ export default {
   'address.Name': 'Eesnimega',
   'address.Patronymic': 'Ees- ja isanimega',
   'address.Formal': 'Härra / proua',
+  'gift.None': 'Pole vaja',
+  'gift.None.desc': 'ilma peakoka kingituseta',
   'gift.Cake': 'Minitort küünlaga',
   'gift.Cake.desc': 'šokolaadine, kahele',
   'gift.Champagne': 'Klaas šampanjat, 150 ml',

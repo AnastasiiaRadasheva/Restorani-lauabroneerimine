@@ -26,7 +26,7 @@ function resizeImage(file) {
 export default function Profile() {
   const { user, updateUser } = useAuth()
   const { t } = useI18n()
-  const [form, setForm] = useState({ name: user.name, phone: user.phone ?? '', smsOptIn: user.smsOptIn ?? true })
+  const [form, setForm] = useState({ name: user.name, email: user.email, phone: user.phone ?? '', smsOptIn: user.smsOptIn ?? true })
   const [avatar, setAvatar] = useState(user.avatarUrl)
   const [changedAvatar, setChangedAvatar] = useState(null)
   const [message, setMessage] = useState('')
@@ -51,7 +51,7 @@ export default function Profile() {
     try {
       const u = await api('/api/auth/me', {
         method: 'PUT',
-        body: { name: form.name, phone: form.phone || null, smsOptIn: form.smsOptIn, avatarUrl: changedAvatar ?? '' },
+        body: { name: form.name, email: form.email.trim() || null, phone: form.phone || null, smsOptIn: form.smsOptIn, avatarUrl: changedAvatar ?? '' },
       })
       updateUser(u)
       setChangedAvatar(null)
@@ -81,7 +81,7 @@ export default function Profile() {
           </label>
           <label className="field">
             {t('auth.email')}
-            <input value={user.email} disabled />
+            <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
           </label>
           <label className="field">
             {t('details4.phone')}

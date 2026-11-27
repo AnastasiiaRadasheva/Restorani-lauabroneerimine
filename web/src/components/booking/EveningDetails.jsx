@@ -4,7 +4,7 @@ import { useI18n } from '../../i18n'
 import { money } from '../../utils'
 
 export const OCCASIONS = ['None', 'Birthday', 'Anniversary', 'Proposal', 'Business']
-export const GIFTS = ['Cake', 'Champagne', 'Dessert']
+export const GIFTS = ['Cake', 'Champagne', 'Dessert', 'None']
 export const HOSTS = ['Me', 'Other', 'Social']
 export const ADDRESS_FORMS = ['Name', 'Patronymic', 'Formal']
 export const SERVICE_LANGS = [
@@ -78,8 +78,11 @@ export default function EveningDetails({ ev, setEv, catalog, userName }) {
       </div>
 
       {cake && (
-        <div className="paper white cake-card">
-          <p className="card-title">{t('cake.title')}</p>
+        <div className="cake-card">
+          <div className="cake-head">
+            <span className="big">{t('cake.title')}</span>
+          </div>
+          <div className="cake-body">
           <p className="muted small">{t('cake.note')}</p>
           <textarea
             className="box"
@@ -89,6 +92,7 @@ export default function EveningDetails({ ev, setEv, catalog, userName }) {
             onChange={(e) => set({ cakeNote: e.target.value })}
             placeholder={t('cake.placeholder')}
           />
+          </div>
         </div>
       )}
       </div>
@@ -116,6 +120,28 @@ export default function EveningDetails({ ev, setEv, catalog, userName }) {
               ))}
             </div>
           </div>
+
+          {ev.occasion !== 'None' && (
+            <div className="paper gift-card">
+              <div className="row-between">
+                <p className="card-title">{t('evening.gift')}</p>
+                <span className="eyebrow ox">{t('evening.free')} · {t(`occasion.${ev.occasion}`).toLowerCase()}</span>
+              </div>
+              <p className="muted small">{t('evening.giftNote')}</p>
+              <div className="gifts" role="radiogroup">
+                {GIFTS.map((g) => (
+                  <button key={g} type="button" role="radio" aria-checked={ev.gift === g} className={ev.gift === g ? 'gift on' : 'gift'} onClick={() => set({ gift: g })}>
+                    <span className="dot" />
+                    <span className="text">
+                      <span className="name">{t(`gift.${g}`)}</span>
+                      <span className="desc">{t(`gift.${g}.desc`)}</span>
+                      {g !== 'None' && <span className="price">0 €</span>}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="paper white host-card">
             <p className="card-title">{t('evening.host')}</p>
@@ -169,28 +195,6 @@ export default function EveningDetails({ ev, setEv, catalog, userName }) {
               </div>
             )}
           </div>
-
-          {ev.occasion !== 'None' && (
-            <div className="paper gift-card">
-              <div className="row-between">
-                <p className="card-title">{t('evening.gift')}</p>
-                <span className="eyebrow ox">{t('evening.free')} · {t(`occasion.${ev.occasion}`).toLowerCase()}</span>
-              </div>
-              <p className="muted small">{t('evening.giftNote')}</p>
-              <div className="gifts" role="radiogroup">
-                {GIFTS.map((g) => (
-                  <button key={g} type="button" role="radio" aria-checked={ev.gift === g} className={ev.gift === g ? 'gift on' : 'gift'} onClick={() => set({ gift: g })}>
-                    <span className="dot" />
-                    <span className="text">
-                      <span className="name">{t(`gift.${g}`)}</span>
-                      <span className="desc">{t(`gift.${g}.desc`)}</span>
-                      <span className="price">0 €</span>
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
 
         </div>
       )}

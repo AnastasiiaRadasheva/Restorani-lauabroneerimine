@@ -61,6 +61,11 @@ public class UpdateProfileDto
     [RegularExpression(@"^[+\d\s-]{5,30}$", ErrorMessage = "Telefoninumber on vigane.")]
     public string? Phone { get; set; }
 
+    /// <summary>Uus e-post (tühi = jätta muutmata). Edaspidi logitakse sisse uue e-postiga.</summary>
+    /// <example>kati.uus@example.com</example>
+    [EmailAddress, StringLength(200)]
+    public string? Email { get; set; }
+
     /// <summary>Kas saata broneeringu kinnitus SMS-iga.</summary>
     public bool SmsOptIn { get; set; } = true;
 
